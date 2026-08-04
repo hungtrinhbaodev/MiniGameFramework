@@ -1,0 +1,23 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "CMake Configure",
+			"type": "shell",
+			"command": "cmake -S ${workspaceFolder} -B ${workspaceFolder}/build",
+			"problemMatcher": []
+		},
+		{
+			"label": "CMake Build",
+			"type": "shell",
+			"command": "cmake --build ${workspaceFolder}/build --config Debug",
+			"dependsOn": "CMake Configure",
+			"dependsOrder": "sequence",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"problemMatcher": ["$msCompile"]
+		}
+	]
+}

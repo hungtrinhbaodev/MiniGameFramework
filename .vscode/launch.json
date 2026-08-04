@@ -1,0 +1,18 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+		
+		{
+			"name": "Run MiniGameFramework",
+			"type": "cppvsdbg",
+			"request": "launch",
+			"program": "${workspaceFolder}/build/MiniGameFramework.exe",
+			"args": [],
+			"stopAtEntry": false,
+			"cwd": "${workspaceFolder}",
+			"environment": [],
+			"console": "integratedTerminal",
+			"preLaunchTask": "CMake Build"
+		}
+	]
+}
