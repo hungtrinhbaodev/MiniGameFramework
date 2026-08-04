@@ -31,7 +31,7 @@ namespace Libs_Wrapper
         Draw_Attributes attributes;
 
         bool operator<(const RayLib_Draw_Command &other) const {
-            return this->attributes.z_order < other.attributes.z_order;
+            return this->attributes.z_order > other.attributes.z_order;
         }
     };
 

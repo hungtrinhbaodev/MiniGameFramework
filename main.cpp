@@ -26,6 +26,7 @@ int main(void)
 
     Draw_Attributes text_attributes = attributes;
     text_attributes.tint = BLACK;
+    text_attributes.z_order = 9;
 
     while (!Libs_Wrapper::window_should_close(window))
     {
