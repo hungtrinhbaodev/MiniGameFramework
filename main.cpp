@@ -15,10 +15,13 @@ int main(void)
 
     while (!Libs_Wrapper::window_should_close(window))
     {
-        for (int i = 0; i < 1000; i++)
-        {
-            Libs_Wrapper::draw_image(PATH_RES + "res/Png/CatBoxing/Idle/CatBoxing-Idle_00.png", Utils::random_int(0, screen_width), Utils::random_int(0, screen_height), 0, 0);
-        }
+        Libs_Wrapper::draw_image(
+            PATH_RES + "res/Png/CatBoxing/Idle/CatBoxing-Idle_00.png",
+            0,
+            0,
+            1.f,
+            1.f,
+            0, 1);
         Libs_Wrapper::draw_frame();
     }
 

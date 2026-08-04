@@ -4,18 +4,32 @@
 
 namespace Libs_Wrapper
 {
+    struct RayLib_Draw_Attributes
+    {
+        int x;
+        int y;
+        float scale_x;
+        float scale_y;
+        int rotation;
+        int z_order;
+    };
+
     struct RayLib_Draw_Image_Command
     {
         std::string image_path;
-        int x;
-        int y;
-        int width;
-        int height;
+        RayLib_Draw_Attributes attributes;
+    };
+
+    struct RayLib_Draw_Font_Command
+    {
+        std::string font;
+        RayLib_Draw_Attributes attributes;
     };
 
     struct RayLib_Texture_Info
     {
         Texture data;
+
         Image_Info info;
     };
 
@@ -23,6 +37,8 @@ namespace Libs_Wrapper
         rl_textures_storage;
 
     std::queue<RayLib_Draw_Image_Command> rl_queue_image_commands;
+
+    std::queue<RayLib_Draw_Font_Command> rl_queue_font_commands;
 
     void init_libs()
     {
@@ -59,9 +75,14 @@ namespace Libs_Wrapper
         return texture_info;
     }
 
-    void draw_image(std::string path, int x, int y, int width, int height)
+    void draw_image(std::string path, int x, int y, float scale_x, float scale_y, int rotation, int z_order)
     {
-        rl_queue_image_commands.push({path, x, y, width, height});
+        rl_queue_image_commands.push({path, {x, y, scale_x, scale_y, rotation, z_order}});
+    }
+
+    void draw_font(std::string path, int x, int y, float scale_x, float scale_y, int rotation, int z_order)
+    {
+        rl_queue_font_commands.push({path, {x, y, scale_x, scale_y, rotation, z_order}});
     }
 
     Image_Info image_info(std::string path)
@@ -80,7 +101,13 @@ namespace Libs_Wrapper
         {
             RayLib_Draw_Image_Command command = rl_queue_image_commands.front();
             RayLib_Texture_Info texture_info = load_raylib_texture(command.image_path);
-            DrawTexture(texture_info.data, command.x, command.y, WHITE);
+
+            Texture2D texture = texture_info.data;
+            Rectangle source = {0.0f, 0.0f, (float)texture.width, (float)texture.height};
+            Rectangle dest = {(float)command.attributes.x, (float)command.attributes.y, (float)texture.width * command.attributes.scale_x, (float)texture.height * command.attributes.scale_y};
+            Vector2 origin = {0.0f, 0.0f};
+
+            DrawTexturePro(texture, source, dest, origin, command.attributes.rotation, WHITE);
             rl_queue_image_commands.pop();
         }
 

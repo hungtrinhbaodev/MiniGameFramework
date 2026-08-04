@@ -19,7 +19,19 @@ namespace Libs_Wrapper
 
     void close_window(void *window = nullptr);
 
-    void draw_image(std::string path, int x, int y, int width, int height);
+    void draw_image(
+        std::string path,
+        int x, int y,
+        float scale_x, float scale_y,
+        int rotation,
+        int z_order);
+
+    void draw_font(
+        std::string path,
+        int x, int y,
+        float scale_x, float scale_y,
+        int rotation,
+        int z_order);
 
     Image_Info image_info(std::string path);
 
