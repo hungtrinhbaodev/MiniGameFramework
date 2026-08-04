@@ -2,7 +2,7 @@
 #include <wrapper.h>
 #include <utils.h>
 
-const std::string PATH_RES = "C:/Work/MiniGameFramework/MiniGameFramework/";
+const std::string PATH_RES = "D:/MiniGameFramework/MiniGameFramework/";
 
 int main(void)
 {
@@ -13,15 +13,32 @@ int main(void)
     Libs_Wrapper::init_libs();
     Libs_Wrapper::open_window(screen_width, screen_height, 60, "Mini Game Framework", window);
 
+    Draw_Attributes attributes = {
+        0.0f,
+        50.0f,
+        1.0f,
+        1.0f,
+        5.0f,
+        10,
+        0.5f,
+        0.5f
+    };
+
+    Draw_Attributes text_attributes = attributes;
+    text_attributes.tint = BLACK;
+
     while (!Libs_Wrapper::window_should_close(window))
     {
         Libs_Wrapper::draw_image(
-            PATH_RES + "res/Png/CatBoxing/Idle/CatBoxing-Idle_00.png",
-            0,
-            0,
-            1.f,
-            1.f,
-            0, 1);
+            PATH_RES + "res/Png/Characters/C3/Idle/Character3-Idle_00.png",
+            attributes
+        );
+        Libs_Wrapper::draw_text(
+            "",
+            "Hi toi la hung",
+            18,
+            text_attributes
+        );
         Libs_Wrapper::draw_frame();
     }
 

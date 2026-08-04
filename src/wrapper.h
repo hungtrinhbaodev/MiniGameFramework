@@ -2,12 +2,26 @@
 #include <string>
 #include <map>
 #include <queue>
+#include "raylib.h"
 
 struct Image_Info
 {
     int width;
     int height;
 };
+
+struct Draw_Attributes
+{
+    float x;
+    float y;
+    float scale_x;
+    float scale_y;
+    float rotation;
+    int z_order;
+    float anchor_x;
+    float anchor_y;
+    Color tint = WHITE;
+}; 
 
 namespace Libs_Wrapper
 {
@@ -20,18 +34,16 @@ namespace Libs_Wrapper
     void close_window(void *window = nullptr);
 
     void draw_image(
-        std::string path,
-        int x, int y,
-        float scale_x, float scale_y,
-        int rotation,
-        int z_order);
+        std::string image_path,
+        Draw_Attributes attributes
+    );
 
-    void draw_font(
-        std::string path,
-        int x, int y,
-        float scale_x, float scale_y,
-        int rotation,
-        int z_order);
+    void draw_text(
+        std::string font_path,
+        std::string text,
+        int font_size,
+        Draw_Attributes attributes
+    );
 
     Image_Info image_info(std::string path);
 
