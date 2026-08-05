@@ -17,7 +17,7 @@ class Base_Node {
         void inverse(const Transform& other);
         bool operator<(const Transform& other) const;
     };
-
+    
     Base_Node();
     ~Base_Node();
 

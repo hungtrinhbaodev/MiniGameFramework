@@ -1,10 +1,10 @@
 #pragma once
 #include <node.h>
+
 #include <string>
 
 class Image_Node : public Node {
-
-    public:
+public:
     Image_Node();
     Image_Node(std::string image_path);
     ~Image_Node();
@@ -14,9 +14,9 @@ class Image_Node : public Node {
 
     void set_image(std::string image_path);
 
-    protected:
+protected:
     void draw(Transform& world_transform);
-    
-    private:
+
+private:
     std::string image_path = "";
 };

@@ -1,11 +1,10 @@
 #include <wrapper.h>
 
+#include <algorithm>
 #include <iostream>
 #include <queue>
-#include <algorithm>
 
-namespace Libs_Wrapper
-{
+namespace Libs_Wrapper {
     enum RayLib_Draw_Type {
         IMAGE,
         TEXT
@@ -30,13 +29,12 @@ namespace Libs_Wrapper
         RayLib_Draw_Resouce resouces;
         Draw_Attributes attributes;
 
-        bool operator<(const RayLib_Draw_Command &other) const {
+        bool operator<(const RayLib_Draw_Command& other) const {
             return this->attributes.z_order > other.attributes.z_order;
         }
     };
 
-    struct RayLib_Texture_Info
-    {
+    struct RayLib_Texture_Info {
         Texture data;
         Image_Info info;
     };
@@ -48,10 +46,8 @@ namespace Libs_Wrapper
 
     std::priority_queue<RayLib_Draw_Command> rl_queue_commands;
 
-    RayLib_Texture_Info load_raylib_texture(std::string path)
-    {
-        if (rl_textures_storage.find(path) != rl_textures_storage.end())
-        {
+    RayLib_Texture_Info load_raylib_texture(std::string path) {
+        if (rl_textures_storage.find(path) != rl_textures_storage.end()) {
             RayLib_Texture_Info texture_info = rl_textures_storage[path];
             return texture_info;
         }
@@ -63,8 +59,7 @@ namespace Libs_Wrapper
         return texture_info;
     }
 
-    Font load_raylib_font(std::string path) 
-    {
+    Font load_raylib_font(std::string path) {
         if (rl_fonts_storages.find(path) != rl_fonts_storages.end()) {
             return rl_fonts_storages[path];
         }
@@ -83,37 +78,29 @@ namespace Libs_Wrapper
         return GetScreenHeight();
     }
 
-    void init_libs()
-    {
-
+    void init_libs() {
     }
 
-    void open_window(int width, int height, int FPS, std::string window_name, void *window)
-    {
+    void open_window(int width, int height, int FPS, std::string window_name, void* window) {
         InitWindow(width, height, window_name.data());
         SetTargetFPS(FPS);
     }
 
-    bool window_should_close(void *window)
-    {
+    bool window_should_close(void* window) {
         return WindowShouldClose();
     }
 
-    void close_window(void *window)
-    {
+    void close_window(void* window) {
         CloseWindow();
     }
 
     void draw_image(
         std::string image_path,
-        Draw_Attributes attributes
-    ) 
-    {
-        RayLib_Draw_Command command {
+        Draw_Attributes attributes) {
+        RayLib_Draw_Command command{
             RayLib_Draw_Type::IMAGE,
             RayLib_Draw_Resouce::make_image(image_path),
-            attributes
-        };
+            attributes};
         rl_queue_commands.push(command);
     }
 
@@ -121,25 +108,20 @@ namespace Libs_Wrapper
         std::string font_path,
         std::string text,
         int font_size,
-        Draw_Attributes attributes
-    )
-    {
-        RayLib_Draw_Command command {
+        Draw_Attributes attributes) {
+        RayLib_Draw_Command command{
             RayLib_Draw_Type::TEXT,
             RayLib_Draw_Resouce::make_text(font_path, text, font_size),
-            attributes
-        };
+            attributes};
         rl_queue_commands.push(command);
     }
 
-    Image_Info image_info(std::string path)
-    {
+    Image_Info image_info(std::string path) {
         RayLib_Texture_Info texture_info = load_raylib_texture(path);
         return texture_info.info;
     }
 
-    void draw_frame()
-    {
+    void draw_frame() {
         BeginDrawing();
 
         ClearBackground(RAYWHITE);
@@ -187,12 +169,10 @@ namespace Libs_Wrapper
         EndDrawing();
     }
 
-    void clear_libs()
-    {
-        for (const auto &[_, texture_info] : rl_textures_storage)
-        {
+    void clear_libs() {
+        for (const auto& [_, texture_info] : rl_textures_storage) {
             UnloadTexture(texture_info.data);
         }
     }
 
-}
+}  // namespace Libs_Wrapper

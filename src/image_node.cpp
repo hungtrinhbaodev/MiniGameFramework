@@ -1,5 +1,6 @@
 #include <image_node.h>
 #include <wrapper.h>
+
 #include <iostream>
 
 Image_Node::Image_Node() {
@@ -12,7 +13,6 @@ Image_Node::Image_Node(std::string image_path) {
 }
 
 Image_Node::~Image_Node() {
-
 }
 
 std::string Image_Node::get_image() {
@@ -32,15 +32,13 @@ void Image_Node::set_image(std::string image) {
 }
 
 void Image_Node::draw(Transform& world_transform) {
-    if (image_path == "") return;
+    if (image_path == "")
+        return;
     Libs_Wrapper::draw_image(
         image_path,
-        {
-            transform.position.x, transform.position.y,
-            transform.scale.x, transform.scale.y, 
-            transform.rotation,
-            transform.z_order,
-            transform.anchor.x, transform.anchor.y
-        }
-    );
+        {world_transform.position.x, world_transform.position.y,
+         world_transform.scale.x, world_transform.scale.y,
+         world_transform.rotation,
+         world_transform.z_order,
+         world_transform.anchor.x, world_transform.anchor.y});
 }

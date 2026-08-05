@@ -1,0 +1,10 @@
+BasedOnStyle: Google
+IndentWidth: 4
+ColumnLimit: 0
+AccessModifierOffset: -4
+BreakBeforeBraces: Attach
+SpaceBeforeParens: ControlStatements
+PointerAlignment: Left
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortIfStatementsOnASingleLine: false
+NamespaceIndentation: All

@@ -1,12 +1,25 @@
 #include <base_node.h>
+#include <math.h>
+
 #include <algorithm>
+#include <iostream>
+
+glm::vec2 rotate(float angle, glm::vec2 target) {
+    return {target.x * cos(angle) - target.y * sin(angle), target.x * sin(angle) + target.y * cos(angle)};
+}
 
 void Base_Node::Transform::forward(const Base_Node::Transform& other) {
-
+    position += rotate(rotation, other.position * scale);
+    rotation += other.rotation;
+    scale.x *= other.scale.x;
+    scale.y *= other.scale.y;
 }
 
 void Base_Node::Transform::inverse(const Base_Node::Transform& other) {
-
+    rotation -= other.rotation;
+    scale.x /= other.scale.x;
+    scale.y /= other.scale.y;
+    position -= rotate(rotation, other.position * scale);
 }
 
 bool Base_Node::Transform::operator<(const Base_Node::Transform& other) const {
@@ -14,16 +27,14 @@ bool Base_Node::Transform::operator<(const Base_Node::Transform& other) const {
 }
 
 Base_Node::Base_Node() {
-
 }
 
 Base_Node::~Base_Node() {
-
 }
 
 void Base_Node::visit(Transform& world_transform, float delta_time) {
-
-    if (!visible) return;
+    if (!visible)
+        return;
 
     // Update current node
     update(delta_time);
@@ -36,19 +47,19 @@ void Base_Node::visit(Transform& world_transform, float delta_time) {
 
     // Cascade attributes into it's children
     for (Base_Node* child : children) {
-        visit(world_transform, delta_time);
+        child->visit(world_transform, delta_time);
     }
 
     // Inverse to other visit can use again
-    world_transform.inverse(transform);
+    if (parent != nullptr) {
+        world_transform.inverse(transform);
+    }
 }
 
 void Base_Node::draw(Transform& world_transform) {
-
 }
 
 void Base_Node::update(float delta_time) {
-
 }
 
 float Base_Node::get_x() {
@@ -126,10 +137,10 @@ Base_Node* Base_Node::get_child_by_tag(int tag) {
 
 Base_Node* Base_Node::get_child_by_name(std::string name) {
     for (Base_Node* child : children) {
-            if (child->name == name) {
-                return child;
-            }
+        if (child->name == name) {
+            return child;
         }
+    }
     return nullptr;
 }
 
