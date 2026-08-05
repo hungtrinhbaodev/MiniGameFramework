@@ -160,7 +160,6 @@ namespace Libs_Wrapper
                     Rectangle source = {0.0f, 0.0f, (float)texture.width, (float)texture.height};
                     float tex_width = (float)texture.width * attributes.scale_x;
                     float tex_height = (float)texture.height * attributes.scale_y;
-                    
                     Rectangle dest = {x, y, tex_width, tex_height};
                     Vector2 origin = {attributes.anchor_x * tex_width, attributes.anchor_y * tex_height};
 

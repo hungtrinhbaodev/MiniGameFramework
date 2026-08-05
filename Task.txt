@@ -1,0 +1,3 @@
+[]: Find the formula transform from parent to children by the attributes first (not from Matrix transform).
+[]: Add the visit to children extend from base_node.
+[]: Separate resouce in draw command into multible type (extend from some base and have different attributes).

@@ -1,6 +1,7 @@
 #include "raylib.h"
 #include <wrapper.h>
 #include <utils.h>
+#include <image_node.h>
 
 const std::string PATH_RES = "D:/MiniGameFramework/MiniGameFramework/";
 
@@ -13,36 +14,21 @@ int main(void)
     Libs_Wrapper::init_libs();
     Libs_Wrapper::open_window(screen_width, screen_height, 60, "Mini Game Framework", window);
 
-    Draw_Attributes attributes = {
-        0.0f,
-        50.0f,
-        1.0f,
-        1.0f,
-        5.0f,
-        10,
-        0.5f,
-        0.5f
-    };
+    Base_Node* image = new Image_Node(PATH_RES + "res/Png/Characters/C3/Idle/Character3-Idle_00.png");
+    image->set_position({100.f, 100.f});
+    image->set_scale({0.8f, 0.8f});
 
-    Draw_Attributes text_attributes = attributes;
-    text_attributes.tint = BLACK;
-    text_attributes.z_order = 9;
-
+    long start = Utils::now();
     while (!Libs_Wrapper::window_should_close(window))
     {
-        Libs_Wrapper::draw_image(
-            PATH_RES + "res/Png/Characters/C3/Idle/Character3-Idle_00.png",
-            attributes
-        );
-        Libs_Wrapper::draw_text(
-            "",
-            "Hi toi la hung",
-            18,
-            text_attributes
-        );
+        long current = Utils::now();
+        float delta_time = (float)(current - start) / 1000;
+        start = current;
+        image->travel(delta_time);
         Libs_Wrapper::draw_frame();
     }
 
+    delete(image);
     Libs_Wrapper::close_window(window);
     Libs_Wrapper::clear_libs();
 

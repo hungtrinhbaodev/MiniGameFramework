@@ -21,7 +21,7 @@ struct Draw_Attributes
     float anchor_x;
     float anchor_y;
     Color tint = WHITE;
-}; 
+};
 
 namespace Libs_Wrapper
 {

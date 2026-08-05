@@ -1,5 +1,6 @@
 #include <utils.h>
 #include <random>
+#include <chrono>
 
 namespace Utils
 {
@@ -19,5 +20,12 @@ namespace Utils
         std::uniform_real_distribution<float> distrib(min, max);
 
         return distrib(gen);
+    }
+
+    long now() {
+        auto now = std::chrono::system_clock::now();
+        auto duration = now.time_since_epoch();
+        auto mili_seconds = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
+        return mili_seconds.count();
     }
 }
