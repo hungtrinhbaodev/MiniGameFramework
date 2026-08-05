@@ -45,7 +45,7 @@ void Base_Node::visit(Transform& world_transform, float delta_time) {
     }
     draw(world_transform);
 
-    // Cascade attributes into it's children
+    // Cascade attributes into its children
     for (Base_Node* child : children) {
         child->visit(world_transform, delta_time);
     }

@@ -1,5 +1,5 @@
 #pragma once
-#include <Base_Node.h>
+#include <base_node.h>
 
 enum Action_Ease {
     LINEAR,
@@ -23,9 +23,8 @@ public:
     Base_Action();
     ~Base_Action();
 
-    virtual void with_start_state(Base_Node::Transform& tranform);
-    bool travle(Base_Node::Transform& transform, float delta_time);
-    Base_Action* remove_chain_by_tag(int tag);
+    void with_start_state(Base_Node::Transform& tranform);
+    bool travel(Base_Node::Transform& transform, float delta_time);
     int get_tag();
 
     void set_tag(int tag);
@@ -43,6 +42,7 @@ protected:
     Action_Type type = Action_Type::SEQUENCE;
     Action_Subtype subtype = Action_Subtype::TO;
     int tag = -1;
+    bool is_setup = false;
 
     // Use in spawn action chain
     Base_Action* next_spawn_chain = nullptr;
@@ -52,5 +52,7 @@ protected:
 
     bool is_end();
     float get_rate();
+
+    virtual void setup_start_state(Base_Node::Transform& transform);
     virtual void apply(Base_Node::Transform& tranform, float delta_time);
 };

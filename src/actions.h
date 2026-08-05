@@ -9,7 +9,7 @@ public:
     void set_end(glm::vec2 end);
     void set_delta(glm::vec2 delta);
 
-    void with_start_state(Base_Node::Transform& tranform) override;
+    void setup_start_state(Base_Node::Transform& tranform) override;
     void apply(Base_Node::Transform& tranform, float delta_time) override;
 
 private:
@@ -25,7 +25,7 @@ public:
     void set_end(glm::vec2 start);
     void set_delta(glm::vec2 delta);
 
-    void with_start_state(Base_Node::Transform& tranform) override;
+    void setup_start_state(Base_Node::Transform& tranform) override;
     void apply(Base_Node::Transform& tranform, float delta_time) override;
 
 private:

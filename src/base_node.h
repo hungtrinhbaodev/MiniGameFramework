@@ -1,10 +1,10 @@
 #pragma once
-#include <vector>
-#include <string>
 #include <glm/glm.hpp>
+#include <string>
+#include <vector>
 
 class Base_Node {
-    public:
+public:
     struct Transform {
         glm::vec2 position{0.0f, 0.0f};
         glm::vec2 scale{1.0f, 1.0f};
@@ -17,7 +17,7 @@ class Base_Node {
         void inverse(const Transform& other);
         bool operator<(const Transform& other) const;
     };
-    
+
     Base_Node();
     ~Base_Node();
 
@@ -40,7 +40,7 @@ class Base_Node {
     std::vector<Base_Node*>& get_children();
     Base_Node* get_child_by_tag(int tag);
     Base_Node* get_child_by_name(std::string name);
-    
+
     void set_x(float x);
     void set_y(float y);
     void set_scale_x(float scale_x);
@@ -61,7 +61,7 @@ class Base_Node {
 
     void travel(float delta_time);
 
-    protected:
+protected:
     Transform transform;
     std::vector<Base_Node*> children;
     Base_Node* parent = nullptr;
@@ -70,7 +70,7 @@ class Base_Node {
     virtual void draw(Transform& world_transform);
     virtual void update(float delta_time);
 
-    private:
+private:
     int tag = -1;
     std::string name = "";
     bool visible = true;

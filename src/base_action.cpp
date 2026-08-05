@@ -7,47 +7,34 @@ Base_Action::~Base_Action() {
 }
 
 void Base_Action::with_start_state(Base_Node::Transform& tranform) {
+    this->setup_start_state(tranform);
+    this->is_setup = true;
+    if (this->next_spawn_chain != nullptr) {
+        this->next_spawn_chain->with_start_state(tranform);
+    }
 }
 
-bool Base_Action::travle(Base_Node::Transform& transform, float delta_time) {
+void Base_Action::setup_start_state(Base_Node::Transform& transform) {
+}
+
+bool Base_Action::travel(Base_Node::Transform& transform, float delta_time) {
     bool finish_all = true;
-    if (!is_end()) {
-        apply(transform, delta_time);
+    if (!this->is_end()) {
+        this->apply(transform, delta_time);
         finish_all = false;
     }
-    if (next_spawn_chain != nullptr) {
-        finish_all &= next_spawn_chain->travle(transform, delta_time);
+    if (this->next_spawn_chain != nullptr) {
+        finish_all &= this->next_spawn_chain->travel(transform, delta_time);
     }
     if (finish_all) {
-        if (next_sequence_chain != nullptr) {
-            finish_all &= next_sequence_chain->travle(transform, delta_time);
+        if (this->next_sequence_chain != nullptr) {
+            if (!this->next_sequence_chain->is_setup) {
+                this->next_sequence_chain->with_start_state(transform);
+            }
+            finish_all &= this->next_sequence_chain->travel(transform, delta_time);
         }
     }
     return finish_all;
-}
-
-Base_Action* Base_Action::remove_chain_by_tag(int tag) {
-    Base_Action* ret_action = this;
-    if (this->tag == tag) {
-        ret_action = new Base_Action();
-        ret_action->next_sequence_chain = next_sequence_chain;
-        ret_action->next_spawn_chain = next_spawn_chain;
-    }
-    if (ret_action->next_sequence_chain != nullptr) {
-        Base_Action* ret = ret_action->next_sequence_chain->remove_chain_by_tag(tag);
-        if (ret != ret_action->next_sequence_chain) {
-            delete (ret_action->next_sequence_chain);
-        }
-        ret_action->next_sequence_chain = ret;
-    }
-    if (ret_action->next_spawn_chain != nullptr) {
-        Base_Action* ret = ret_action->next_spawn_chain->remove_chain_by_tag(tag);
-        if (ret != ret_action->next_spawn_chain) {
-            delete (ret_action->next_spawn_chain);
-        }
-        ret_action->next_spawn_chain = ret;
-    }
-    return ret_action;
 }
 
 void Base_Action::apply(Base_Node::Transform& tranform, float delta_time) {
@@ -58,18 +45,21 @@ void Base_Action::apply(Base_Node::Transform& tranform, float delta_time) {
 }
 
 void Base_Action::push_sequence(Base_Action* action) {
-    if (next_sequence_chain != nullptr) {
-        next_sequence_chain->push_sequence(action);
+    if (this->next_sequence_chain != nullptr) {
+        this->next_sequence_chain->push_sequence(action);
     } else {
-        next_sequence_chain = action;
+        this->next_sequence_chain = action;
+        // continuous_action
     }
 }
 
 void Base_Action::push_spawn(Base_Action* action) {
-    if (next_spawn_chain != nullptr) {
-        next_spawn_chain->push_spawn(action);
+    if (this->next_spawn_chain != nullptr) {
+        this->next_spawn_chain->push_spawn(action);
     } else {
-        next_spawn_chain = action;
+        this->next_spawn_chain = action;
+        return;  // @Hack: No more adjacent-action, so we break the recursive loop.
+        // parallel_action
     }
 }
 

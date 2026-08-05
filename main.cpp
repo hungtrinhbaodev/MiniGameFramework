@@ -5,7 +5,7 @@
 
 #include "raylib.h"
 
-const std::string PATH_RES = "D:/MiniGameFramework/MiniGameFramework/";
+const std::string PATH_RES = "C:/Work/MiniGameFramework/MiniGameFramework/";
 
 int main(void) {
     const int screen_width = 800;
@@ -25,6 +25,10 @@ int main(void) {
     animation->play_animation("IDLE", 0.8f);
     animation->set_y(50.f);
 
+    Image_Node* child = new Image_Node(PATH_RES + "res/Png/Characters/C3/Shoot/Character3-Shoot_00.png");
+    child->set_position({30.f, 30.f});
+    animation->add_child(child);
+
     long start = Utils::now();
     while (!Libs_Wrapper::window_should_close(window)) {
         long current = Utils::now();
@@ -32,7 +36,10 @@ int main(void) {
         start = current;
         if (IsKeyPressed(KEY_A)) {
             animation->stop_action(5);
-            animation->do_action(Actions::move_by(0.2, {-50.f, 0}, Action_Ease::LINEAR), 5);
+            animation->do_action(Actions::spawn({Actions::move_by(0.2 /*delta_time=*/, {-50.f, 0}, Action_Ease::LINEAR),
+                                                 Actions::sequence({Actions::scale_to(0.1 /*delta_time=*/, {1.2f, 1.2f}, Action_Ease::LINEAR),
+                                                                    Actions::scale_to(0.1 /*delta_time=*/, {1.f, 1.f}, Action_Ease::LINEAR)})}),
+                                 5);
         } else if (IsKeyPressed(KEY_D)) {
             animation->stop_action(5);
             animation->do_action(Actions::move_by(0.2, {50.f, 0}, Action_Ease::LINEAR), 5);

@@ -1,5 +1,7 @@
 #include <actions.h>
 
+#include <iostream>
+
 Action_Move::Action_Move() {
 }
 
@@ -15,7 +17,7 @@ void Action_Move::set_delta(glm::vec2 delta) {
     delta_position = delta;
 }
 
-void Action_Move::with_start_state(Base_Node::Transform& transform) {
+void Action_Move::setup_start_state(Base_Node::Transform& transform) {
     if (subtype == Action_Subtype::TO) {
         delta_position.x = end_x - transform.position.x;
         delta_position.x = end_y - transform.position.y;
@@ -23,12 +25,12 @@ void Action_Move::with_start_state(Base_Node::Transform& transform) {
 }
 
 void Action_Move::apply(Base_Node::Transform& tranform, float delta_time) {
-    float last_rate = get_rate();
+    float last_rate = this->get_rate();
     Base_Action::apply(tranform, delta_time);
-    float current_rate = get_rate();
+    float current_rate = this->get_rate();
 
-    glm::vec2 current = (current_rate - last_rate) * delta_position;
-    tranform.position += current;
+    glm::vec2 distance = (current_rate - last_rate) * delta_position;
+    tranform.position += distance;
 }
 
 Action_Scale::Action_Scale() {
@@ -46,20 +48,20 @@ void Action_Scale::set_delta(glm::vec2 delta) {
     delta_scale = delta;
 }
 
-void Action_Scale::with_start_state(Base_Node::Transform& transform) {
+void Action_Scale::setup_start_state(Base_Node::Transform& transform) {
     if (subtype == Action_Subtype::TO) {
         delta_scale.x = end_x - transform.scale.x;
-        delta_scale.x = end_y - transform.scale.y;
+        delta_scale.y = end_y - transform.scale.y;
     }
 }
 
 void Action_Scale::apply(Base_Node::Transform& tranform, float delta_time) {
-    float last_rate = get_rate();
+    float last_rate = this->get_rate();
     Base_Action::apply(tranform, delta_time);
-    float current_rate = get_rate();
+    float current_rate = this->get_rate();
 
-    glm::vec2 current = (current_rate - last_rate) * delta_scale;
-    tranform.scale += current;
+    glm::vec2 size = (current_rate - last_rate) * delta_scale;
+    tranform.scale += size;
 }
 
 Action_Move* Actions::move_to(float duration, glm::vec2 position_to, Action_Ease ease) {
@@ -117,7 +119,7 @@ Action_Scale* Actions::scale_by(float duration, float x, float y, Action_Ease ea
 Base_Action* Actions::sequence(std::vector<Base_Action*> actions) {
     Base_Action* first = nullptr;
     if (actions.size() > 0) {
-        first = actions[1];
+        first = actions.front();
     } else {
         first = new Base_Action();
     }
@@ -130,7 +132,7 @@ Base_Action* Actions::sequence(std::vector<Base_Action*> actions) {
 Base_Action* Actions::spawn(std::vector<Base_Action*> actions) {
     Base_Action* first = nullptr;
     if (actions.size() > 0) {
-        first = actions[1];
+        first = actions.front();
     } else {
         first = new Base_Action();
     }
