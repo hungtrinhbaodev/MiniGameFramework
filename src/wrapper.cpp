@@ -1,3 +1,4 @@
+#include <utils.h>
 #include <wrapper.h>
 
 #include <algorithm>
@@ -70,6 +71,7 @@ namespace Libs_Wrapper {
     int clipping_shader_count_location = -1;
 
     RayLib_Texture_Info load_raylib_texture(std::string path) {
+        path = Utils::get_root_path() + path;
         if (rl_textures_storage.find(path) != rl_textures_storage.end()) {
             RayLib_Texture_Info texture_info = rl_textures_storage[path];
             return texture_info;
@@ -83,6 +85,7 @@ namespace Libs_Wrapper {
     }
 
     Font load_raylib_font(std::string path) {
+        path = Utils::get_root_path() + path;
         if (rl_fonts_storages.find(path) != rl_fonts_storages.end()) {
             return rl_fonts_storages[path];
         }
@@ -102,7 +105,7 @@ namespace Libs_Wrapper {
     }
 
     void init_libs() {
-        clipping_shader = LoadShader(0, "res/shader/clipping.fs");
+        clipping_shader = LoadShader(0, (Utils::get_root_path() + "shader/clipping.fs").data());
         if (!IsShaderValid(clipping_shader)) {
             throw std::runtime_error("Fail to load clipping shader please, try again!");
         }

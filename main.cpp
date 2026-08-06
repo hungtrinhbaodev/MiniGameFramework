@@ -5,32 +5,30 @@
 
 #include "raylib.h"
 
-const std::string PATH_RES = "D:/MiniGameFramework/MiniGameFramework/";
-
 int main(void) {
     const int screen_width = 800;
     const int screen_height = 480;
     void* window = nullptr;
 
-    Libs_Wrapper::init_libs();
     Libs_Wrapper::open_window(screen_width, screen_height, 60, "Mini Game Framework", window);
+    Libs_Wrapper::init_libs();
 
     Node* scene = new Node();
     scene->set_position({0.f, 0.f});
 
     Animation_Node* animation = new Animation_Node();
     animation->make_animation(
-        "IDLE", PATH_RES + "res/Png/Characters/C3/Idle/Character3-Idle_", 20, 0.06, ".png"
+        "IDLE", "res/Png/Characters/C3/Idle/Character3-Idle_", 20, 0.06, ".png"
     );
     animation->make_animation(
-        "SHOOT", PATH_RES + "res/Png/Characters/C3/Shoot/Character3-Shoot_", 9, 0.08, ".png"
+        "SHOOT", "res/Png/Characters/C3/Shoot/Character3-Shoot_", 9, 0.08, ".png"
     );
     animation->play_animation("IDLE", 0.8f);
     animation->set_y(50.f);
     animation->set_cascade_opacity(false);
     scene->add_child(animation);
 
-    std::string path = PATH_RES + "res/Png/Characters/C3/Shoot/Character3-Shoot_00.png";
+    std::string path = "res/Png/Characters/C3/Shoot/Character3-Shoot_00.png";
 
     Image_Node* child = new Image_Node(path);
     child->set_position({30.f, 30.f});
