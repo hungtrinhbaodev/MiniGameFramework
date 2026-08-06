@@ -15,7 +15,7 @@ public:
     void set_image(std::string image_path);
 
 protected:
-    void draw(Transform& world_transform);
+    void draw(Transform& world_transform, int& draw_index);
 
 private:
     std::string image_path = "";

@@ -1,3 +1,15 @@
 [Done]: Find the formula transform from parent to children by the attributes first (not from Matrix transform).
-[]: Add the visit to children extend from base_node.
+[Done]: Add the visit to children extend from base_node.
 []: Separate resouce in draw command into multible type (extend from some base and have different attributes).
+
+[Done]: Add ease to action.
+[Done]: Add remove chain action to action been deleted.
+[Done]: Add rotate, opacity, bezier, delay to action.
+[Done]: Make repeat and repeat forever.
+[]: Separate action in multible file make tracking become easier.
+[Done]: Make sequence and spawn with args param when create it.
+
+[]: Add clipping layer.
+[]: Add scale9image.
+[]: Add label.
+[]: Add colision system.

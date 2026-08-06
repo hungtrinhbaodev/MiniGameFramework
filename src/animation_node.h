@@ -5,7 +5,13 @@
 
 class Animation_Node : public Image_Node {
 public:
-    void make_animation(std::string name, std::string folder_path, int number_frame, float duration_loop, std::string extend_format = ".png");
+    void make_animation(
+        std::string name,
+        std::string folder_path,
+        int number_frame,
+        float duration_loop,
+        std::string extend_format = ".png"
+    );
     void play_animation(std::string name, float speed = 1.0f);
     void set_speed(float speed);
 
