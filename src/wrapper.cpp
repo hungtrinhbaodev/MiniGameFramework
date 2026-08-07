@@ -2,6 +2,7 @@
 #include <wrapper.h>
 
 #include <algorithm>
+#include <glm/glm.hpp>
 #include <iostream>
 #include <queue>
 #include <stack>
@@ -66,9 +67,10 @@ namespace Libs_Wrapper {
     std::map<std::string, RayLib_Texture_Info> rl_textures_storage;
     std::map<std::string, Font> rl_fonts_storages;
     std::priority_queue<RayLib_Draw_Command> rl_queue_commands;
+
     Shader clipping_shader;
-    int clipping_shader_quads_location = -1;
-    int clipping_shader_count_location = -1;
+    std::array<int, 4> clipping_slot_locations{{0, 0, 0, 0}};
+    std::array<Vector2, 4> clipping_corners{{{0.f, 0.f}, {0.f, 0.f}, {0.f, 0.f}, {0.f, 0.f}}};
 
     RayLib_Texture_Info load_raylib_texture(std::string path) {
         path = Utils::get_root_path() + path;
@@ -104,10 +106,59 @@ namespace Libs_Wrapper {
         return GetScreenHeight();
     }
 
+    void process_start_clipping(RayLib_Draw_Command& command) {
+        Draw_Attributes attributes = command.attributes;
+        RayLib_Draw_Clipping_Resource* resource =
+            reinterpret_cast<RayLib_Draw_Clipping_Resource*>(command.resource);
+        float total_width = resource->width * attributes.scale_x;
+        float total_height = resource->height * attributes.scale_y;
+        // bottom-left
+        clipping_corners[0] = {
+            -attributes.anchor_x * total_width, -attributes.anchor_y * total_height
+        };
+        // bottom-right
+        clipping_corners[1] = {
+            (1.f - attributes.anchor_x) * total_width, -attributes.anchor_y * total_height
+        };
+        // top-right
+        clipping_corners[2] = {
+            (1.f - attributes.anchor_x) * total_width, (1.f - attributes.anchor_y) * total_height
+        };
+        // top-left
+        clipping_corners[3] = {
+            -attributes.anchor_x * total_width, (1.f - attributes.anchor_y) * total_height
+        };
+        float screen_height = get_screen_height();
+        auto rotate = [screen_height](const Vector2& target, float rotation) {
+            return Vector2{
+                (float)(target.x * cos(rotation) - target.y * sin(rotation)),
+                screen_height - ((float)(target.x * sin(rotation) + target.y * cos(rotation)))
+            };
+        };
+        for (int i = 0; i < clipping_corners.size(); i++) {
+            clipping_corners[i] = rotate(clipping_corners[i], attributes.rotation);
+            SetShaderValue(
+                clipping_shader,
+                clipping_slot_locations[i],
+                &clipping_corners[i],
+                SHADER_UNIFORM_VEC2
+            );
+        }
+        BeginShaderMode(clipping_shader);
+    }
+
+    void process_end_clipping() {
+        EndShaderMode();
+    }
+
     void init_libs() {
         clipping_shader = LoadShader(0, (Utils::get_root_path() + "shader/clipping.fs").data());
         if (!IsShaderValid(clipping_shader)) {
             throw std::runtime_error("Fail to load clipping shader please, try again!");
+        }
+        for (int i = 0; i < clipping_slot_locations.size(); i++) {
+            std::string name_slot = std::string(std::string("u_p") + std::to_string(i + 1));
+            clipping_slot_locations[i] = GetShaderLocation(clipping_shader, name_slot.data());
         }
     }
 
@@ -156,8 +207,10 @@ namespace Libs_Wrapper {
         rl_queue_commands.push(command);
     }
 
-    void end_draw_clipping() {
-        RayLib_Draw_Command command{RayLib_Draw_Type::END_CLIPPING};
+    void end_draw_clipping(int draw_index) {
+        Draw_Attributes attributes{};
+        attributes.draw_index = draw_index;
+        RayLib_Draw_Command command{RayLib_Draw_Type::END_CLIPPING, attributes};
         rl_queue_commands.push(command);
     }
 
@@ -177,6 +230,13 @@ namespace Libs_Wrapper {
 
             switch (command.type) {
                 case RayLib_Draw_Type::START_CLIPPING: {
+                    if (stack_clipping_command.size() <= 0) {
+                        process_start_clipping(command);
+                    } else {
+                        process_end_clipping();
+                        process_start_clipping(command);
+                    }
+                    stack_clipping_command.push(command);
                     break;
                 }
                 case RayLib_Draw_Type::IMAGE: {
@@ -239,6 +299,16 @@ namespace Libs_Wrapper {
                     break;
                 }
                 case RayLib_Draw_Type::END_CLIPPING: {
+                    process_end_clipping();
+                    if (stack_clipping_command.size() > 0) {
+                        RayLib_Draw_Command& command = stack_clipping_command.top();
+                        command.clean();
+                        stack_clipping_command.pop();
+                    }
+                    if (stack_clipping_command.size() > 0) {
+                        RayLib_Draw_Command& command = stack_clipping_command.top();
+                        process_start_clipping(command);
+                    }
                     break;
                 }
                 default: {

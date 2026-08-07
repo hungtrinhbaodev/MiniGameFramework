@@ -116,8 +116,8 @@ int main(void) {
     }
 
     delete (scene);
-    Libs_Wrapper::close_window(window);
     Libs_Wrapper::clear_libs();
+    Libs_Wrapper::close_window(window);
 
     return 0;
 }

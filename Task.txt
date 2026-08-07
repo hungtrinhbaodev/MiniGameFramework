@@ -1,6 +1,6 @@
 [Done]: Find the formula transform from parent to children by the attributes first (not from Matrix transform).
 [Done]: Add the visit to children extend from base_node.
-[]: Separate resouce in draw command into multible type (extend from some base and have different attributes).
+[Done]: Separate resouce in draw command into multible type (extend from some base and have different attributes).
 
 [Done]: Add ease to action.
 [Done]: Add remove chain action to action been deleted.
@@ -9,7 +9,9 @@
 []: Separate action in multible file make tracking become easier.
 [Done]: Make sequence and spawn with args param when create it.
 
-[]: Add clipping layer.
-[]: Add scale9image.
-[]: Add label.
+[]: Add clipping layer node.
+[]: Add scale9image node.
+[]: Add label node.
+[]: Add progression node (make health bar).
+
 []: Add colision system.

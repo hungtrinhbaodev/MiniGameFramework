@@ -48,7 +48,7 @@ namespace Libs_Wrapper {
 
     void start_draw_clipping(float width, float height, Draw_Attributes attributes);
 
-    void end_draw_clipping();
+    void end_draw_clipping(int draw_index);
 
     Image_Info image_info(std::string path);
 

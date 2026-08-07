@@ -1,4 +1,5 @@
 #include <layer_node.h>
+#include <wrapper.h>
 
 Layer_Node::Layer_Node() {}
 
@@ -26,12 +27,27 @@ void Layer_Node::set_clipping(bool is_clipping) {
 
 void Layer_Node::before_draw_children(Transform& world_transform, int& draw_index) {
     if (is_clipping) {
+        Libs_Wrapper::start_draw_clipping(
+            this->size.x,
+            this->size.y,
+            {world_transform.position.x,
+             world_transform.position.y,
+             world_transform.scale.x,
+             world_transform.scale.y,
+             world_transform.rotation,
+             draw_index,
+             this->transform.anchor.x,
+             this->transform.anchor.y,
+             {255, 255, 255},
+             world_transform.opacity}
+        );
         draw_index++;
     }
 }
 
 void Layer_Node::after_draw_children(Transform& world_transform, int& draw_index) {
     if (is_clipping) {
+        Libs_Wrapper::end_draw_clipping(draw_index);
         draw_index++;
     }
 }

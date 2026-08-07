@@ -52,12 +52,12 @@ void Base_Node::visit(Transform& world_transform, float delta_time, int& draw_in
 
     // Draw current node
     unsigned char insverse_opacity = world_transform.opacity;
-    if (parent != nullptr) {
-        world_transform.forward(transform, parent->is_cascade_opacity());
+    if (this->parent != nullptr) {
+        world_transform.forward(transform, this->parent->is_cascade_opacity());
     }
 
     // Cascade attributes into its children
-    for (Base_Node* child : children) {
+    for (Base_Node* child : this->children) {
         if (child->transform.z_order < 0) {
             child->visit(world_transform, delta_time, draw_index);
         }
@@ -65,14 +65,14 @@ void Base_Node::visit(Transform& world_transform, float delta_time, int& draw_in
     if (visible) {
         draw(world_transform, draw_index);
     }
-    for (Base_Node* child : children) {
+    for (Base_Node* child : this->children) {
         if (child->transform.z_order >= 0) {
             child->visit(world_transform, delta_time, draw_index);
         }
     }
 
     // Inverse to other visit can use again
-    if (parent != nullptr) {
+    if (this->parent != nullptr) {
         world_transform.inverse(transform, insverse_opacity);
     }
 }
