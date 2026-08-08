@@ -1,4 +1,5 @@
 #pragma once
+#include <glm/glm.hpp>
 #include <iostream>
 #include <map>
 #include <queue>
@@ -23,8 +24,7 @@ struct Draw_Attributes {
     Color tint = WHITE;
     unsigned char opacity = 255;
     friend std::ostream& operator<<(std::ostream& os, const Draw_Attributes& attr) {
-        os << (int)attr.tint.a << ", " << (int)attr.tint.b << ", " << (int)attr.tint.g << ", "
-           << (int)attr.opacity;
+        os << (int)attr.tint.a << ", " << (int)attr.tint.b << ", " << (int)attr.tint.g << ", " << (int)attr.opacity;
         return os;
     }
 };
@@ -32,9 +32,7 @@ struct Draw_Attributes {
 namespace Libs_Wrapper {
     void init_libs();
 
-    void open_window(
-        int width, int height, int FPS, std::string window_name, void* window = nullptr
-    );
+    void open_window(int width, int height, int FPS, std::string window_name, void* window = nullptr);
 
     bool window_should_close(void* window = nullptr);
 
@@ -42,8 +40,10 @@ namespace Libs_Wrapper {
 
     void draw_image(std::string image_path, Draw_Attributes attributes);
 
-    void draw_text(
-        std::string font_path, std::string text, int font_size, Draw_Attributes attributes
+    void draw_text(std::string font_path, std::string text, int font_size, Draw_Attributes attributes);
+
+    void draw_line(
+        float start_x, float start_y, float end_x, float end_y, int draw_index, glm::vec3 color, float thin = 1.0f
     );
 
     void start_draw_clipping(float width, float height, Draw_Attributes attributes);

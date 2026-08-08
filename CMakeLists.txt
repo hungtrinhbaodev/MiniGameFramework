@@ -7,6 +7,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(RAYLIB_DIR "D:/Dev/raylib/raylib/")
 set(GLM_DIR "D:/Dev/glm/")
+
 add_subdirectory(${RAYLIB_DIR} ${CMAKE_BINARY_DIR}/raylib_build)
 add_subdirectory(${GLM_DIR} ${CMAKE_BINARY_DIR}/glm_build)
 target_compile_definitions(raylib PUBLIC SUPPORT_FILEFORMAT_JPG)
@@ -19,23 +20,21 @@ target_link_libraries(MiniGameFramework PRIVATE raylib glm::glm)
 
 find_program(PYTHON_EXEC
     NAMES python python3
-)
+)# Use your actual path here
 
 if(PYTHON_EXEC)
-    add_custom_command(TARGET MiniGameFramework POST_BUILD
+    add_custom_target(sync_resources ALL
         COMMAND ${PYTHON_EXEC}
             "${CMAKE_SOURCE_DIR}/scripts/copy_res.py"
             "${CMAKE_SOURCE_DIR}/res"
             "$<TARGET_FILE_DIR:MiniGameFramework>/res"
-        COMMENT "Syncing res/ to build output..."
-    )
-    add_custom_command(TARGET MiniGameFramework POST_BUILD
         COMMAND ${PYTHON_EXEC}
             "${CMAKE_SOURCE_DIR}/scripts/copy_res.py"
             "${CMAKE_SOURCE_DIR}/shader"
             "$<TARGET_FILE_DIR:MiniGameFramework>/shader"
-        COMMENT "Syncing shader/ to build output..."
+        COMMENT "Syncing res/ and shader/ to build output..."
     )
+    add_dependencies(sync_resources MiniGameFramework)
 else()
     message(WARNING "Python not found — res/ and shader/ will not be copied to build output.")
 endif()

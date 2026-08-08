@@ -1,17 +1,11 @@
 #include <base_node.h>
-#include <math.h>
+#include <math_custom.h>
 
 #include <algorithm>
 #include <iostream>
 
-glm::vec2 rotate(float angle, glm::vec2 target) {
-    return {
-        target.x * cos(angle) - target.y * sin(angle), target.x * sin(angle) + target.y * cos(angle)
-    };
-}
-
 void Base_Node::Transform::forward(const Base_Node::Transform& other, bool is_cascade_opacity) {
-    position += rotate(rotation, other.position * scale);
+    position += Math::rotate(rotation, other.position * scale);
     rotation += other.rotation;
     scale.x *= other.scale.x;
     scale.y *= other.scale.y;
@@ -24,7 +18,7 @@ void Base_Node::Transform::inverse(
     rotation -= other.rotation;
     scale.x /= other.scale.x;
     scale.y /= other.scale.y;
-    position -= rotate(rotation, other.position * scale);
+    position -= Math::rotate(rotation, other.position * scale);
     opacity = inverse_opacity;
 }
 
@@ -56,6 +50,10 @@ void Base_Node::visit(Transform& world_transform, float delta_time, int& draw_in
         world_transform.forward(transform, this->parent->is_cascade_opacity());
     }
 
+    // Make the wrapper caller function to wrap the draw of object
+    // to handle something like cliping
+    this->before_draw_children(world_transform, draw_index);
+
     // Cascade attributes into its children
     for (Base_Node* child : this->children) {
         if (child->transform.z_order < 0) {
@@ -70,6 +68,8 @@ void Base_Node::visit(Transform& world_transform, float delta_time, int& draw_in
             child->visit(world_transform, delta_time, draw_index);
         }
     }
+
+    this->after_draw_children(world_transform, draw_index);
 
     // Inverse to other visit can use again
     if (this->parent != nullptr) {
