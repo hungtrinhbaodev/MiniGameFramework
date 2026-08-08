@@ -9,7 +9,7 @@
 []: Separate action in multible file make tracking become easier.
 [Done]: Make sequence and spawn with args param when create it.
 
-[]: Add clipping layer node.
+[Done]: Add clipping layer node.
 []: Add scale9image node.
 []: Add label node.
 []: Add progression node (make health bar).

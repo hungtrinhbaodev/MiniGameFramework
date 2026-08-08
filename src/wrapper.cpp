@@ -261,23 +261,6 @@ namespace Libs_Wrapper {
                     }
                     stack_clipping.push(1);
                     command.clean();
-                    for (int i = 0; i < clipping_points.size() / 4; i++) {
-                        int start = i * 4;
-                        int end = start + 4;
-                        for (int j = start; j < end; j++) {
-                            int current = j;
-                            int next = start + (current + 1) % 4;
-                            Vector2 current_point = clipping_points[current];
-                            Vector2 next_point = clipping_points[next];
-
-                            DrawLineEx(
-                                {current_point.x, get_screen_height() - current_point.y},
-                                {next_point.x, get_screen_height() - next_point.y},
-                                1.0f,
-                                {0, 255, 0, 255}
-                            );
-                        }
-                    }
                     break;
                 }
                 case RayLib_Draw_Type::IMAGE: {
