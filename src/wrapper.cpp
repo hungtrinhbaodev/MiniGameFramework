@@ -113,12 +113,19 @@ namespace Libs_Wrapper {
     }
 
     Font load_raylib_font(std::string path) {
+        if (path.empty()) {
+            return GetFontDefault();
+        }
+
         path = Utils::get_root_path() + path;
         if (rl_fonts_storages.find(path) != rl_fonts_storages.end()) {
             return rl_fonts_storages[path];
         }
 
         Font font = LoadFont(path.data());
+        if (!IsFontValid(font)) {
+            font = GetFontDefault();
+        }
         rl_fonts_storages[path] = font;
 
         return font;
@@ -303,8 +310,6 @@ namespace Libs_Wrapper {
                     Vector2 position = {x, y};
                     float font_size = (float)resource->font_size * std::min(attributes.scale_y, attributes.scale_x);
                     Vector2 text_size = MeasureTextEx(font, resource->text.data(), font_size, 1.0f);
-                    std::cout << "ERROR what is my attributes " << attributes.anchor_x << " " << attributes.anchor_y
-                              << std::endl;
                     Vector2 origin = {text_size.x * attributes.anchor_x, text_size.y * attributes.anchor_y};
 
                     DrawTextPro(

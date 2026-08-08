@@ -21,6 +21,7 @@ Label_Node* label = nullptr;
 
 void start_test_node() {
     scene = new Scene_Node();
+    scene->set_position({0.0, 0.0});
 
     animation = new Animation_Node();
     animation->make_animation("IDLE", "res/Png/Characters/C3/Idle/Character3-Idle_", 20, 0.06, ".png");
@@ -60,7 +61,7 @@ void start_test_node() {
     label->set_position({0.f, 200.f});
     label->set_color({220, 100, 50});
     label->set_scale({1.f, 1.f});
-    // label->do_action(Actions::sequence(Actions::rotate_by(1, 360, Action_Ease::SINE_OUT))->repeat_forever());
+    label->do_action(Actions::sequence(Actions::rotate_by(1, 360, Action_Ease::SINE_OUT))->repeat_forever());
 
     layer->add_child(sub_layer);
     scene->add_child(layer);
