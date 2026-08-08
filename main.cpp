@@ -1,13 +1,15 @@
 #include <actions.h>
 #include <animation_node.h>
+#include <label_node.h>
 #include <layer_node.h>
 #include <math_custom.h>
+#include <scene_node.h>
 #include <utils.h>
 #include <wrapper.h>
 
 #include "raylib.h"
 
-Node* scene = nullptr;
+Scene_Node* scene = nullptr;
 Animation_Node* animation = nullptr;
 Layer_Node* layer = nullptr;
 Animation_Node* animation_2 = nullptr;
@@ -15,10 +17,10 @@ Animation_Node* animation_2 = nullptr;
 Layer_Node* layer_1 = nullptr;
 Layer_Node* layer_2 = nullptr;
 Layer_Node* layer_3 = nullptr;
+Label_Node* label = nullptr;
 
 void start_test_node() {
-    scene = new Node();
-    scene->set_position({0.f, 0.f});
+    scene = new Scene_Node();
 
     animation = new Animation_Node();
     animation->make_animation("IDLE", "res/Png/Characters/C3/Idle/Character3-Idle_", 20, 0.06, ".png");
@@ -48,42 +50,22 @@ void start_test_node() {
     sub_layer->set_clipping(true);
     sub_layer->set_show_boundary(true);
 
-    // layer_1 = new Layer_Node{{600.f, 320.f}};
-    // layer_1->set_rotation(30.f);
-    // layer_1->set_anchor({0.5f, 0.5f});
-    // layer_1->set_position({50.5f, 60.5f});
-    // layer_1->set_show_boundary(true);
-    // layer_1->set_clipping(true);
-
-    // layer_2 = new Layer_Node{{400.f, 620.f}};
-    // layer_2->set_rotation(-20.f);
-    // layer_2->set_anchor({0.5f, 0.5f});
-    // layer_2->set_position({30.5f, 15.5f});
-    // layer_2->set_show_boundary(true);
-    // layer_2->set_clipping(true);
-
-    // layer_3 = new Layer_Node{{200.f, 120.f}};
-    // layer_3->set_rotation(-60.f);
-    // layer_3->set_anchor({0.5f, 0.5f});
-    // layer_2->set_position({240.5f, 30.5f});
-    // layer_3->set_show_boundary(true);
-    // layer_3->set_clipping(true);
-    // layer_3->set_show_boundary(true);
-
     layer = new Layer_Node{{800.f, 480.f}};
     layer->set_rotation(10.f);
     layer->set_show_boundary(true);
     layer->set_clipping(true);
 
+    label = new Label_Node("Trinh Bao Hung", "res/fonts/KnightWarrior-w16n8.otf", 28);
+    label->set_anchor({0.5, 0.5});
+    label->set_position({0.f, 200.f});
+    label->set_color({220, 100, 50});
+    label->set_scale({1.f, 1.f});
+    // label->do_action(Actions::sequence(Actions::rotate_by(1, 360, Action_Ease::SINE_OUT))->repeat_forever());
+
     layer->add_child(sub_layer);
     scene->add_child(layer);
     sub_layer->add_child(animation_2);
-    // layer_1->add_child(layer_2);
-    // layer_2->add_child(animation_2);
-    // layer->add_child(animation_2);
-    // layer_1->add_child(layer_2);
-    // layer_2->add_child(layer_3);
-    // layer_3->add_child(animation);
+    layer->add_child(label);
 }
 
 void loop_test_node(float delta_time) {
@@ -130,15 +112,17 @@ void loop_test_node(float delta_time) {
             ),
             5
         );
+        animation_2->set_flipped_x(true);
     } else if (IsKeyPressed(KEY_RIGHT)) {
         animation_2->stop_action(5);
         animation_2->do_action(Actions::move_by(0.2, {50.f, 0}, Action_Ease::LINEAR), 5);
+        animation_2->set_flipped_x(false);
     } else if (IsKeyPressed(KEY_UP)) {
         animation_2->stop_action(5);
-        animation_2->do_action(Actions::move_by(0.2, {0, -50.f}, Action_Ease::LINEAR), 5);
+        animation_2->do_action(Actions::move_by(0.2, {0, 50.f}, Action_Ease::LINEAR), 5);
     } else if (IsKeyPressed(KEY_DOWN)) {
         animation_2->stop_action(5);
-        animation_2->do_action(Actions::move_by(0.2, {0, 50.f}, Action_Ease::LINEAR), 5);
+        animation_2->do_action(Actions::move_by(0.2, {0, -50.f}, Action_Ease::LINEAR), 5);
     }
     scene->travel(delta_time);
 }

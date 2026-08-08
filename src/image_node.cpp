@@ -26,8 +26,24 @@ glm::vec2 Image_Node::get_content_size() {
     return {image_info.width, image_info.height};
 }
 
+bool Image_Node::is_flipped_x() {
+    return this->flipped_x;
+}
+
+bool Image_Node::is_flipped_y() {
+    return this->flipped_y;
+}
+
 void Image_Node::set_image(std::string image) {
     this->image_path = image;
+}
+
+void Image_Node::set_flipped_x(bool flipped_x) {
+    this->flipped_x = flipped_x;
+}
+
+void Image_Node::set_flipped_y(bool flipped_y) {
+    this->flipped_y = flipped_y;
 }
 
 void Image_Node::draw(Transform& world_transform, int& draw_index) {
@@ -44,7 +60,9 @@ void Image_Node::draw(Transform& world_transform, int& draw_index) {
          transform.anchor.x,
          transform.anchor.y,
          {world_transform.color.x, world_transform.color.y, world_transform.color.z},
-         world_transform.opacity}
+         world_transform.opacity,
+         flipped_x,
+         flipped_y}
     );
     draw_index++;
 }

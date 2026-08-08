@@ -11,7 +11,10 @@
 
 [Done]: Add clipping layer node.
 []: Add scale9image node.
-[]: Add label node.
+[Done]: Add label node.
 []: Add progression node (make health bar).
+
+[]: Move transfrom and Rectangle into custom geometry.h
+[]: Using same structure to draw.
 
 []: Add colision system.

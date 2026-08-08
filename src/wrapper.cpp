@@ -226,6 +226,12 @@ namespace Libs_Wrapper {
         return texture_info.info;
     }
 
+    Text_Info text_info(std::string text, std::string font_path, int font_size) {
+        Font font = load_raylib_font(font_path);
+        Vector2 text_size = MeasureTextEx(font, text.data(), (float)font_size, 1.0f);
+        return {text_size.x, text_size.y};
+    }
+
     void start_draw_clipping(float width, float height, Draw_Attributes attributes) {
         RayLib_Draw_Command command{
             RayLib_Draw_Type::START_CLIPPING, attributes, new RayLib_Draw_Clipping_Resource(width, height)
@@ -270,6 +276,8 @@ namespace Libs_Wrapper {
                     Texture2D texture = texture_info.data;
 
                     Rectangle source = {0.0f, 0.0f, (float)texture.width, (float)texture.height};
+                    source.width *= (attributes.is_flipped_x ? -1.f : 1.f);
+                    source.height *= (attributes.is_flipped_y ? -1.f : 1.f);
                     float tex_width = (float)texture.width * attributes.scale_x;
                     float tex_height = (float)texture.height * attributes.scale_y;
                     Rectangle dest = {x, y, tex_width, tex_height};
@@ -295,6 +303,8 @@ namespace Libs_Wrapper {
                     Vector2 position = {x, y};
                     float font_size = (float)resource->font_size * std::min(attributes.scale_y, attributes.scale_x);
                     Vector2 text_size = MeasureTextEx(font, resource->text.data(), font_size, 1.0f);
+                    std::cout << "ERROR what is my attributes " << attributes.anchor_x << " " << attributes.anchor_y
+                              << std::endl;
                     Vector2 origin = {text_size.x * attributes.anchor_x, text_size.y * attributes.anchor_y};
 
                     DrawTextPro(

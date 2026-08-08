@@ -12,6 +12,11 @@ struct Image_Info {
     int height;
 };
 
+struct Text_Info {
+    float width;
+    float height;
+};
+
 struct Draw_Attributes {
     float x;
     float y;
@@ -23,6 +28,8 @@ struct Draw_Attributes {
     float anchor_y;
     Color tint = WHITE;
     unsigned char opacity = 255;
+    bool is_flipped_x = false;
+    bool is_flipped_y = false;
     friend std::ostream& operator<<(std::ostream& os, const Draw_Attributes& attr) {
         os << (int)attr.tint.a << ", " << (int)attr.tint.b << ", " << (int)attr.tint.g << ", " << (int)attr.opacity;
         return os;
@@ -31,6 +38,10 @@ struct Draw_Attributes {
 
 namespace Libs_Wrapper {
     void init_libs();
+
+    int get_screen_width();
+
+    int get_screen_height();
 
     void open_window(int width, int height, int FPS, std::string window_name, void* window = nullptr);
 
@@ -51,6 +62,8 @@ namespace Libs_Wrapper {
     void end_draw_clipping(int draw_index);
 
     Image_Info image_info(std::string path);
+
+    Text_Info text_info(std::string text, std::string font_path, int font_size);
 
     void draw_frame();
 
