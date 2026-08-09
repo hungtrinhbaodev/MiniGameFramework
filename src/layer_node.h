@@ -1,6 +1,8 @@
 #pragma once
 #include <node.h>
 
+#include <array>
+
 class Layer_Node : public Node {
 public:
     struct Rectangle {

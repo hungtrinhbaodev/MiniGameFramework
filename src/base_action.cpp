@@ -72,10 +72,12 @@ void Base_Action::deep_clean() {
     if (this->next_spawn_chain != nullptr) {
         this->next_spawn_chain->deep_clean();
         delete (this->next_spawn_chain);
+        this->next_spawn_chain = nullptr;
     }
     if (this->next_sequence_chain != nullptr) {
         this->next_sequence_chain->deep_clean();
         delete (this->next_sequence_chain);
+        this->next_sequence_chain = nullptr;
     }
 }
 
