@@ -46,7 +46,7 @@ void Node::attach() {}
 
 void Node::detach() {}
 
-void Node::draw(Transform& world_transform, int& draw_index) {
+void Node::draw(Custom::Transform& world_transform, int& draw_index) {
     // Draw nothing because I am a node
 }
 

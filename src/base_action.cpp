@@ -16,7 +16,7 @@ void Base_Action::set_target(Base_Node* target) {
     this->target = target;
 }
 
-void Base_Action::with_start_state(Base_Node::Transform& tranform, Base_Node* target) {
+void Base_Action::with_start_state(Custom::Transform& tranform, Base_Node* target) {
     this->setup_start_state(tranform);
     if (this->target == nullptr) {
         this->target = target;
@@ -27,9 +27,9 @@ void Base_Action::with_start_state(Base_Node::Transform& tranform, Base_Node* ta
     }
 }
 
-void Base_Action::setup_start_state(Base_Node::Transform& transform) {}
+void Base_Action::setup_start_state(Custom::Transform& transform) {}
 
-bool Base_Action::travel(Base_Node::Transform& transform, float delta_time) {
+bool Base_Action::travel(Custom::Transform& transform, float delta_time) {
     bool finish_all = true;
     if (!this->is_end() || this->type == Action_Type::ALWAY_HAPPEN) {
         if (this->type == Action_Type::ALWAY_HAPPEN) {
@@ -81,7 +81,7 @@ void Base_Action::deep_clean() {
     }
 }
 
-void Base_Action::apply(Base_Node::Transform& tranform, float delta_time) {
+void Base_Action::apply(Custom::Transform& tranform, float delta_time) {
     current_duration += delta_time;
     if (current_duration > total_duration) {
         current_duration = total_duration;

@@ -18,7 +18,7 @@ public:
 
 protected:
     std::vector<Base_Action*> actions;
-    void draw(Transform& world_transform, int& draw_index) override;
+    void draw(Custom::Transform& world_transform, int& draw_index) override;
     void update(float delta_time) override;
     void exit() override;
     void enter() override;

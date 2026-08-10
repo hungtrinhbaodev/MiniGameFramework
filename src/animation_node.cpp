@@ -6,7 +6,9 @@ bool Animation_Node::is_valid_animation(std::string name) {
     return animations.find(name) != animations.end();
 }
 
-void Animation_Node::make_animation(std::string name, std::string folder_path, int number_frame, float duration_loop, std::string extend_format) {
+void Animation_Node::make_animation(
+    std::string name, std::string folder_path, int number_frame, float duration_loop, std::string extend_format
+) {
     if (is_valid_animation(name)) {
         std::cout << "Animation_Node WARNING: animation " << name << " is exists!" << std::endl;
     }
@@ -48,7 +50,8 @@ void Animation_Node::update(float delta_time) {
     total_delta_time += delta_time;
     Animation_Data& animation = animations[current_animation];
     if (total_delta_time >= animation.duration_loop * speed_ratio) {
-        std::string frame_number_str = current_frame < 10 ? ("0" + std::to_string(current_frame)) : std::to_string(current_frame);
+        std::string frame_number_str =
+            current_frame < 10 ? ("0" + std::to_string(current_frame)) : std::to_string(current_frame);
         std::string current_image = animation.folder_path + frame_number_str + animation.extend_format;
         set_image(current_image);
         total_delta_time = 0;

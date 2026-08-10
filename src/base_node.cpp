@@ -4,28 +4,6 @@
 #include <algorithm>
 #include <iostream>
 
-void Base_Node::Transform::forward(const Base_Node::Transform& other, bool is_cascade_opacity) {
-    position += Math::rotate(rotation, other.position * scale);
-    rotation += other.rotation;
-    scale.x *= other.scale.x;
-    scale.y *= other.scale.y;
-    this->opacity = is_cascade_opacity ? std::min(this->opacity, other.opacity) : other.opacity;
-}
-
-void Base_Node::Transform::inverse(
-    const Base_Node::Transform& other, unsigned char inverse_opacity
-) {
-    rotation -= other.rotation;
-    scale.x /= other.scale.x;
-    scale.y /= other.scale.y;
-    position -= Math::rotate(rotation, other.position * scale);
-    opacity = inverse_opacity;
-}
-
-bool Base_Node::Transform::operator<(const Base_Node::Transform& other) const {
-    return z_order > other.z_order;
-}
-
 Base_Node::Base_Node() {}
 
 Base_Node::~Base_Node() {
@@ -35,7 +13,7 @@ Base_Node::~Base_Node() {
     }
 }
 
-void Base_Node::visit(Transform& world_transform, float delta_time, int& draw_index) {
+void Base_Node::visit(Custom::Transform& world_transform, float delta_time, int& draw_index) {
     // Update current node
     update(delta_time);
 
@@ -56,7 +34,7 @@ void Base_Node::visit(Transform& world_transform, float delta_time, int& draw_in
 
     // Cascade attributes into its children
     for (Base_Node* child : this->children) {
-        if (child->transform.z_order < 0) {
+        if (child->z_order < 0) {
             child->visit(world_transform, delta_time, draw_index);
         }
     }
@@ -64,7 +42,7 @@ void Base_Node::visit(Transform& world_transform, float delta_time, int& draw_in
         draw(world_transform, draw_index);
     }
     for (Base_Node* child : this->children) {
-        if (child->transform.z_order >= 0) {
+        if (child->z_order >= 0) {
             child->visit(world_transform, delta_time, draw_index);
         }
     }
@@ -77,11 +55,11 @@ void Base_Node::visit(Transform& world_transform, float delta_time, int& draw_in
     }
 }
 
-void Base_Node::before_draw_children(Transform& world_transform, int& draw_index) {}
+void Base_Node::before_draw_children(Custom::Transform& world_transform, int& draw_index) {}
 
-void Base_Node::draw(Transform& world_transform, int& draw_index) {}
+void Base_Node::draw(Custom::Transform& world_transform, int& draw_index) {}
 
-void Base_Node::after_draw_children(Transform& world_transform, int& draw_index) {}
+void Base_Node::after_draw_children(Custom::Transform& world_transform, int& draw_index) {}
 
 void Base_Node::update(float delta_time) {
     cleanup_invalid_children();
@@ -112,11 +90,11 @@ float Base_Node::get_rotation() {
 }
 
 float Base_Node::get_anchor_x() {
-    return transform.anchor.x;
+    return this->anchor.x;
 }
 
 float Base_Node::get_anchor_y() {
-    return transform.anchor.y;
+    return this->anchor.y;
 }
 
 glm::vec2 Base_Node::get_position() {
@@ -127,8 +105,8 @@ glm::vec2 Base_Node::get_scale() {
     return transform.scale;
 }
 
-glm::vec2 Base_Node::get_anchor() {
-    return transform.anchor;
+Custom::Anchor_Point Base_Node::get_anchor() {
+    return this->anchor;
 }
 
 int Base_Node::get_opacity() {
@@ -136,7 +114,7 @@ int Base_Node::get_opacity() {
 }
 
 int Base_Node::get_z_order() {
-    return transform.z_order;
+    return z_order;
 }
 
 int Base_Node::get_tag() {
@@ -202,11 +180,11 @@ void Base_Node::set_rotation(float rotation) {
 }
 
 void Base_Node::set_anchor_x(float anchor_x) {
-    transform.anchor.x = anchor_x;
+    this->anchor.x = anchor_x;
 }
 
 void Base_Node::set_anchor_y(float anchor_y) {
-    transform.anchor.y = anchor_y;
+    this->anchor.y = anchor_y;
 }
 
 void Base_Node::set_position(glm::vec2 position) {
@@ -218,7 +196,7 @@ void Base_Node::set_scale(glm::vec2 scale) {
 }
 
 void Base_Node::set_anchor(glm::vec2 anchor) {
-    transform.anchor = anchor;
+    this->anchor = {anchor.x, anchor.y};
 }
 
 void Base_Node::set_opacity(int opacity) {
@@ -226,7 +204,7 @@ void Base_Node::set_opacity(int opacity) {
 }
 
 void Base_Node::set_z_order(int z_order) {
-    transform.z_order = z_order;
+    this->z_order = z_order;
     if (this->parent != nullptr) {
         this->parent->sort_nodes();
     }
@@ -300,9 +278,7 @@ bool Base_Node::remove_child(Base_Node* child, bool is_cleanup) {
 }
 
 void Base_Node::sort_nodes() {
-    std::sort(children.begin(), children.end(), [](Base_Node* a, Base_Node* b) {
-        return a->transform.z_order > b->transform.z_order;
-    });
+    std::sort(children.begin(), children.end(), [](Base_Node* a, Base_Node* b) { return a->z_order > b->z_order; });
 }
 
 void Base_Node::cleanup_invalid_children() {

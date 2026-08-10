@@ -15,14 +15,14 @@ void Action_Move::set_delta(glm::vec2 delta) {
     delta_position = delta;
 }
 
-void Action_Move::setup_start_state(Base_Node::Transform& transform) {
+void Action_Move::setup_start_state(Custom::Transform& transform) {
     if (subtype == Action_Subtype::TO) {
         delta_position.x = end_x - transform.position.x;
         delta_position.y = end_y - transform.position.y;
     }
 }
 
-void Action_Move::apply(Base_Node::Transform& tranform, float delta_time) {
+void Action_Move::apply(Custom::Transform& tranform, float delta_time) {
     float last_rate = this->get_rate();
     Base_Action::apply(tranform, delta_time);
     float current_rate = this->get_rate();
@@ -44,14 +44,14 @@ void Action_Scale::set_delta(glm::vec2 delta) {
     delta_scale = delta;
 }
 
-void Action_Scale::setup_start_state(Base_Node::Transform& transform) {
+void Action_Scale::setup_start_state(Custom::Transform& transform) {
     if (subtype == Action_Subtype::TO) {
         delta_scale.x = end_x - transform.scale.x;
         delta_scale.y = end_y - transform.scale.y;
     }
 }
 
-void Action_Scale::apply(Base_Node::Transform& tranform, float delta_time) {
+void Action_Scale::apply(Custom::Transform& tranform, float delta_time) {
     float last_rate = this->get_rate();
     Base_Action::apply(tranform, delta_time);
     float current_rate = this->get_rate();
@@ -72,13 +72,13 @@ void Action_Rotate::set_delta(float delta) {
     delta_rotation = delta;
 }
 
-void Action_Rotate::setup_start_state(Base_Node::Transform& transform) {
+void Action_Rotate::setup_start_state(Custom::Transform& transform) {
     if (subtype == Action_Subtype::TO) {
         delta_rotation = end_rotation - transform.rotation;
     }
 }
 
-void Action_Rotate::apply(Base_Node::Transform& tranform, float delta_time) {
+void Action_Rotate::apply(Custom::Transform& tranform, float delta_time) {
     float last_rate = this->get_rate();
     Base_Action::apply(tranform, delta_time);
     float current_rate = this->get_rate();
@@ -99,20 +99,19 @@ void Action_Opacity::set_delta(int delta) {
     delta_opacity = delta;
 }
 
-void Action_Opacity::setup_start_state(Base_Node::Transform& transform) {
+void Action_Opacity::setup_start_state(Custom::Transform& transform) {
     if (subtype == Action_Subtype::TO) {
         delta_opacity = std::max(std::min((int)end_opacity, 255), 0) - transform.opacity;
     }
 }
 
-void Action_Opacity::apply(Base_Node::Transform& tranform, float delta_time) {
+void Action_Opacity::apply(Custom::Transform& tranform, float delta_time) {
     float last_rate = this->get_rate();
     Base_Action::apply(tranform, delta_time);
     float current_rate = this->get_rate();
 
     float opacity_more = (current_rate - last_rate) * delta_opacity;
-    tranform.opacity =
-        (unsigned char)std::max(std::min((int)(tranform.opacity + opacity_more), 255), 0);
+    tranform.opacity = (unsigned char)std::max(std::min((int)(tranform.opacity + opacity_more), 255), 0);
 }
 
 Action_Remove_Self::Action_Remove_Self() {}
@@ -123,9 +122,9 @@ void Action_Remove_Self::set_cleanup(bool is_cleanup) {
     this->is_cleanup = is_cleanup;
 }
 
-void Action_Remove_Self::setup_start_state(Base_Node::Transform& transform) {}
+void Action_Remove_Self::setup_start_state(Custom::Transform& transform) {}
 
-void Action_Remove_Self::apply(Base_Node::Transform& tranform, float delta_time) {
+void Action_Remove_Self::apply(Custom::Transform& tranform, float delta_time) {
     Base_Action::apply(tranform, delta_time);
     if (this->target != nullptr) {
         this->target->remove_from_parent(this->is_cleanup);
@@ -140,9 +139,9 @@ void Action_Visible::set_show(bool is_show) {
     this->is_show = is_show;
 }
 
-void Action_Visible::setup_start_state(Base_Node::Transform& transform) {}
+void Action_Visible::setup_start_state(Custom::Transform& transform) {}
 
-void Action_Visible::apply(Base_Node::Transform& tranform, float delta_time) {
+void Action_Visible::apply(Custom::Transform& tranform, float delta_time) {
     Base_Action::apply(tranform, delta_time);
     if (this->target != nullptr) {
         this->target->set_visible(this->is_show);

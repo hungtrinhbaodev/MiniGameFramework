@@ -68,7 +68,7 @@ namespace Libs_Wrapper {
 
     struct RayLib_Draw_Command {
         RayLib_Draw_Type type;
-        Draw_Attributes attributes;
+        Custom::Draw_Attributes attributes;
         RayLib_Base_Draw_Resouce* resource = nullptr;
 
         bool operator<(const RayLib_Draw_Command& other) const {
@@ -106,7 +106,7 @@ namespace Libs_Wrapper {
         }
 
         Texture2D texture = LoadTexture(path.data());
-        RayLib_Texture_Info texture_info{texture, {texture.width, texture.width}};
+        RayLib_Texture_Info texture_info{texture, {(float)texture.width, (float)texture.height}};
         rl_textures_storage[path] = texture_info;
 
         return texture_info;
@@ -131,23 +131,21 @@ namespace Libs_Wrapper {
         return font;
     }
 
-    int get_screen_width() {
+    float get_screen_width() {
         return GetScreenWidth();
     }
 
-    int get_screen_height() {
+    float get_screen_height() {
         return GetScreenHeight();
     }
 
     void process_start_clipping(RayLib_Draw_Command& command) {
-        Draw_Attributes attributes = command.attributes;
+        Custom::Draw_Attributes attributes = command.attributes;
+        Custom::Transform transfrom = attributes.transform;
+        Custom::Anchor_Point anchor = attributes.anchor;
         RayLib_Draw_Clipping_Resource* resource = reinterpret_cast<RayLib_Draw_Clipping_Resource*>(command.resource);
-        Layer_Node::Rectangle rec{resource->width, resource->height};
-        Base_Node::Transform transform = {
-            {attributes.x, attributes.y}, {attributes.scale_x, attributes.scale_y}, {}, attributes.rotation
-        };
-        std::array<glm::vec2, 4> current_clipping_points =
-            rec.apply(transform, {attributes.anchor_x, attributes.anchor_y});
+        Custom::Rectangle rec{resource->width, resource->height};
+        std::array<glm::vec2, 4> current_clipping_points = rec.apply(transfrom, anchor);
         for (int i = 0; i < 4; i++) {
             glm::vec2 point = current_clipping_points[i];
             glm::vec2 next_point = current_clipping_points[(i + 1) % 4];
@@ -204,13 +202,12 @@ namespace Libs_Wrapper {
     void close_window(void* window) {
         CloseWindow();
     }
-
-    void draw_image(std::string image_path, Draw_Attributes attributes) {
+    void draw_image(std::string image_path, Custom::Draw_Attributes attributes) {
         RayLib_Draw_Command command{RayLib_Draw_Type::IMAGE, attributes, new RayLib_Draw_Image_Resource(image_path)};
         rl_queue_commands.push(command);
     }
 
-    void draw_text(std::string font_path, std::string text, int font_size, Draw_Attributes attributes) {
+    void draw_text(std::string font_path, std::string text, int font_size, Custom::Draw_Attributes attributes) {
         RayLib_Draw_Command command{
             RayLib_Draw_Type::TEXT, attributes, new RayLib_Draw_Text_Resource(font_path, text, font_size)
         };
@@ -220,7 +217,7 @@ namespace Libs_Wrapper {
     void draw_line(
         float start_x, float start_y, float end_x, float end_y, int draw_index, glm::vec3 color, float thin
     ) {
-        Draw_Attributes attr{};
+        Custom::Draw_Attributes attr{};
         attr.draw_index = draw_index;
         RayLib_Draw_Command command{
             RayLib_Draw_Type::LINE, attr, new RayLib_Draw_Line_Resource(start_x, start_y, end_x, end_y, color, thin)
@@ -239,7 +236,7 @@ namespace Libs_Wrapper {
         return {text_size.x, text_size.y};
     }
 
-    void start_draw_clipping(float width, float height, Draw_Attributes attributes) {
+    void start_draw_clipping(float width, float height, Custom::Draw_Attributes attributes) {
         RayLib_Draw_Command command{
             RayLib_Draw_Type::START_CLIPPING, attributes, new RayLib_Draw_Clipping_Resource(width, height)
         };
@@ -247,7 +244,7 @@ namespace Libs_Wrapper {
     }
 
     void end_draw_clipping(int draw_index) {
-        Draw_Attributes attributes{};
+        Custom::Draw_Attributes attributes{};
         attributes.draw_index = draw_index;
         RayLib_Draw_Command command{RayLib_Draw_Type::END_CLIPPING, attributes};
         rl_queue_commands.push(command);
@@ -259,10 +256,12 @@ namespace Libs_Wrapper {
         ClearBackground(RAYWHITE);
         while (!rl_queue_commands.empty()) {
             RayLib_Draw_Command command = rl_queue_commands.top();
-            Draw_Attributes attributes = command.attributes;
+            Custom::Draw_Attributes attributes = command.attributes;
+            Custom::Transform transform = attributes.transform;
+            Custom::Anchor_Point anchor = attributes.anchor;
             int screen_height = get_screen_height();
-            float x = attributes.x;
-            float y = (float)screen_height - attributes.y;
+            float x = transform.position.x;
+            float y = (float)screen_height - transform.position.y;
 
             switch (command.type) {
                 case RayLib_Draw_Type::START_CLIPPING: {
@@ -283,20 +282,20 @@ namespace Libs_Wrapper {
                     Texture2D texture = texture_info.data;
 
                     Rectangle source = {0.0f, 0.0f, (float)texture.width, (float)texture.height};
-                    source.width *= (attributes.is_flipped_x ? -1.f : 1.f);
-                    source.height *= (attributes.is_flipped_y ? -1.f : 1.f);
-                    float tex_width = (float)texture.width * attributes.scale_x;
-                    float tex_height = (float)texture.height * attributes.scale_y;
+                    source.width *= (attributes.flipped.x ? -1.f : 1.f);
+                    source.height *= (attributes.flipped.y ? -1.f : 1.f);
+                    float tex_width = (float)texture.width * transform.scale.x;
+                    float tex_height = (float)texture.height * transform.scale.y;
                     Rectangle dest = {x, y, tex_width, tex_height};
-                    Vector2 origin = {attributes.anchor_x * tex_width, attributes.anchor_y * tex_height};
+                    Vector2 origin = {anchor.x * tex_width, anchor.y * tex_height};
 
                     DrawTexturePro(
                         texture,
                         source,
                         dest,
                         origin,
-                        command.attributes.rotation,
-                        {attributes.tint.g, attributes.tint.b, attributes.tint.r, attributes.opacity}
+                        transform.rotation,
+                        {attributes.tint.g, attributes.tint.b, attributes.tint.r, transform.opacity}
                     );
 
                     command.clean();
@@ -308,19 +307,19 @@ namespace Libs_Wrapper {
                     Font font = load_raylib_font(resource->font_path);
 
                     Vector2 position = {x, y};
-                    float font_size = (float)resource->font_size * std::min(attributes.scale_y, attributes.scale_x);
+                    float font_size = (float)resource->font_size * std::min(transform.scale.x, transform.scale.y);
                     Vector2 text_size = MeasureTextEx(font, resource->text.data(), font_size, 1.0f);
-                    Vector2 origin = {text_size.x * attributes.anchor_x, text_size.y * attributes.anchor_y};
+                    Vector2 origin = {text_size.x * anchor.x, text_size.y * anchor.y};
 
                     DrawTextPro(
                         font,
                         resource->text.data(),
                         position,
                         origin,
-                        attributes.rotation,
+                        transform.rotation,
                         font_size,
                         1.0f,
-                        {attributes.tint.g, attributes.tint.b, attributes.tint.r, attributes.opacity}
+                        {attributes.tint.g, attributes.tint.b, attributes.tint.r, transform.opacity}
                     );
 
                     command.clean();

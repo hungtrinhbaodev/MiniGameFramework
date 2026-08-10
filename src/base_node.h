@@ -1,24 +1,12 @@
 #pragma once
+#include <custom.h>
+
 #include <glm/glm.hpp>
 #include <string>
 #include <vector>
 
 class Base_Node {
 public:
-    struct Transform {
-        glm::vec2 position{0.0f, 0.0f};
-        glm::vec2 scale{1.0f, 1.0f};
-        glm::vec2 anchor{0.0f, 0.0f};
-        float rotation = 0.0f;
-        int z_order = 0;
-        unsigned char opacity = 255;
-        glm::u8vec3 color{255, 255, 255};
-
-        void forward(const Transform& other, bool is_cascade_opacity);
-        void inverse(const Transform& other, unsigned char inverse_opacity);
-        bool operator<(const Transform& other) const;
-    };
-
     Base_Node();
     ~Base_Node();
 
@@ -31,7 +19,7 @@ public:
     float get_anchor_y();
     glm::vec2 get_position();
     glm::vec2 get_scale();
-    glm::vec2 get_anchor();
+    Custom::Anchor_Point get_anchor();
     int get_opacity();
     int get_z_order();
     int get_tag();
@@ -67,14 +55,16 @@ public:
     bool remove_child(Base_Node* child, bool is_cleanup = false);
 
 protected:
-    Transform transform;
+    Custom::Transform transform;
+    Custom::Anchor_Point anchor;
+    int z_order;
     std::vector<Base_Node*> children;
     Base_Node* parent = nullptr;
 
-    void visit(Transform& world_transform, float delta_time, int& draw_index);
-    virtual void before_draw_children(Transform& world_transform, int& draw_index);
-    virtual void draw(Transform& world_transform, int& draw_index);
-    virtual void after_draw_children(Transform& world_transform, int& draw_index);
+    void visit(Custom::Transform& world_transform, float delta_time, int& draw_index);
+    virtual void before_draw_children(Custom::Transform& world_transform, int& draw_index);
+    virtual void draw(Custom::Transform& world_transform, int& draw_index);
+    virtual void after_draw_children(Custom::Transform& world_transform, int& draw_index);
     virtual void update(float delta_time);
 
     // Call when node attach from parent

@@ -1,5 +1,6 @@
 #pragma once
 #include <base_node.h>
+#include <custom.h>
 
 enum Action_Ease { LINEAR, SINE_IN, SINE_OUT };
 
@@ -12,8 +13,8 @@ public:
     Base_Action();
     ~Base_Action();
 
-    void with_start_state(Base_Node::Transform& tranform, Base_Node* target);
-    bool travel(Base_Node::Transform& transform, float delta_time);
+    void with_start_state(Custom::Transform& tranform, Base_Node* target);
+    bool travel(Custom::Transform& transform, float delta_time);
     int get_tag();
 
     void set_tag(int tag);
@@ -48,8 +49,8 @@ protected:
     float get_rate();
     void deep_clean();
 
-    virtual void setup_start_state(Base_Node::Transform& transform);
-    virtual void apply(Base_Node::Transform& tranform, float delta_time);
+    virtual void setup_start_state(Custom::Transform& transform);
+    virtual void apply(Custom::Transform& tranform, float delta_time);
 
 private:
     bool is_repeat_forever = false;
