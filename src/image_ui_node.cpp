@@ -121,7 +121,7 @@ void Image_UI_Node::draw_without_nine_scale(Custom::Transform& world_transform, 
     Custom::Size size = this->get_content_size();
     if (this->enable_boundary || Libs_Wrapper::is_debug_mode()) {
         Custom::Rectangle rec = {size.width, size.height};
-        Custom::Color color = {100, 255, 100};
+        Custom::Color color = {255, 0, 255};
         draw_index += rec.draw_rectangle(world_transform, {0.f, 0.f}, draw_index, color);
     }
     glm::vec2 scale_renderer{this->renderer_size.width / size.width, this->renderer_size.height / size.height};

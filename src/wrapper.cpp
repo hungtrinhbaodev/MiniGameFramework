@@ -409,16 +409,14 @@ namespace Libs_Wrapper {
                             continue;
                         }
                         source = {rect.x, (float)texture.height - (rect.y + rect.height), rect.width, rect.height};
-                        Custom::Rectangle draw_rect = {source.width, source.height};
-                        std::array<glm::vec2, 4> rect_points = draw_rect.apply(transform, attributes.anchor);
-                        x = rect_points[3].x;
-                        y = screen_height - rect_points[3].y;
                     }
+
                     float tex_width = source.width * std::abs(transform.scale.x);
                     float tex_height = source.height * std::abs(transform.scale.y);
                     source.width *= (transform.flipped.x ? -1.f : 1.f);
                     source.height *= (transform.flipped.y ? -1.f : 1.f);
                     Rectangle dest = {x, y, tex_width, tex_height};
+
                     /**@Hack: round pixel prevent rasterize false with floating point which not rounded (Example: .25,
                      * .50,... all fail)*/
                     if (std::abs(transform.rotation) <= 3) {
@@ -430,7 +428,7 @@ namespace Libs_Wrapper {
                         };
                         dest = {std::round(x), std::round(y), std::round(tex_width), std::round(tex_height)};
                     }
-                    Vector2 origin = {anchor.x * tex_width, anchor.y * tex_height};
+                    Vector2 origin = {anchor.x * tex_width, (1 - anchor.y) * tex_height};
                     if (resource->enable_force_color) {
                         process_start_force_color_to_texture(resource->force_color);
                     }
@@ -456,7 +454,8 @@ namespace Libs_Wrapper {
                     Vector2 position = {x, y};
                     float font_size = (float)resource->font_size * std::min(transform.scale.x, transform.scale.y);
                     Vector2 text_size = MeasureTextEx(font, resource->text.data(), font_size, 1.0f);
-                    Vector2 origin = {text_size.x * anchor.x, text_size.y * anchor.y};
+                    Vector2 origin = {text_size.x * anchor.x, text_size.y * (1 - anchor.y)};
+
                     DrawTextPro(
                         font,
                         resource->text.data(),

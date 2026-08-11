@@ -41,6 +41,7 @@ void start_test_node() {
     animation_2->make_animation("IDLE", "res/Png/Characters/C5/Idle/Character5-Idle_", 20, 0.06, ".png");
     animation_2->make_animation("SHOOT", "res/Png/Characters/C5/Shoot/Character5-Shoot_", 10, 0.08, ".png");
     animation_2->play_animation("IDLE", 0.8f);
+    animation_2->set_anchor({0., 0.});
     animation_2->set_y(50.f);
     animation_2->set_cascade_opacity(false);
     animation_2->set_position({0.f, 0.f});
@@ -92,6 +93,7 @@ void start_test_node() {
     image = new Image_Node();
     image->set_image("res/Png/Ui/AddonBtnyellow.png");
     image->set_position({100.f, 200.f});
+    image->set_anchor({0., 0.});
 
     progression =
         Progression_Node::make("res/Png/Ui/AddonBoxNumber.png", {30, 10, 74, 31}, {200, 40}, {20, 160, 20}, {6, 8});

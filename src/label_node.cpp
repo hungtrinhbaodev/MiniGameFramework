@@ -53,6 +53,12 @@ void Label_Node::set_color(Custom::Color color) {
 }
 
 void Label_Node::draw(Custom::Transform& world_transform, int& draw_index) {
+    if (Libs_Wrapper::is_debug_mode()) {
+        Custom::Size size = this->get_content_size();
+        Custom::Rectangle rec = {size.width, size.height};
+        Custom::Color color = {255, 0, 255};
+        draw_index += rec.draw_rectangle(world_transform, this->anchor, draw_index, color);
+    }
     Libs_Wrapper::draw_text(font, text, font_size, {world_transform, anchor, draw_index, color});
     draw_index++;
 }
