@@ -17,7 +17,7 @@ namespace Custom {
         float x = 0.f;
         float y = 0.f;
         friend std::ostream& operator<<(std::ostream& os, const Anchor_Point& anchor) {
-            os << "Anchor: " << "width: " << anchor.x << ", height: " << anchor.y << std::endl;
+            os << "Anchor: " << "x: " << anchor.x << ", y: " << anchor.y << std::endl;
             return os;
         }
     };
@@ -26,6 +26,7 @@ namespace Custom {
         unsigned char r = 0;
         unsigned char g = 0;
         unsigned char b = 0;
+        std::string to_string();
         friend std::ostream& operator<<(std::ostream& os, const Color& color) {
             os << "Color: " << "red: " << (int)color.r << ", green: " << (int)color.g << ", blue: " << (int)color.b
                << std::endl;

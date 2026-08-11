@@ -23,14 +23,24 @@ namespace Libs_Wrapper {
 
     struct RayLib_Draw_Image_Resource : public RayLib_Base_Draw_Resouce {
         std::string image_path = "";
+        bool enable_force_color = false;
+        Custom::Color force_color;
 
-        RayLib_Draw_Image_Resource(std::string image_path) {
+        RayLib_Draw_Image_Resource(
+            std::string image_path, bool enable_force_color = false, Custom::Color force_color = {}
+        ) {
             this->image_path = image_path;
+            this->enable_force_color = enable_force_color;
+            this->force_color = force_color;
         }
 
         std::map<std::string, std::string> get_trace() {
             std::map<std::string, std::string> extra_information;
             extra_information.insert({std::string("Image texture"), image_path});
+            extra_information.insert({std::string("Enable force color"), std::to_string(enable_force_color)});
+            if (enable_force_color) {
+                extra_information.insert({std::string("Force color"), this->force_color.to_string()});
+            }
             return extra_information;
         }
     };
@@ -166,9 +176,11 @@ namespace Libs_Wrapper {
     Shader clipping_shader;
     int clipping_shader_points_location = 0;
     int clipping_shader_point_count_localtion = 0;
+    int shader_enable_force_color_location = 0;
+    int shader_force_color_location = 0;
     std::vector<Vector2> clipping_points;
-    /**@Hack using stack like the verify "(())()" backets sequence to handle clipping  */
-    std::stack<int> stack_clipping;
+    bool enable_force_color_texture = false;
+    Custom::Color force_color_texture{};
     bool is_debug = false;
 
     RayLib_Texture_Info load_raylib_texture(std::string path) {
@@ -212,6 +224,29 @@ namespace Libs_Wrapper {
         return (float)GetScreenHeight();
     }
 
+    void flush_uniform_clipping_data() {
+        int point_count = static_cast<int>(clipping_points.size());
+        SetShaderValue(clipping_shader, clipping_shader_point_count_localtion, &point_count, SHADER_UNIFORM_INT);
+        SetShaderValueV(
+            clipping_shader, clipping_shader_points_location, clipping_points.data(), SHADER_UNIFORM_VEC2, point_count
+        );
+    };
+
+    void flush_uniform_force_color_texture_data() {
+        int is_force = enable_force_color_texture ? 1 : 0;
+        Custom::Color color = force_color_texture;
+        Vector4 in_color = {(float)color.r / 255, (float)color.g / 255, (float)color.b / 255, 1.f};
+        SetShaderValue(clipping_shader, shader_enable_force_color_location, &is_force, SHADER_UNIFORM_INT);
+        SetShaderValue(clipping_shader, shader_force_color_location, &in_color, SHADER_UNIFORM_VEC4);
+    };
+
+    void reload_shader() {
+        EndShaderMode();
+        flush_uniform_clipping_data();
+        flush_uniform_force_color_texture_data();
+        BeginShaderMode(clipping_shader);
+    }
+
     void process_start_clipping(RayLib_Draw_Command& command) {
         Custom::Draw_Attributes attributes = command.attributes;
         Custom::Transform transfrom = attributes.transform;
@@ -224,22 +259,7 @@ namespace Libs_Wrapper {
             glm::vec2 next_point = current_clipping_points[(i + 1) % 4];
             clipping_points.push_back({point.x, point.y});
         }
-
-        int point_count = static_cast<int>(clipping_points.size());
-        SetShaderValue(clipping_shader, clipping_shader_point_count_localtion, &point_count, SHADER_UNIFORM_INT);
-        SetShaderValueV(
-            clipping_shader, clipping_shader_points_location, clipping_points.data(), SHADER_UNIFORM_VEC2, point_count
-        );
-        BeginShaderMode(clipping_shader);
-    }
-
-    void process_resume_clipping() {
-        int point_count = static_cast<int>(clipping_points.size());
-        SetShaderValue(clipping_shader, clipping_shader_point_count_localtion, &point_count, SHADER_UNIFORM_INT);
-        SetShaderValueV(
-            clipping_shader, clipping_shader_points_location, clipping_points.data(), SHADER_UNIFORM_VEC2, point_count
-        );
-        BeginShaderMode(clipping_shader);
+        reload_shader();
     }
 
     void process_end_clipping(bool clean_current_points = false) {
@@ -251,7 +271,18 @@ namespace Libs_Wrapper {
                 clipping_points.pop_back();
             }
         }
-        EndShaderMode();
+        reload_shader();
+    }
+
+    void process_start_force_color_to_texture(Custom::Color color) {
+        enable_force_color_texture = true;
+        force_color_texture = color;
+        reload_shader();
+    }
+
+    void process_end_force_color_to_texture() {
+        enable_force_color_texture = false;
+        reload_shader();
     }
 
     void init_libs() {
@@ -261,6 +292,8 @@ namespace Libs_Wrapper {
         }
         clipping_shader_points_location = GetShaderLocation(clipping_shader, "u_clip_points");
         clipping_shader_point_count_localtion = GetShaderLocation(clipping_shader, "u_point_count");
+        shader_enable_force_color_location = GetShaderLocation(clipping_shader, "u_enable_force_color");
+        shader_force_color_location = GetShaderLocation(clipping_shader, "u_force_color");
     }
 
     void open_window(int width, int height, int FPS, std::string window_name, void* window) {
@@ -276,8 +309,14 @@ namespace Libs_Wrapper {
         CloseWindow();
     }
 
-    void draw_image(std::string image_path, Custom::Draw_Attributes attributes) {
-        RayLib_Draw_Command command{RayLib_Draw_Type::IMAGE, attributes, new RayLib_Draw_Image_Resource(image_path)};
+    void draw_image(
+        std::string image_path, Custom::Draw_Attributes attributes, bool enable_force_color, Custom::Color force_color
+    ) {
+        RayLib_Draw_Command command{
+            RayLib_Draw_Type::IMAGE,
+            attributes,
+            new RayLib_Draw_Image_Resource(image_path, enable_force_color, force_color)
+        };
         rl_queue_commands.push(command);
     }
 
@@ -329,6 +368,7 @@ namespace Libs_Wrapper {
         BeginDrawing();
 
         ClearBackground(RAYWHITE);
+        reload_shader();
 
         while (!rl_queue_commands.empty()) {
             RayLib_Draw_Command command = rl_queue_commands.top();
@@ -350,13 +390,7 @@ namespace Libs_Wrapper {
 
             switch (command.type) {
                 case RayLib_Draw_Type::START_CLIPPING: {
-                    if (stack_clipping.size() <= 0) {
-                        process_start_clipping(command);
-                    } else {
-                        process_end_clipping(false);
-                        process_start_clipping(command);
-                    }
-                    stack_clipping.push(1);
+                    process_start_clipping(command);
                     command.clean();
                     break;
                 }
@@ -397,6 +431,9 @@ namespace Libs_Wrapper {
                         dest = {std::round(x), std::round(y), std::round(tex_width), std::round(tex_height)};
                     }
                     Vector2 origin = {anchor.x * tex_width, anchor.y * tex_height};
+                    if (resource->enable_force_color) {
+                        process_start_force_color_to_texture(resource->force_color);
+                    }
                     DrawTexturePro(
                         texture,
                         source,
@@ -405,6 +442,9 @@ namespace Libs_Wrapper {
                         transform.rotation,
                         {attributes.tint.r, attributes.tint.g, attributes.tint.b, transform.opacity}
                     );
+                    if (resource->enable_force_color) {
+                        process_end_force_color_to_texture();
+                    }
                     command.clean();
                     break;
                 }
@@ -441,12 +481,6 @@ namespace Libs_Wrapper {
                 }
                 case RayLib_Draw_Type::END_CLIPPING: {
                     process_end_clipping(true);
-                    if (stack_clipping.size() > 0) {
-                        stack_clipping.pop();
-                    }
-                    if (stack_clipping.size() > 0) {
-                        process_resume_clipping();
-                    }
                     command.clean();
                     break;
                 }
@@ -457,11 +491,8 @@ namespace Libs_Wrapper {
             rl_queue_commands.pop();
         }
 
+        EndShaderMode();
         EndDrawing();
-
-        if (stack_clipping.size() > 0 || clipping_points.size() > 0) {
-            throw std::runtime_error("Drawing: logic clipping wrong, please review it again!");
-        }
 
         if (IsKeyPressed(KEY_K)) {
             if (is_debug) {

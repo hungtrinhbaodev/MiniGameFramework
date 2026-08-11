@@ -9,6 +9,7 @@
 []: Separate action in multible file make tracking become easier.
 [Done]: Make sequence and spawn with args param when create it.
 
+[]: Update shader push constain and don't need to end it.
 [Pending]: Recheck logic flipped add it into base_node.
 [Done]: Add clipping layer node.
 [Done]: Add scale9image node.
@@ -18,4 +19,6 @@
 [Done]: Move transfrom and Rectangle into custom geometry.h -> (custom.h).
 [Done]: Using same structure to draw.
 
+[]: Add rect area to check touch. 
+[]: Add button ui.
 []: Add colision system.

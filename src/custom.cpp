@@ -3,6 +3,15 @@
 #include <wrapper.h>
 
 namespace Custom {
+
+    std::string Color::to_string() {
+        std::string color;
+        color += std::string("red: ") + std::to_string(this->r);
+        color += std::string("green: ") + std::to_string(this->g);
+        color += std::string("blue: ") + std::to_string(this->b);
+        return color;
+    }
+
     void Transform::forward(const Transform& other, bool is_cascade_opacity, Flipped forward_flipped) {
         this->flipped = forward_flipped;
         position += Math::rotate(rotation, other.position * scale);

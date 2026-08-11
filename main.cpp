@@ -20,6 +20,7 @@ Layer_Node* layer_2 = nullptr;
 Layer_Node* layer_3 = nullptr;
 Label_Node* label = nullptr;
 Image_UI_Node* ui = nullptr;
+Image_UI_Node* ui_child = nullptr;
 Image_Node* image = nullptr;
 
 void start_test_node() {
@@ -71,12 +72,20 @@ void start_test_node() {
     ui->set_image("res/Png/Ui/AddonBoxNumber.png");
     ui->set_enable_nine_scale(true);
     ui->set_cap_insets(30, 10, 74, 31);
-    ui->set_anchor({0.5f, 0.5f});
     ui->set_position({400.f, 400.f});
-    ui->set_renderer_size({200.f, 70.f});
-    ui->set_scale({1.5f, 1.2f});
-    ui->set_rotation(30);
-    ui->do_action(Actions::sequence(Actions::rotate_by(3, 360, Action_Ease::SINE_OUT))->repeat_forever());
+    ui->set_renderer_size({160.f, 40.f});
+    // ui->set_scale({1.5f, 1.2f});
+    // ui->set_rotation(30);
+    // ui->do_action(Actions::sequence(Actions::rotate_by(3, 360, Action_Ease::SINE_OUT))->repeat_forever());
+
+    ui_child = new Image_UI_Node();
+    ui_child->set_image("res/Png/Ui/AddonBoxNumber.png");
+    ui_child->set_enable_nine_scale(true);
+    ui_child->set_cap_insets(30, 10, 74, 31);
+    ui_child->set_renderer_size({160.f - 6.f, 40.f - 6.f});
+    ui_child->set_enable_force_renderer_color(true);
+    ui_child->set_force_renderer_color({20, 180, 20});
+    ui->add_child(ui_child);
 
     image = new Image_Node();
     image->set_image("res/Png/Ui/AddonBtnyellow.png");
@@ -86,7 +95,7 @@ void start_test_node() {
     scene->add_child(layer);
     sub_layer->add_child(animation_2);
     layer->add_child(label);
-    layer->add_child(ui);
+    scene->add_child(ui);
     scene->add_child(image);
 }
 

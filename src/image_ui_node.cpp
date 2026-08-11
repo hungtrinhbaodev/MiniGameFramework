@@ -105,8 +105,34 @@ void Image_UI_Node::set_enable_bondary(bool enable_boundary) {
     this->enable_boundary = enable_boundary;
 }
 
+void Image_UI_Node::set_force_renderer_color(Custom::Color color) {
+    this->force_renderer_color = color;
+}
+
+void Image_UI_Node::set_enable_force_renderer_color(bool enable_force_renderer_color) {
+    this->enable_force_renderer_color = enable_force_renderer_color;
+}
+
 void Image_UI_Node::draw(Custom::Transform& world_transform, int& draw_index) {
     Custom::Size size = this->get_content_size();
+    if (!this->enable_nine_scale) {
+        if (this->enable_boundary || Libs_Wrapper::is_debug_mode()) {
+            Custom::Rectangle rec = {size.width, size.height};
+            Custom::Color color = {100, 255, 100};
+            draw_index += rec.draw_rectangle(world_transform, {0.f, 0.f}, draw_index, color);
+        }
+        glm::vec2 scale_renderer{renderer_size.width / size.width, renderer_size.height / size.height};
+        world_transform.scale *= scale_renderer;
+        Libs_Wrapper::draw_image(
+            this->get_image(),
+            {world_transform, this->anchor, draw_index},
+            enable_force_renderer_color,
+            force_renderer_color
+        );
+        world_transform.scale /= scale_renderer;
+        draw_index++;
+        return;
+    }
     Custom::Rectangle_Area origin_area = {0, 0, size.width, size.height};
     std::array<Custom::Size, 9> size_at_parts;
     std::array<Custom::Draw_Attributes, 9> nine_draw_parts;
@@ -206,7 +232,7 @@ void Image_UI_Node::draw(Custom::Transform& world_transform, int& draw_index) {
         world_transform_duplicate.forward(attribute.transform, true, this->flipped);
         attribute.transform = world_transform_duplicate;
         attribute.is_use_rect_texture = true;
-        Libs_Wrapper::draw_image(this->get_image(), attribute);
+        Libs_Wrapper::draw_image(this->get_image(), attribute, enable_force_renderer_color, force_renderer_color);
         draw_index++;
         if (this->enable_boundary || Libs_Wrapper::is_debug_mode()) {
             draw_parts(i, attribute, draw_index);

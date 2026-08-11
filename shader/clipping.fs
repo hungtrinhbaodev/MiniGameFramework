@@ -7,7 +7,10 @@ out vec4 finalColor;
 uniform sampler2D texture0;
 
 uniform vec2 u_clip_points[64];
-uniform int u_point_count; 
+uniform int u_point_count;
+
+uniform int u_enable_force_color;
+uniform vec4 u_force_color;
 
 float edge(vec2 a, vec2 b, vec2 p) {
     return (p.x - a.x) * (b.y - a.y) - (p.y - a.y) * (b.x - a.x);
@@ -32,6 +35,9 @@ void main() {
     vec4 matching = texture(texture0, fragTexCoord);
     if (matching.w <= 0) {
         discard;
+    }
+    if (u_enable_force_color == 1) {
+        matching = u_force_color;
     }
     finalColor = matching * fragColor;
 }

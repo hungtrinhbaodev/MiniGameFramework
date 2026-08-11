@@ -32,7 +32,12 @@ namespace Libs_Wrapper {
 
     void close_window(void* window = nullptr);
 
-    void draw_image(std::string image_path, Custom::Draw_Attributes attributes);
+    void draw_image(
+        std::string image_path,
+        Custom::Draw_Attributes attributes,
+        bool enable_force_color = false,
+        Custom::Color force_color = {}
+    );
 
     void draw_text(std::string font_path, std::string text, int font_size, Custom::Draw_Attributes attributes);
 
