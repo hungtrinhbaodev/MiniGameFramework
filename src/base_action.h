@@ -13,8 +13,8 @@ public:
     Base_Action();
     ~Base_Action();
 
-    void with_start_state(Custom::Transform& tranform, Base_Node* target);
-    bool travel(Custom::Transform& transform, float delta_time);
+    void assign_target_to_all_chain(Base_Node* target);
+    bool travel(Base_Node* target, float delta_time);
     int get_tag();
 
     void set_tag(int tag);
@@ -48,9 +48,9 @@ protected:
     bool is_end();
     float get_rate();
     void deep_clean();
-
-    virtual void setup_start_state(Custom::Transform& transform);
-    virtual void apply(Custom::Transform& tranform, float delta_time);
+    virtual bool is_valid_target(Base_Node* target);
+    virtual void setup_target_to_action(Base_Node* target);
+    virtual void apply(Base_Node* target, float delta_time);
 
 private:
     bool is_repeat_forever = false;

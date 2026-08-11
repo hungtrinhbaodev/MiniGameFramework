@@ -1,5 +1,6 @@
 #pragma once
 #include <custom.h>
+#include <node_type.h>
 
 #include <glm/glm.hpp>
 #include <string>
@@ -29,6 +30,9 @@ public:
     Base_Node* get_parent();
     bool is_flipped_x();
     bool is_flipped_y();
+    Custom::Transform& modify_transform();
+    Custom::Transform get_transform();
+    virtual Node_Type get_type();
 
     std::vector<Base_Node*>& get_children();
     Base_Node* get_child_by_tag(int tag);

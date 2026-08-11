@@ -16,41 +16,41 @@ void Base_Action::set_target(Base_Node* target) {
     this->target = target;
 }
 
-void Base_Action::with_start_state(Custom::Transform& tranform, Base_Node* target) {
-    this->setup_start_state(tranform);
+void Base_Action::assign_target_to_all_chain(Base_Node* target) {
+    this->setup_target_to_action(target);
     if (this->target == nullptr) {
         this->target = target;
     }
     this->is_setup = true;
     if (this->next_spawn_chain != nullptr) {
-        this->next_spawn_chain->with_start_state(tranform, target);
+        this->next_spawn_chain->assign_target_to_all_chain(target);
     }
 }
 
-void Base_Action::setup_start_state(Custom::Transform& transform) {}
+void Base_Action::setup_target_to_action(Base_Node* target) {}
 
-bool Base_Action::travel(Custom::Transform& transform, float delta_time) {
+bool Base_Action::travel(Base_Node* target, float delta_time) {
     bool finish_all = true;
-    if (!this->is_end() || this->type == Action_Type::ALWAY_HAPPEN) {
+    if ((!this->is_end() || this->type == Action_Type::ALWAY_HAPPEN) && this->is_valid_target(target)) {
         if (this->type == Action_Type::ALWAY_HAPPEN) {
             if (!this->is_appled) {
-                this->apply(transform, delta_time);
+                this->apply(target, delta_time);
                 this->is_appled = true;
             }
         } else {
-            this->apply(transform, delta_time);
+            this->apply(target, delta_time);
             finish_all = false;
         }
     }
     if (this->next_spawn_chain != nullptr) {
-        finish_all &= this->next_spawn_chain->travel(transform, delta_time);
+        finish_all &= this->next_spawn_chain->travel(target, delta_time);
     }
     if (finish_all) {
         if (this->next_sequence_chain != nullptr) {
             if (!this->next_sequence_chain->is_setup) {
-                this->next_sequence_chain->with_start_state(transform, this->target);
+                this->next_sequence_chain->assign_target_to_all_chain(target);
             }
-            finish_all &= this->next_sequence_chain->travel(transform, delta_time);
+            finish_all &= this->next_sequence_chain->travel(target, delta_time);
         }
     }
     if (finish_all) {
@@ -63,6 +63,10 @@ bool Base_Action::travel(Custom::Transform& transform, float delta_time) {
         }
     }
     return finish_all;
+}
+
+bool Base_Action::is_valid_target(Base_Node* target) {
+    return true;
 }
 
 void Base_Action::deep_clean() {
@@ -81,7 +85,7 @@ void Base_Action::deep_clean() {
     }
 }
 
-void Base_Action::apply(Custom::Transform& tranform, float delta_time) {
+void Base_Action::apply(Base_Node* target, float delta_time) {
     current_duration += delta_time;
     if (current_duration > total_duration) {
         current_duration = total_duration;

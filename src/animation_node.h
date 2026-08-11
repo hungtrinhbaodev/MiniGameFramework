@@ -5,6 +5,8 @@
 
 class Animation_Node : public Image_Node {
 public:
+    Node_Type get_type() override;
+
     void make_animation(
         std::string name,
         std::string folder_path,

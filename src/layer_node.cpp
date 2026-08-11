@@ -18,6 +18,10 @@ Custom::Size Layer_Node::get_content_size() {
     return this->size;
 }
 
+Node_Type Layer_Node::get_type() {
+    return Node_Type::LAYER;
+}
+
 void Layer_Node::set_content_size(Custom::Size size) {
     this->size = size;
 }

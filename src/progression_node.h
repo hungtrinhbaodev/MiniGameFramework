@@ -18,6 +18,7 @@ public:
     ~Progression_Node();
 
     float get_percent();
+    Node_Type get_type() override;
 
     void set_inner_padding(glm::vec2 padding);
     void set_percent(float percent);

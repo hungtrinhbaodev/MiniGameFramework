@@ -13,6 +13,10 @@ Scene_Node::Scene_Node() {
 
 Scene_Node::~Scene_Node() {}
 
+Node_Type Scene_Node::get_type() {
+    return Node_Type::SCENE;
+}
+
 void Scene_Node::update(float delta_time) {
     Node::update(delta_time);
     int fps = (int)((1.f / delta_time) * 1000);

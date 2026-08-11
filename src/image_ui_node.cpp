@@ -85,6 +85,10 @@ bool Image_UI_Node::is_enable_nine_scale() {
     return this->enable_nine_scale;
 }
 
+Node_Type Image_UI_Node::get_type() {
+    return Node_Type::IMGE_UI;
+}
+
 void Image_UI_Node::set_enable_nine_scale(bool enable_nine_scale) {
     this->enable_nine_scale = enable_nine_scale;
 }

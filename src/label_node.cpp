@@ -23,6 +23,10 @@ int Label_Node::get_font_size() {
     return this->font_size;
 }
 
+Node_Type Label_Node::get_type() {
+    return Node_Type::LABEL;
+}
+
 Custom::Size Label_Node::get_content_size() {
     Text_Info info = Libs_Wrapper::text_info(this->text, this->font, this->font_size);
     return info.size;

@@ -7,6 +7,8 @@ public:
     Scene_Node();
     ~Scene_Node();
 
+    Node_Type get_type() override;
+
 protected:
     void update(float delta_time) override;
 

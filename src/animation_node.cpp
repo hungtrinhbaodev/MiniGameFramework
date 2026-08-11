@@ -6,6 +6,10 @@ bool Animation_Node::is_valid_animation(std::string name) {
     return animations.find(name) != animations.end();
 }
 
+Node_Type Animation_Node::get_type() {
+    return Node_Type::ANIMATION;
+}
+
 void Animation_Node::make_animation(
     std::string name, std::string folder_path, int number_frame, float duration_loop, std::string extend_format
 ) {

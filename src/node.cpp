@@ -16,7 +16,7 @@ void Node::do_action(Base_Action* action, int tag) {
         return;
     }
     action->set_tag(tag);
-    action->with_start_state(transform, this);
+    action->assign_target_to_all_chain(this);
     action->set_target(this);
     actions.push_back(action);
 }
@@ -42,6 +42,10 @@ void Node::stop_all_action() {
     cleanup_stopped_actions();
 }
 
+Node_Type Node::get_type() {
+    return Node_Type::NODE;
+}
+
 void Node::attach() {}
 
 void Node::detach() {}
@@ -65,7 +69,7 @@ void Node::update(float delta_time) {
 
     for (int i = 0; i < actions.size(); i++) {
         Base_Action* action = actions[i];
-        bool is_finish_all = action->travel(transform, delta_time);
+        bool is_finish_all = action->travel(this, delta_time);
         if (is_finish_all) {
             cleanup_actions.push_back(action);
             actions[i] = actions[actions.size() - 1];

@@ -15,6 +15,7 @@ public:
     // and use something work when node enter and exit
     virtual void attach();
     virtual void detach();
+    Node_Type get_type() override;
 
 protected:
     std::vector<Base_Action*> actions;

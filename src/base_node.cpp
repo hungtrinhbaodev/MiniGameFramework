@@ -28,6 +28,9 @@ void Base_Node::visit(Custom::Transform& world_transform, float delta_time, int&
         world_transform.forward(transform, this->parent->is_cascade_opacity(), this->flipped);
     }
 
+    // Sort node to draw one by one
+    sort_nodes();
+
     // Make the wrapper caller function to wrap the draw of object
     // to handle something like cliping
     this->before_draw_children(world_transform, draw_index);
@@ -167,6 +170,18 @@ Base_Node* Base_Node::get_child_by_name(std::string name) {
     return nullptr;
 }
 
+Custom::Transform& Base_Node::modify_transform() {
+    return this->transform;
+}
+
+Custom::Transform Base_Node::get_transform() {
+    return this->transform;
+}
+
+Node_Type Base_Node::get_type() {
+    return Node_Type::BASE_NODE;
+}
+
 void Base_Node::set_x(float x) {
     transform.position.x = x;
 }
@@ -213,9 +228,6 @@ void Base_Node::set_opacity(int opacity) {
 
 void Base_Node::set_z_order(int z_order) {
     this->z_order = z_order;
-    if (this->parent != nullptr) {
-        this->parent->sort_nodes();
-    }
 }
 
 void Base_Node::set_tag(int tag) {
@@ -251,7 +263,6 @@ void Base_Node::add_child(Base_Node* child) {
     child->parent = this;
     child->is_valid = true;
     child->enter();
-    sort_nodes();
 }
 
 void Base_Node::travel(float delta_time) {
@@ -271,15 +282,16 @@ bool Base_Node::remove_child(Base_Node* child, bool is_cleanup) {
         return false;
     }
     bool is_removed = false;
+    int remove_index = -1;
     for (int i = 0; i < children.size(); i++) {
         if (children[i] == child) {
             is_removed = true;
-            children[i] = children[children.size() - 1];
-            children.pop_back();
+            remove_index = i;
             break;
         }
     }
     if (is_removed) {
+        children.erase(children.begin() + remove_index);
         if (is_cleanup) {
             cleanup_children.push_back(child);
         }
@@ -287,7 +299,6 @@ bool Base_Node::remove_child(Base_Node* child, bool is_cleanup) {
         child->parent = nullptr;
         child->exit();
         total_node -= child->total_node;
-        sort_nodes();
         return true;
     }
     return false;

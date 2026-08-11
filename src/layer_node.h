@@ -11,6 +11,7 @@ public:
     ~Layer_Node();
 
     Custom::Size get_content_size();
+    Node_Type get_type() override;
 
     void set_clipping(bool is_clipping);
     void set_content_size(Custom::Size size);

@@ -35,6 +35,10 @@ float Progression_Node::get_percent() {
     return this->percent;
 }
 
+Node_Type Progression_Node::get_type() {
+    return Node_Type::PROGRESSION;
+}
+
 void Progression_Node::set_inner_padding(glm::vec2 padding) {
     this->inner_padding = padding;
     this->sync_inner_progression();

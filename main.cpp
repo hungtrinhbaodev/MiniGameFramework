@@ -109,9 +109,11 @@ void start_test_node() {
 
 void loop_test_node(float delta_time) {
     if (IsKeyPressed(KEY_A)) {
-        progression->set_percent(progression->get_percent() - 10);
+        progression->stop_action(5);
+        progression->do_action(Actions::progress_by(0.5, -10, Action_Ease::SINE_IN), 5);
     } else if (IsKeyPressed(KEY_D)) {
-        progression->set_percent(progression->get_percent() + 10);
+        progression->stop_action(5);
+        progression->do_action(Actions::progress_by(0.5, 10, Action_Ease::SINE_OUT), 5);
     } else if (IsKeyPressed(KEY_S)) {
     } else if (IsKeyPressed(KEY_W)) {
     }

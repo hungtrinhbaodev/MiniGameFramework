@@ -11,6 +11,7 @@ public:
 
     std::string get_image();
     Custom::Size get_content_size();
+    Node_Type get_type() override;
 
     void set_image(std::string image_path);
 

@@ -26,6 +26,10 @@ Custom::Size Image_Node::get_content_size() {
     return image_info.size;
 }
 
+Node_Type Image_Node::get_type() {
+    return Node_Type::IMAGE;
+}
+
 void Image_Node::set_image(std::string image) {
     this->image_path = image;
 }

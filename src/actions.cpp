@@ -1,4 +1,5 @@
 #include <actions.h>
+#include <progression_node.h>
 
 #include <iostream>
 
@@ -15,20 +16,21 @@ void Action_Move::set_delta(glm::vec2 delta) {
     delta_position = delta;
 }
 
-void Action_Move::setup_start_state(Custom::Transform& transform) {
+void Action_Move::setup_target_to_action(Base_Node* target) {
     if (subtype == Action_Subtype::TO) {
+        Custom ::Transform transform = target->get_transform();
         delta_position.x = end_x - transform.position.x;
         delta_position.y = end_y - transform.position.y;
     }
 }
 
-void Action_Move::apply(Custom::Transform& tranform, float delta_time) {
+void Action_Move::apply(Base_Node* target, float delta_time) {
     float last_rate = this->get_rate();
-    Base_Action::apply(tranform, delta_time);
+    Base_Action::apply(target, delta_time);
     float current_rate = this->get_rate();
 
     glm::vec2 distance = (current_rate - last_rate) * delta_position;
-    tranform.position += distance;
+    target->modify_transform().position += distance;
 }
 
 Action_Scale::Action_Scale() {}
@@ -44,20 +46,21 @@ void Action_Scale::set_delta(glm::vec2 delta) {
     delta_scale = delta;
 }
 
-void Action_Scale::setup_start_state(Custom::Transform& transform) {
+void Action_Scale::setup_target_to_action(Base_Node* target) {
     if (subtype == Action_Subtype::TO) {
+        Custom ::Transform transform = target->get_transform();
         delta_scale.x = end_x - transform.scale.x;
         delta_scale.y = end_y - transform.scale.y;
     }
 }
 
-void Action_Scale::apply(Custom::Transform& tranform, float delta_time) {
+void Action_Scale::apply(Base_Node* target, float delta_time) {
     float last_rate = this->get_rate();
-    Base_Action::apply(tranform, delta_time);
+    Base_Action::apply(target, delta_time);
     float current_rate = this->get_rate();
 
     glm::vec2 size = (current_rate - last_rate) * delta_scale;
-    tranform.scale += size;
+    target->modify_transform().scale += size;
 }
 
 Action_Rotate::Action_Rotate() {}
@@ -72,19 +75,20 @@ void Action_Rotate::set_delta(float delta) {
     delta_rotation = delta;
 }
 
-void Action_Rotate::setup_start_state(Custom::Transform& transform) {
+void Action_Rotate::setup_target_to_action(Base_Node* target) {
     if (subtype == Action_Subtype::TO) {
+        Custom ::Transform transform = target->get_transform();
         delta_rotation = end_rotation - transform.rotation;
     }
 }
 
-void Action_Rotate::apply(Custom::Transform& tranform, float delta_time) {
+void Action_Rotate::apply(Base_Node* target, float delta_time) {
     float last_rate = this->get_rate();
-    Base_Action::apply(tranform, delta_time);
+    Base_Action::apply(target, delta_time);
     float current_rate = this->get_rate();
 
     float rotate_more = (current_rate - last_rate) * delta_rotation;
-    tranform.rotation += rotate_more;
+    target->modify_transform().rotation += rotate_more;
 }
 
 Action_Opacity::Action_Opacity() {}
@@ -99,19 +103,22 @@ void Action_Opacity::set_delta(int delta) {
     delta_opacity = delta;
 }
 
-void Action_Opacity::setup_start_state(Custom::Transform& transform) {
+void Action_Opacity::setup_target_to_action(Base_Node* target) {
     if (subtype == Action_Subtype::TO) {
+        Custom ::Transform transform = target->get_transform();
         delta_opacity = std::max(std::min((int)end_opacity, 255), 0) - transform.opacity;
     }
 }
 
-void Action_Opacity::apply(Custom::Transform& tranform, float delta_time) {
+void Action_Opacity::apply(Base_Node* target, float delta_time) {
     float last_rate = this->get_rate();
-    Base_Action::apply(tranform, delta_time);
+    Base_Action::apply(target, delta_time);
     float current_rate = this->get_rate();
 
     float opacity_more = (current_rate - last_rate) * delta_opacity;
-    tranform.opacity = (unsigned char)std::max(std::min((int)(tranform.opacity + opacity_more), 255), 0);
+
+    target->modify_transform().opacity =
+        (unsigned char)std::max(std::min((int)(target->get_opacity() + opacity_more), 255), 0);
 }
 
 Action_Remove_Self::Action_Remove_Self() {}
@@ -122,10 +129,10 @@ void Action_Remove_Self::set_cleanup(bool is_cleanup) {
     this->is_cleanup = is_cleanup;
 }
 
-void Action_Remove_Self::setup_start_state(Custom::Transform& transform) {}
+void Action_Remove_Self::setup_target_to_action(Base_Node* target) {}
 
-void Action_Remove_Self::apply(Custom::Transform& tranform, float delta_time) {
-    Base_Action::apply(tranform, delta_time);
+void Action_Remove_Self::apply(Base_Node* target, float delta_time) {
+    Base_Action::apply(target, delta_time);
     if (this->target != nullptr) {
         this->target->remove_from_parent(this->is_cleanup);
     }
@@ -139,13 +146,46 @@ void Action_Visible::set_show(bool is_show) {
     this->is_show = is_show;
 }
 
-void Action_Visible::setup_start_state(Custom::Transform& transform) {}
+void Action_Visible::setup_target_to_action(Base_Node* target) {}
 
-void Action_Visible::apply(Custom::Transform& tranform, float delta_time) {
-    Base_Action::apply(tranform, delta_time);
+void Action_Visible::apply(Base_Node* target, float delta_time) {
+    Base_Action::apply(target, delta_time);
     if (this->target != nullptr) {
         this->target->set_visible(this->is_show);
     }
+}
+
+Action_Progression::Action_Progression() {}
+
+Action_Progression::~Action_Progression() {}
+
+void Action_Progression::set_end(float end) {
+    end_progression = end;
+}
+
+void Action_Progression::set_delta(float delta) {
+    delta_progression = delta;
+}
+
+void Action_Progression::setup_target_to_action(Base_Node* target) {
+    if (subtype == Action_Subtype::TO) {
+        Progression_Node* progression = reinterpret_cast<Progression_Node*>(target);
+        delta_progression = end_progression - progression->get_percent();
+    }
+}
+
+void Action_Progression::apply(Base_Node* target, float delta_time) {
+    float last_rate = this->get_rate();
+    Base_Action::apply(target, delta_time);
+    float current_rate = this->get_rate();
+
+    Progression_Node* progression = reinterpret_cast<Progression_Node*>(target);
+    float progression_more = (current_rate - last_rate) * delta_progression;
+    progression->set_percent(progression->get_percent() + progression_more);
+}
+
+bool Action_Progression::is_valid_target(Base_Node* target) {
+    return target->get_type() == Node_Type::PROGRESSION;
 }
 
 Action_Move* Actions::move_to(float duration, glm::vec2 position_to, Action_Ease ease) {
@@ -248,11 +288,30 @@ Action_Visible* Actions::show() {
     visible->set_type(Action_Type::ALWAY_HAPPEN);
     return visible;
 }
+
 Action_Visible* Actions::hide() {
     Action_Visible* visible = new Action_Visible();
     visible->set_show(false);
     visible->set_type(Action_Type::ALWAY_HAPPEN);
     return visible;
+}
+
+Action_Progression* Actions::progress_to(float duration, float progression_to, Action_Ease ease) {
+    Action_Progression* progression = new Action_Progression();
+    progression->set_subtype(Action_Subtype::TO);
+    progression->set_ease_type(ease);
+    progression->set_end(progression_to);
+    progression->set_duration(duration);
+    return progression;
+}
+
+Action_Progression* Actions::progress_by(float duration, float progression_by, Action_Ease ease) {
+    Action_Progression* progression = new Action_Progression();
+    progression->set_subtype(Action_Subtype::BY);
+    progression->set_ease_type(ease);
+    progression->set_delta(progression_by);
+    progression->set_duration(duration);
+    return progression;
 }
 
 Base_Action* Actions::sequence(std::vector<Base_Action*> actions) {

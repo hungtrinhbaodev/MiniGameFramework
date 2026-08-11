@@ -14,6 +14,7 @@ public:
     Custom::Color get_color();
     Custom::Size get_content_size();
     int get_font_size();
+    Node_Type get_type() override;
 
     void set_font(std::string font);
     void set_font_size(int size);
