@@ -27,6 +27,8 @@ public:
     bool is_visible();
     bool is_cascade_opacity();
     Base_Node* get_parent();
+    bool is_flipped_x();
+    bool is_flipped_y();
 
     std::vector<Base_Node*>& get_children();
     Base_Node* get_child_by_tag(int tag);
@@ -46,6 +48,8 @@ public:
     void set_z_order(int z_order);
     void set_visible(bool visible);
     void set_cascade_opacity(bool cascade);
+    void set_flipped_x(bool flipped_x);
+    void set_flipped_y(bool flipped_y);
 
     void set_tag(int tag);
     void set_name(std::string name);
@@ -57,6 +61,8 @@ public:
 protected:
     Custom::Transform transform;
     Custom::Anchor_Point anchor;
+    Custom::Flipped flipped;
+    bool casecade_opacity = false;
     int z_order;
     std::vector<Base_Node*> children;
     Base_Node* parent = nullptr;
@@ -76,7 +82,6 @@ private:
     int tag = -1;
     std::string name = "";
     bool visible = true;
-    bool casecade_opacity = false;
     int total_node = 1;
     std::vector<Base_Node*> cleanup_children;
     // Invalid happen when node in list cleanup_children

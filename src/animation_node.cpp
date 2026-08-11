@@ -28,7 +28,7 @@ void Animation_Node::set_speed(float speed) {
 
 void Animation_Node::play_animation(std::string name, float speed) {
     if (!is_valid_animation(name)) {
-        std::cout << "Animation_Node WARNING: can find animation " << name << " to play!" << std::endl;
+        std::cout << "Animation_Node WARNING: can't find animation " << name << " to play!" << std::endl;
         return;
     }
     if (current_animation == name) {

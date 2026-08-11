@@ -43,15 +43,12 @@ namespace Libs_Wrapper {
         Color color;
         float thin;
 
-        RayLib_Draw_Line_Resource(float start_x, float start_y, float end_x, float end_y, glm::vec3 color, float thin) {
+        RayLib_Draw_Line_Resource(
+            float start_x, float start_y, float end_x, float end_y, Custom::Color color, float thin
+        ) {
             this->start = {start_x, start_y};
             this->end = {end_x, end_y};
-            this->color = {
-                (unsigned char)std::max(std::min((int)color.x, 255), 0),
-                (unsigned char)std::max(std::min((int)color.y, 255), 0),
-                (unsigned char)std::max(std::min((int)color.z, 255), 0),
-                255
-            };
+            this->color = {color.r, color.g, color.b, 255};
             this->thin = thin;
         }
     };
@@ -132,11 +129,11 @@ namespace Libs_Wrapper {
     }
 
     float get_screen_width() {
-        return GetScreenWidth();
+        return (float)GetScreenWidth();
     }
 
     float get_screen_height() {
-        return GetScreenHeight();
+        return (float)GetScreenHeight();
     }
 
     void process_start_clipping(RayLib_Draw_Command& command) {
@@ -202,6 +199,7 @@ namespace Libs_Wrapper {
     void close_window(void* window) {
         CloseWindow();
     }
+
     void draw_image(std::string image_path, Custom::Draw_Attributes attributes) {
         RayLib_Draw_Command command{RayLib_Draw_Type::IMAGE, attributes, new RayLib_Draw_Image_Resource(image_path)};
         rl_queue_commands.push(command);
@@ -215,7 +213,7 @@ namespace Libs_Wrapper {
     }
 
     void draw_line(
-        float start_x, float start_y, float end_x, float end_y, int draw_index, glm::vec3 color, float thin
+        float start_x, float start_y, float end_x, float end_y, int draw_index, Custom::Color color, float thin
     ) {
         Custom::Draw_Attributes attr{};
         attr.draw_index = draw_index;
@@ -259,9 +257,9 @@ namespace Libs_Wrapper {
             Custom::Draw_Attributes attributes = command.attributes;
             Custom::Transform transform = attributes.transform;
             Custom::Anchor_Point anchor = attributes.anchor;
-            int screen_height = get_screen_height();
+            float screen_height = get_screen_height();
             float x = transform.position.x;
-            float y = (float)screen_height - transform.position.y;
+            float y = screen_height - transform.position.y;
 
             switch (command.type) {
                 case RayLib_Draw_Type::START_CLIPPING: {
@@ -282,22 +280,32 @@ namespace Libs_Wrapper {
                     Texture2D texture = texture_info.data;
 
                     Rectangle source = {0.0f, 0.0f, (float)texture.width, (float)texture.height};
-                    source.width *= (attributes.flipped.x ? -1.f : 1.f);
-                    source.height *= (attributes.flipped.y ? -1.f : 1.f);
-                    float tex_width = (float)texture.width * transform.scale.x;
-                    float tex_height = (float)texture.height * transform.scale.y;
+                    if (attributes.is_use_rect_texture) {
+                        Custom::Rectangle_Area& rect = attributes.rect_texture;
+                        if (rect.width <= 0 || rect.height <= 0) {
+                            command.clean();
+                            continue;
+                        }
+                        source = {rect.x, (float)texture.height - (rect.y + rect.height), rect.width, rect.height};
+                        Custom::Rectangle draw_rect = {source.width, source.height};
+                        std::array<glm::vec2, 4> rect_points = draw_rect.apply(transform, attributes.anchor);
+                        x = rect_points[3].x;
+                        y = screen_height - rect_points[3].y;
+                    }
+                    source.width *= (transform.flipped.x ? -1.f : 1.f);
+                    source.height *= (transform.flipped.y ? -1.f : 1.f);
+                    float tex_width = source.width * transform.scale.x;
+                    float tex_height = source.height * transform.scale.y;
                     Rectangle dest = {x, y, tex_width, tex_height};
                     Vector2 origin = {anchor.x * tex_width, anchor.y * tex_height};
-
                     DrawTexturePro(
                         texture,
                         source,
                         dest,
                         origin,
                         transform.rotation,
-                        {attributes.tint.g, attributes.tint.b, attributes.tint.r, transform.opacity}
+                        {attributes.tint.r, attributes.tint.g, attributes.tint.b, transform.opacity}
                     );
-
                     command.clean();
                     break;
                 }
@@ -310,7 +318,6 @@ namespace Libs_Wrapper {
                     float font_size = (float)resource->font_size * std::min(transform.scale.x, transform.scale.y);
                     Vector2 text_size = MeasureTextEx(font, resource->text.data(), font_size, 1.0f);
                     Vector2 origin = {text_size.x * anchor.x, text_size.y * anchor.y};
-
                     DrawTextPro(
                         font,
                         resource->text.data(),
@@ -319,9 +326,8 @@ namespace Libs_Wrapper {
                         transform.rotation,
                         font_size,
                         1.0f,
-                        {attributes.tint.g, attributes.tint.b, attributes.tint.r, transform.opacity}
+                        {attributes.tint.r, attributes.tint.g, attributes.tint.b, transform.opacity}
                     );
-
                     command.clean();
                     break;
                 }

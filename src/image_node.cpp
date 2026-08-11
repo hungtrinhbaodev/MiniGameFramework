@@ -26,29 +26,13 @@ Custom::Size Image_Node::get_content_size() {
     return image_info.size;
 }
 
-bool Image_Node::is_flipped_x() {
-    return this->flipped.x;
-}
-
-bool Image_Node::is_flipped_y() {
-    return this->flipped.y;
-}
-
 void Image_Node::set_image(std::string image) {
     this->image_path = image;
-}
-
-void Image_Node::set_flipped_x(bool flipped_x) {
-    this->flipped.x = flipped_x;
-}
-
-void Image_Node::set_flipped_y(bool flipped_y) {
-    this->flipped.y = flipped_y;
 }
 
 void Image_Node::draw(Custom::Transform& world_transform, int& draw_index) {
     if (image_path == "")
         return;
-    Libs_Wrapper::draw_image(image_path, {world_transform, anchor, draw_index, {255, 255, 255}, flipped});
+    Libs_Wrapper::draw_image(image_path, {world_transform, anchor, draw_index, {255, 255, 255}});
     draw_index++;
 }

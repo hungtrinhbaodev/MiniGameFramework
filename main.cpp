@@ -1,5 +1,6 @@
 #include <actions.h>
 #include <animation_node.h>
+#include <image_ui_node.h>
 #include <label_node.h>
 #include <layer_node.h>
 #include <math_custom.h>
@@ -18,6 +19,8 @@ Layer_Node* layer_1 = nullptr;
 Layer_Node* layer_2 = nullptr;
 Layer_Node* layer_3 = nullptr;
 Label_Node* label = nullptr;
+Image_UI_Node* ui = nullptr;
+Image_Node* image = nullptr;
 
 void start_test_node() {
     scene = new Scene_Node();
@@ -38,6 +41,7 @@ void start_test_node() {
     animation_2->set_y(50.f);
     animation_2->set_cascade_opacity(false);
     animation_2->set_position({0.f, 0.f});
+    // animation_2->set_scale_x(-1.f);
 
     layer = new Layer_Node{{800.f, 480.f}};
     layer->set_rotation(10.f);
@@ -59,14 +63,27 @@ void start_test_node() {
     label = new Label_Node("Trinh Bao Hung", "res/fonts/KnightWarrior-w16n8.otf", 28);
     label->set_anchor({0.5, 0.5});
     label->set_position({0.f, 200.f});
-    label->set_color({220, 100, 50});
+    label->set_color({220, 50, 100});
     label->set_scale({1.f, 1.f});
     label->do_action(Actions::sequence(Actions::rotate_by(1, 360, Action_Ease::SINE_OUT))->repeat_forever());
 
+    ui = new Image_UI_Node();
+    ui->set_image("res/Png/Ui/AddonBoxNumber.png");
+    ui->set_enable_nine_scale(true);
+    ui->set_cap_insets(30, 20, 74, 11);
+    ui->set_position({400.f, 240.f});
+    ui->set_renderer_size({200.f, 51.f});
+
+    image = new Image_Node();
+    image->set_image("res/Png/Ui/AddonBtnyellow.png");
+    image->set_position({100.f, 200.f});
+
     layer->add_child(sub_layer);
     scene->add_child(layer);
-    sub_layer->add_child(animation_2);
+    // sub_layer->add_child(animation_2);
     layer->add_child(label);
+    scene->add_child(ui);
+    // scene->add_child(image);
 }
 
 void loop_test_node(float delta_time) {

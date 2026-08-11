@@ -25,7 +25,7 @@ void Base_Node::visit(Custom::Transform& world_transform, float delta_time, int&
     // Draw current node
     unsigned char insverse_opacity = world_transform.opacity;
     if (this->parent != nullptr) {
-        world_transform.forward(transform, this->parent->is_cascade_opacity());
+        world_transform.forward(transform, this->parent->is_cascade_opacity(), this->flipped);
     }
 
     // Make the wrapper caller function to wrap the draw of object
@@ -51,7 +51,7 @@ void Base_Node::visit(Custom::Transform& world_transform, float delta_time, int&
 
     // Inverse to other visit can use again
     if (this->parent != nullptr) {
-        world_transform.inverse(transform, insverse_opacity);
+        world_transform.inverse(transform, insverse_opacity, this->parent->flipped);
     }
 }
 
@@ -135,6 +135,14 @@ bool Base_Node::is_cascade_opacity() {
 
 Base_Node* Base_Node::get_parent() {
     return parent;
+}
+
+bool Base_Node::is_flipped_x() {
+    return this->flipped.x;
+}
+
+bool Base_Node::is_flipped_y() {
+    return this->flipped.y;
 }
 
 std::vector<Base_Node*>& Base_Node::get_children() {
@@ -224,6 +232,14 @@ void Base_Node::set_name(std::string name) {
 
 void Base_Node::set_cascade_opacity(bool cascade) {
     this->casecade_opacity = cascade;
+}
+
+void Base_Node::set_flipped_x(bool flipped_x) {
+    this->flipped.x = flipped_x;
+}
+
+void Base_Node::set_flipped_y(bool flipped_y) {
+    this->flipped.y = flipped_y;
 }
 
 void Base_Node::add_child(Base_Node* child) {
