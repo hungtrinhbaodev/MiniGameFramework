@@ -29,5 +29,9 @@ void main() {
         }
     }
 
-    finalColor = texture(texture0, fragTexCoord) * fragColor;
+    vec4 matching = texture(texture0, fragTexCoord);
+    if (matching.w <= 0) {
+        discard;
+    }
+    finalColor = matching * fragColor;
 }

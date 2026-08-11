@@ -169,6 +169,7 @@ namespace Libs_Wrapper {
     std::vector<Vector2> clipping_points;
     /**@Hack using stack like the verify "(())()" backets sequence to handle clipping  */
     std::stack<int> stack_clipping;
+    bool is_debug = false;
 
     RayLib_Texture_Info load_raylib_texture(std::string path) {
         path = Utils::get_root_path() + path;
@@ -197,6 +198,10 @@ namespace Libs_Wrapper {
         rl_fonts_storages[path] = font;
 
         return font;
+    }
+
+    bool is_debug_mode() {
+        return is_debug;
     }
 
     float get_screen_width() {
@@ -335,11 +340,13 @@ namespace Libs_Wrapper {
             float y = screen_height - transform.position.y;
 
             // Save command to trace and debug when need
-            std::map<std::string, std::string> extra_trace_information;
-            if (command.resource != nullptr) {
-                extra_trace_information = command.resource->get_trace();
+            if (is_debug) {
+                std::map<std::string, std::string> extra_trace_information;
+                if (command.resource != nullptr) {
+                    extra_trace_information = command.resource->get_trace();
+                }
+                trace_commands.push_back({command.type, command.attributes, extra_trace_information});
             }
-            trace_commands.push_back({command.type, command.attributes, extra_trace_information});
 
             switch (command.type) {
                 case RayLib_Draw_Type::START_CLIPPING: {
@@ -457,10 +464,20 @@ namespace Libs_Wrapper {
         }
 
         if (IsKeyPressed(KEY_K)) {
-            for (auto& trace : trace_commands) {
-                std::cout << trace;
+            if (!is_debug) {
+                for (auto& trace : trace_commands) {
+                    std::cout << trace;
+                }
+                std::cout << std::endl;
             }
-            std::cout << std::endl;
+        }
+        if (IsKeyPressed(KEY_B)) {
+            is_debug = !is_debug;
+            if (is_debug) {
+                std::cout << "Open mode debug!" << std::endl;
+            } else {
+                std::cout << "Exit mode debug!" << std::endl;
+            }
         }
     }
 

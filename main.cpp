@@ -71,7 +71,7 @@ void start_test_node() {
     ui->set_image("res/Png/Ui/AddonBoxNumber.png");
     ui->set_enable_nine_scale(true);
     ui->set_cap_insets(30, 10, 74, 31);
-    ui->set_anchor({0.3f, 0.5f});
+    ui->set_anchor({0.5f, 0.5f});
     ui->set_position({400.f, 400.f});
     ui->set_renderer_size({200.f, 70.f});
     ui->set_scale({1.5f, 1.2f});

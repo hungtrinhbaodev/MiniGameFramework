@@ -139,7 +139,7 @@ void Image_UI_Node::draw(Custom::Transform& world_transform, int& draw_index) {
     Custom::Size renderer_size = {
         std::max(min_width, this->renderer_size.width), std::max(min_height, this->renderer_size.height)
     };
-    // find local scale at each part
+    // Find local scale at each part
     for (int i = 0; i < 9; i++) {
         if (to_row(i) == 1) {
             float width_at_part = nine_draw_parts[i].rect_texture.width;
@@ -150,14 +150,16 @@ void Image_UI_Node::draw(Custom::Transform& world_transform, int& draw_index) {
             size_at_parts[i].width = remain_width;
         }
         if (to_col(i) == 1) {
-            float remain_height = renderer_size.height - min_height;
             float height_at_part = nine_draw_parts[i].rect_texture.height;
+            if (height_at_part <= 0)
+                continue;
+            float remain_height = renderer_size.height - min_height;
             nine_draw_parts[i].transform.scale.y = height_at_part <= 0 ? 0 : remain_height / height_at_part;
             size_at_parts[i].height = remain_height;
         }
     }
     glm::vec2 origin_position = {-renderer_size.width * anchor.x, -renderer_size.height * anchor.y};
-    // Update position x of all parts
+    // Update local position x of all parts
     for (int col = 0; col < 3; col++) {
         if (!flipped.x) {
             for (int row = 1; row < 3; row++) {
@@ -181,7 +183,7 @@ void Image_UI_Node::draw(Custom::Transform& world_transform, int& draw_index) {
             }
         }
     }
-    // Update position y of all parts
+    // Update local position y of all parts
     for (int row = 0; row < 3; row++) {
         if (!flipped.y) {
             for (int col = 1; col < 3; col++) {
@@ -219,7 +221,7 @@ void Image_UI_Node::draw(Custom::Transform& world_transform, int& draw_index) {
         attribute.is_use_rect_texture = true;
         Libs_Wrapper::draw_image(this->get_image(), attribute);
         draw_index++;
-        if (this->enable_boundary) {
+        if (this->enable_boundary || Libs_Wrapper::is_debug_mode()) {
             draw_parts(i, attribute, draw_index);
         }
     }

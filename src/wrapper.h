@@ -20,6 +20,8 @@ struct Text_Info {
 namespace Libs_Wrapper {
     void init_libs();
 
+    bool is_debug_mode();
+
     float get_screen_width();
 
     float get_screen_height();

@@ -35,7 +35,7 @@ void Layer_Node::set_clipping(bool is_clipping) {
 }
 
 void Layer_Node::before_draw_children(Custom::Transform& world_transform, int& draw_index) {
-    if (this->is_show_boundary) {
+    if (this->is_show_boundary || Libs_Wrapper::is_debug_mode()) {
         glm::vec3 color = {255, 0, 0};
         Custom::Rectangle rec{this->size.width, this->size.height};
         draw_index += rec.draw_rectangle(world_transform, anchor, draw_index);

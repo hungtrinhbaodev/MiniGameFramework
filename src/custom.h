@@ -14,8 +14,8 @@ namespace Custom {
     };
 
     struct Anchor_Point {
-        float x;
-        float y;
+        float x = 0.f;
+        float y = 0.f;
         friend std::ostream& operator<<(std::ostream& os, const Anchor_Point& anchor) {
             os << "Anchor: " << "width: " << anchor.x << ", height: " << anchor.y << std::endl;
             return os;
@@ -72,10 +72,10 @@ namespace Custom {
     };
 
     struct Rectangle_Area {
-        float x;
-        float y;
-        float width;
-        float height;
+        float x = 0.f;
+        float y = 0.f;
+        float width = 0.f;
+        float height = 0.f;
 
         friend std::ostream& operator<<(std::ostream& os, const Rectangle_Area& area) {
             os << "Rectangle_Area: " << "x: " << area.x << ", y: " << area.y << ", width: " << area.width
