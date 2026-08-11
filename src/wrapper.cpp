@@ -15,13 +15,23 @@ int MAX_CLIPPING_POINTS = 64;
 namespace Libs_Wrapper {
     enum RayLib_Draw_Type { IMAGE, TEXT, START_CLIPPING, END_CLIPPING, LINE };
 
-    struct RayLib_Base_Draw_Resouce {};
+    struct RayLib_Base_Draw_Resouce {
+        virtual std::map<std::string, std::string> get_trace() {
+            return {};
+        }
+    };
 
     struct RayLib_Draw_Image_Resource : public RayLib_Base_Draw_Resouce {
         std::string image_path = "";
 
         RayLib_Draw_Image_Resource(std::string image_path) {
             this->image_path = image_path;
+        }
+
+        std::map<std::string, std::string> get_trace() {
+            std::map<std::string, std::string> extra_information;
+            extra_information.insert({std::string("Image texture"), image_path});
+            return extra_information;
         }
     };
 
@@ -34,6 +44,14 @@ namespace Libs_Wrapper {
             this->font_path = font_path;
             this->text = text;
             this->font_size = font_size;
+        }
+
+        std::map<std::string, std::string> get_trace() {
+            std::map<std::string, std::string> extra_information;
+            extra_information.insert({std::string("Text font"), font_path});
+            extra_information.insert({std::string("Text"), text});
+            extra_information.insert({std::string("Font size"), std::to_string(font_size)});
+            return extra_information;
         }
     };
 
@@ -51,6 +69,15 @@ namespace Libs_Wrapper {
             this->color = {color.r, color.g, color.b, 255};
             this->thin = thin;
         }
+
+        std::map<std::string, std::string> get_trace() {
+            std::map<std::string, std::string> extra_information;
+            extra_information.insert({std::string("Start x"), std::to_string(start.x)});
+            extra_information.insert({std::string("Start y"), std::to_string(start.y)});
+            extra_information.insert({std::string("End x"), std::to_string(end.x)});
+            extra_information.insert({std::string("End y"), std::to_string(end.y)});
+            return extra_information;
+        }
     };
 
     struct RayLib_Draw_Clipping_Resource : public RayLib_Base_Draw_Resouce {
@@ -60,6 +87,13 @@ namespace Libs_Wrapper {
         RayLib_Draw_Clipping_Resource(float width, float height) {
             this->width = width;
             this->height = height;
+        }
+
+        std::map<std::string, std::string> get_trace() {
+            std::map<std::string, std::string> extra_information;
+            extra_information.insert({std::string("Clipping width"), std::to_string(width)});
+            extra_information.insert({std::string("Clipping height"), std::to_string(height)});
+            return extra_information;
         }
     };
 
@@ -84,9 +118,50 @@ namespace Libs_Wrapper {
         Image_Info info;
     };
 
+    struct RayLib_Trace_Draw_Command {
+        RayLib_Draw_Type command_type;
+        Custom::Draw_Attributes attributes;
+        std::map<std::string, std::string> trace_extra_information;
+        friend std::ostream& operator<<(std::ostream& os, const RayLib_Trace_Draw_Command& trace) {
+            std::string type = "";
+            switch (trace.command_type) {
+                case IMAGE: {
+                    type = "IMAGE";
+                    break;
+                }
+                case TEXT: {
+                    type = "TEXT";
+                    break;
+                }
+                case START_CLIPPING: {
+                    type = "START_CLIPPING";
+                    break;
+                }
+                case END_CLIPPING: {
+                    type = "END_CLIPPING";
+                    break;
+                }
+                case LINE: {
+                    type = "LINE";
+                    break;
+                }
+            }
+            os << "Trace command: " << type << std::endl << trace.attributes;
+            if (trace.trace_extra_information.size() > 0) {
+                os << "Extra information: ";
+                for (auto& [key, value] : trace.trace_extra_information) {
+                    os << key << ": " << value << " ";
+                }
+            }
+            os << std::endl << std::endl;
+            return os;
+        }
+    };
+
     std::map<std::string, RayLib_Texture_Info> rl_textures_storage;
     std::map<std::string, Font> rl_fonts_storages;
     std::priority_queue<RayLib_Draw_Command> rl_queue_commands;
+    std::vector<RayLib_Trace_Draw_Command> trace_commands;
 
     Shader clipping_shader;
     int clipping_shader_points_location = 0;
@@ -110,10 +185,6 @@ namespace Libs_Wrapper {
     }
 
     Font load_raylib_font(std::string path) {
-        if (path.empty()) {
-            return GetFontDefault();
-        }
-
         path = Utils::get_root_path() + path;
         if (rl_fonts_storages.find(path) != rl_fonts_storages.end()) {
             return rl_fonts_storages[path];
@@ -249,9 +320,11 @@ namespace Libs_Wrapper {
     }
 
     void draw_frame() {
+        trace_commands.clear();
         BeginDrawing();
 
         ClearBackground(RAYWHITE);
+
         while (!rl_queue_commands.empty()) {
             RayLib_Draw_Command command = rl_queue_commands.top();
             Custom::Draw_Attributes attributes = command.attributes;
@@ -260,6 +333,13 @@ namespace Libs_Wrapper {
             float screen_height = get_screen_height();
             float x = transform.position.x;
             float y = screen_height - transform.position.y;
+
+            // Save command to trace and debug when need
+            std::map<std::string, std::string> extra_trace_information;
+            if (command.resource != nullptr) {
+                extra_trace_information = command.resource->get_trace();
+            }
+            trace_commands.push_back({command.type, command.attributes, extra_trace_information});
 
             switch (command.type) {
                 case RayLib_Draw_Type::START_CLIPPING: {
@@ -282,6 +362,7 @@ namespace Libs_Wrapper {
                     Rectangle source = {0.0f, 0.0f, (float)texture.width, (float)texture.height};
                     if (attributes.is_use_rect_texture) {
                         Custom::Rectangle_Area& rect = attributes.rect_texture;
+                        /*@Hack: if draw area have size <= 0 we ignore it don't draw anything*/
                         if (rect.width <= 0 || rect.height <= 0) {
                             command.clean();
                             continue;
@@ -292,11 +373,22 @@ namespace Libs_Wrapper {
                         x = rect_points[3].x;
                         y = screen_height - rect_points[3].y;
                     }
+                    float tex_width = source.width * std::abs(transform.scale.x);
+                    float tex_height = source.height * std::abs(transform.scale.y);
                     source.width *= (transform.flipped.x ? -1.f : 1.f);
                     source.height *= (transform.flipped.y ? -1.f : 1.f);
-                    float tex_width = source.width * transform.scale.x;
-                    float tex_height = source.height * transform.scale.y;
                     Rectangle dest = {x, y, tex_width, tex_height};
+                    /**@Hack: round pixel prevent rasterize false with floating point which not rounded (Example: .25,
+                     * .50,... all fail)*/
+                    if (std::abs(transform.rotation) <= 3) {
+                        source = (Rectangle){
+                            std::round(source.x),
+                            std::round(source.y),
+                            std::round(source.width),
+                            std::round(source.height)
+                        };
+                        dest = {std::round(x), std::round(y), std::round(tex_width), std::round(tex_height)};
+                    }
                     Vector2 origin = {anchor.x * tex_width, anchor.y * tex_height};
                     DrawTexturePro(
                         texture,
@@ -362,6 +454,13 @@ namespace Libs_Wrapper {
 
         if (stack_clipping.size() > 0 || clipping_points.size() > 0) {
             throw std::runtime_error("Drawing: logic clipping wrong, please review it again!");
+        }
+
+        if (IsKeyPressed(KEY_K)) {
+            for (auto& trace : trace_commands) {
+                std::cout << trace;
+            }
+            std::cout << std::endl;
         }
     }
 

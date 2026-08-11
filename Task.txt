@@ -11,7 +11,7 @@
 
 [Pending]: Recheck logic flipped add it into base_node.
 [Done]: Add clipping layer node.
-[]: Add scale9image node.
+[Done]: Add scale9image node.
 [Done]: Add label node.
 []: Add progression node (make health bar).
 

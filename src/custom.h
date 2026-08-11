@@ -16,17 +16,30 @@ namespace Custom {
     struct Anchor_Point {
         float x;
         float y;
+        friend std::ostream& operator<<(std::ostream& os, const Anchor_Point& anchor) {
+            os << "Anchor: " << "width: " << anchor.x << ", height: " << anchor.y << std::endl;
+            return os;
+        }
     };
 
     struct Color {
         unsigned char r = 0;
         unsigned char g = 0;
         unsigned char b = 0;
+        friend std::ostream& operator<<(std::ostream& os, const Color& color) {
+            os << "Color: " << "red: " << (int)color.r << ", green: " << (int)color.g << ", blue: " << (int)color.b
+               << std::endl;
+            return os;
+        }
     };
 
     struct Flipped {
         bool x = false;
         bool y = false;
+        friend std::ostream& operator<<(std::ostream& os, const Flipped& flipped) {
+            os << "Flipped: " << "x: " << flipped.x << ", y: " << flipped.y << std::endl;
+            return os;
+        }
     };
 
     struct Transform {
@@ -92,7 +105,8 @@ namespace Custom {
         bool is_use_rect_texture = false;
         Rectangle_Area rect_texture = {0.f, 0.f, 0.f, 0.f};
         friend std::ostream& operator<<(std::ostream& os, const Draw_Attributes& attr) {
-            os << attr.transform << attr.rect_texture << std::endl;
+            os << "draw_index: " << attr.draw_index << std::endl
+               << attr.transform << attr.anchor << attr.tint << attr.rect_texture;
             return os;
         }
     };

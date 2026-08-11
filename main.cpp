@@ -70,9 +70,13 @@ void start_test_node() {
     ui = new Image_UI_Node();
     ui->set_image("res/Png/Ui/AddonBoxNumber.png");
     ui->set_enable_nine_scale(true);
-    ui->set_cap_insets(30, 20, 74, 11);
-    ui->set_position({400.f, 240.f});
-    ui->set_renderer_size({200.f, 51.f});
+    ui->set_cap_insets(30, 10, 74, 31);
+    ui->set_anchor({0.3f, 0.5f});
+    ui->set_position({400.f, 400.f});
+    ui->set_renderer_size({200.f, 70.f});
+    ui->set_scale({1.5f, 1.2f});
+    ui->set_rotation(30);
+    ui->do_action(Actions::sequence(Actions::rotate_by(3, 360, Action_Ease::SINE_OUT))->repeat_forever());
 
     image = new Image_Node();
     image->set_image("res/Png/Ui/AddonBtnyellow.png");
@@ -80,10 +84,10 @@ void start_test_node() {
 
     layer->add_child(sub_layer);
     scene->add_child(layer);
-    // sub_layer->add_child(animation_2);
+    sub_layer->add_child(animation_2);
     layer->add_child(label);
-    scene->add_child(ui);
-    // scene->add_child(image);
+    layer->add_child(ui);
+    scene->add_child(image);
 }
 
 void loop_test_node(float delta_time) {
