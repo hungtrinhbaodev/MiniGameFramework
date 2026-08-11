@@ -73,20 +73,7 @@ Custom::Distance_1D find_distance_y(
 
 void draw_parts(int i, const Custom::Draw_Attributes attribute, int& draw_index) {
     Custom::Rectangle rec = {attribute.rect_texture.width, attribute.rect_texture.height};
-    Custom::Color color = {255, 0, 0};
-    if (to_col(i) == 1) {
-        color = {0, 255, 0};
-    }
-    if (to_col(i) == 2) {
-        color = {0, 0, 255};
-    }
-    if (to_row(i) == 0) {
-        color.g = 255;
-    } else if (to_row(i) == 1) {
-        color.b = 255;
-    } else {
-        color.r = 255;
-    }
+    Custom::Color color = {100, 255, 100};
     draw_index += rec.draw_rectangle(attribute.transform, {0.f, 0.f}, draw_index, color);
 }
 

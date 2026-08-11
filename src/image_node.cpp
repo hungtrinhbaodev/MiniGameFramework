@@ -36,7 +36,7 @@ void Image_Node::draw(Custom::Transform& world_transform, int& draw_index) {
     if (Libs_Wrapper::is_debug_mode()) {
         Custom::Size size = get_content_size();
         Custom::Rectangle rec{size.width, size.height};
-        draw_index += rec.draw_rectangle(world_transform, this->anchor, draw_index, {255, 255, 0});
+        draw_index += rec.draw_rectangle(world_transform, this->anchor, draw_index, {255, 0, 255});
     }
     Libs_Wrapper::draw_image(image_path, {world_transform, anchor, draw_index, {255, 255, 255}});
     draw_index++;

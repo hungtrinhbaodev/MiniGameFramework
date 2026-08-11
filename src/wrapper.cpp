@@ -464,7 +464,7 @@ namespace Libs_Wrapper {
         }
 
         if (IsKeyPressed(KEY_K)) {
-            if (!is_debug) {
+            if (is_debug) {
                 for (auto& trace : trace_commands) {
                     std::cout << trace;
                 }
