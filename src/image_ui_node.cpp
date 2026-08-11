@@ -113,24 +113,29 @@ void Image_UI_Node::set_enable_force_renderer_color(bool enable_force_renderer_c
     this->enable_force_renderer_color = enable_force_renderer_color;
 }
 
+void Image_UI_Node::draw_without_nine_scale(Custom::Transform& world_transform, int& draw_index) {
+    Custom::Size size = this->get_content_size();
+    if (this->enable_boundary || Libs_Wrapper::is_debug_mode()) {
+        Custom::Rectangle rec = {size.width, size.height};
+        Custom::Color color = {100, 255, 100};
+        draw_index += rec.draw_rectangle(world_transform, {0.f, 0.f}, draw_index, color);
+    }
+    glm::vec2 scale_renderer{this->renderer_size.width / size.width, this->renderer_size.height / size.height};
+    world_transform.scale *= scale_renderer;
+    Libs_Wrapper::draw_image(
+        this->get_image(),
+        {world_transform, this->anchor, draw_index},
+        enable_force_renderer_color,
+        force_renderer_color
+    );
+    world_transform.scale /= scale_renderer;
+    draw_index++;
+}
+
 void Image_UI_Node::draw(Custom::Transform& world_transform, int& draw_index) {
     Custom::Size size = this->get_content_size();
     if (!this->enable_nine_scale) {
-        if (this->enable_boundary || Libs_Wrapper::is_debug_mode()) {
-            Custom::Rectangle rec = {size.width, size.height};
-            Custom::Color color = {100, 255, 100};
-            draw_index += rec.draw_rectangle(world_transform, {0.f, 0.f}, draw_index, color);
-        }
-        glm::vec2 scale_renderer{renderer_size.width / size.width, renderer_size.height / size.height};
-        world_transform.scale *= scale_renderer;
-        Libs_Wrapper::draw_image(
-            this->get_image(),
-            {world_transform, this->anchor, draw_index},
-            enable_force_renderer_color,
-            force_renderer_color
-        );
-        world_transform.scale /= scale_renderer;
-        draw_index++;
+        this->draw_without_nine_scale(world_transform, draw_index);
         return;
     }
     Custom::Rectangle_Area origin_area = {0, 0, size.width, size.height};
@@ -149,6 +154,10 @@ void Image_UI_Node::draw(Custom::Transform& world_transform, int& draw_index) {
     Custom::Rectangle_Area left_top_area = nine_draw_parts[to_index(0, 2)].rect_texture;
     float min_width = left_bottom_area.width + right_bottom_area.width;
     float min_height = left_bottom_area.height + left_top_area.height;
+    if (renderer_size.width < min_width || renderer_size.height < min_height) {
+        this->draw_without_nine_scale(world_transform, draw_index);
+        return;
+    }
     Custom::Size renderer_size = {
         std::max(min_width, this->renderer_size.width), std::max(min_height, this->renderer_size.height)
     };

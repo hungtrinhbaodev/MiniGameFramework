@@ -4,6 +4,7 @@
 #include <label_node.h>
 #include <layer_node.h>
 #include <math_custom.h>
+#include <progression_node.h>
 #include <scene_node.h>
 #include <utils.h>
 #include <wrapper.h>
@@ -22,6 +23,7 @@ Label_Node* label = nullptr;
 Image_UI_Node* ui = nullptr;
 Image_UI_Node* ui_child = nullptr;
 Image_Node* image = nullptr;
+Progression_Node* progression = nullptr;
 
 void start_test_node() {
     scene = new Scene_Node();
@@ -74,8 +76,8 @@ void start_test_node() {
     ui->set_cap_insets(30, 10, 74, 31);
     ui->set_position({400.f, 400.f});
     ui->set_renderer_size({160.f, 40.f});
-    // ui->set_scale({1.5f, 1.2f});
-    // ui->set_rotation(30);
+    ui->set_scale({1.5f, 1.2f});
+    ui->set_rotation(30);
     // ui->do_action(Actions::sequence(Actions::rotate_by(3, 360, Action_Ease::SINE_OUT))->repeat_forever());
 
     ui_child = new Image_UI_Node();
@@ -91,40 +93,27 @@ void start_test_node() {
     image->set_image("res/Png/Ui/AddonBtnyellow.png");
     image->set_position({100.f, 200.f});
 
+    progression =
+        Progression_Node::make("res/Png/Ui/AddonBoxNumber.png", {30, 10, 74, 31}, {200, 40}, {20, 160, 20}, {6, 8});
+    progression->set_position({300, 120});
+    progression->do_action(Actions::sequence(Actions::rotate_by(3, 360, Action_Ease::SINE_OUT))->repeat_forever());
+
     layer->add_child(sub_layer);
     scene->add_child(layer);
     sub_layer->add_child(animation_2);
     layer->add_child(label);
     scene->add_child(ui);
     scene->add_child(image);
+    scene->add_child(progression);
 }
 
 void loop_test_node(float delta_time) {
     if (IsKeyPressed(KEY_A)) {
-        animation->stop_action(5);
-        animation->do_action(
-            Actions::spawn(
-                Actions::move_by(0.2 /*delta_time=*/, {-50.f, 0}, Action_Ease::LINEAR),
-                Actions::sequence(
-                    Actions::scale_to(0.1 /*delta_time=*/, {1.2f, 1.2f}, Action_Ease::LINEAR),
-                    Actions::scale_to(0.1 /*delta_time=*/, {1.f, 1.f}, Action_Ease::LINEAR)
-                ),
-                Actions::sequence(
-                    Actions::fade_to(0.1 /*delta_time=*/, Math::random_int(125, 220), Action_Ease::LINEAR),
-                    Actions::fade_in(0.1 /*delta_time=*/, Action_Ease::LINEAR)
-                )
-            ),
-            5
-        );
+        progression->set_percent(progression->get_percent() - 10);
     } else if (IsKeyPressed(KEY_D)) {
-        animation->stop_action(5);
-        animation->do_action(Actions::move_by(0.2, {50.f, 0}, Action_Ease::LINEAR), 5);
+        progression->set_percent(progression->get_percent() + 10);
     } else if (IsKeyPressed(KEY_S)) {
-        animation->stop_action(5);
-        animation->do_action(Actions::move_by(0.2, {0, -50.f}, Action_Ease::LINEAR), 5);
     } else if (IsKeyPressed(KEY_W)) {
-        animation->stop_action(5);
-        animation->do_action(Actions::move_by(0.2, {0, 50.f}, Action_Ease::LINEAR), 5);
     }
 
     if (IsKeyPressed(KEY_LEFT)) {

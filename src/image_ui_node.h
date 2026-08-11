@@ -26,4 +26,7 @@ private:
     Custom::Rectangle_Area cap_inset_area;
     bool enable_force_renderer_color = false;
     Custom::Color force_renderer_color;
+
+    /**Fallback to draw when can't estimate 9 path feed with user input render size */
+    void draw_without_nine_scale(Custom::Transform& world_transform, int& draw_index);
 };
