@@ -111,7 +111,7 @@ private:
     float delta_progression;
 };
 
-class Actions {
+class Action {
 public:
     static Action_Move* move_to(float duration, glm::vec2 position_to, Action_Ease ease = Action_Ease::LINEAR);
     static Action_Move* move_to(float duration, float x, float y, Action_Ease ease = Action_Ease::LINEAR);

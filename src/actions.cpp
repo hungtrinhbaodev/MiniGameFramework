@@ -188,7 +188,7 @@ bool Action_Progression::is_valid_target(Base_Node* target) {
     return target->get_type() == Node_Type::PROGRESSION;
 }
 
-Action_Move* Actions::move_to(float duration, glm::vec2 position_to, Action_Ease ease) {
+Action_Move* Action::move_to(float duration, glm::vec2 position_to, Action_Ease ease) {
     Action_Move* move = new Action_Move();
     move->set_subtype(Action_Subtype::TO);
     move->set_ease_type(ease);
@@ -197,11 +197,11 @@ Action_Move* Actions::move_to(float duration, glm::vec2 position_to, Action_Ease
     return move;
 }
 
-Action_Move* Actions::move_to(float duration, float x, float y, Action_Ease ease) {
-    return Actions::move_to(duration, {x, y}, ease);
+Action_Move* Action::move_to(float duration, float x, float y, Action_Ease ease) {
+    return Action::move_to(duration, {x, y}, ease);
 }
 
-Action_Move* Actions::move_by(float duration, glm::vec2 position_by, Action_Ease ease) {
+Action_Move* Action::move_by(float duration, glm::vec2 position_by, Action_Ease ease) {
     Action_Move* move = new Action_Move();
     move->set_subtype(Action_Subtype::BY);
     move->set_ease_type(ease);
@@ -210,11 +210,11 @@ Action_Move* Actions::move_by(float duration, glm::vec2 position_by, Action_Ease
     return move;
 }
 
-Action_Move* Actions::move_by(float duration, float x, float y, Action_Ease ease) {
-    return Actions::move_by(duration, {x, y}, ease);
+Action_Move* Action::move_by(float duration, float x, float y, Action_Ease ease) {
+    return Action::move_by(duration, {x, y}, ease);
 }
 
-Action_Scale* Actions::scale_to(float duration, glm::vec2 scale_to, Action_Ease ease) {
+Action_Scale* Action::scale_to(float duration, glm::vec2 scale_to, Action_Ease ease) {
     Action_Scale* scale = new Action_Scale();
     scale->set_subtype(Action_Subtype::TO);
     scale->set_ease_type(ease);
@@ -223,11 +223,11 @@ Action_Scale* Actions::scale_to(float duration, glm::vec2 scale_to, Action_Ease 
     return scale;
 }
 
-Action_Scale* Actions::scale_to(float duration, float x, float y, Action_Ease ease) {
-    return Actions::scale_to(duration, {x, y}, ease);
+Action_Scale* Action::scale_to(float duration, float x, float y, Action_Ease ease) {
+    return Action::scale_to(duration, {x, y}, ease);
 }
 
-Action_Scale* Actions::scale_by(float duration, glm::vec2 scale_by, Action_Ease ease) {
+Action_Scale* Action::scale_by(float duration, glm::vec2 scale_by, Action_Ease ease) {
     Action_Scale* scale = new Action_Scale();
     scale->set_subtype(Action_Subtype::BY);
     scale->set_ease_type(ease);
@@ -236,11 +236,11 @@ Action_Scale* Actions::scale_by(float duration, glm::vec2 scale_by, Action_Ease 
     return scale;
 }
 
-Action_Scale* Actions::scale_by(float duration, float x, float y, Action_Ease ease) {
-    return Actions::scale_by(duration, {x, y}, ease);
+Action_Scale* Action::scale_by(float duration, float x, float y, Action_Ease ease) {
+    return Action::scale_by(duration, {x, y}, ease);
 }
 
-Action_Rotate* Actions::rotate_to(float duration, float rotate_to, Action_Ease ease) {
+Action_Rotate* Action::rotate_to(float duration, float rotate_to, Action_Ease ease) {
     Action_Rotate* rotation = new Action_Rotate();
     rotation->set_subtype(Action_Subtype::TO);
     rotation->set_ease_type(ease);
@@ -249,7 +249,7 @@ Action_Rotate* Actions::rotate_to(float duration, float rotate_to, Action_Ease e
     return rotation;
 }
 
-Action_Rotate* Actions::rotate_by(float duration, float rotate_by, Action_Ease ease) {
+Action_Rotate* Action::rotate_by(float duration, float rotate_by, Action_Ease ease) {
     Action_Rotate* rotation = new Action_Rotate();
     rotation->set_subtype(Action_Subtype::BY);
     rotation->set_ease_type(ease);
@@ -258,7 +258,7 @@ Action_Rotate* Actions::rotate_by(float duration, float rotate_by, Action_Ease e
     return rotation;
 }
 
-Action_Opacity* Actions::fade_to(float duration, unsigned char opacity_to, Action_Ease ease) {
+Action_Opacity* Action::fade_to(float duration, unsigned char opacity_to, Action_Ease ease) {
     Action_Opacity* opacity = new Action_Opacity();
     opacity->set_subtype(Action_Subtype::TO);
     opacity->set_ease_type(ease);
@@ -267,36 +267,36 @@ Action_Opacity* Actions::fade_to(float duration, unsigned char opacity_to, Actio
     return opacity;
 }
 
-Action_Opacity* Actions::fade_in(float duration, Action_Ease ease) {
-    return Actions::fade_to(duration, 255, ease);
+Action_Opacity* Action::fade_in(float duration, Action_Ease ease) {
+    return Action::fade_to(duration, 255, ease);
 }
 
-Action_Opacity* Actions::fade_out(float duration, Action_Ease ease) {
-    return Actions::fade_to(duration, 0, ease);
+Action_Opacity* Action::fade_out(float duration, Action_Ease ease) {
+    return Action::fade_to(duration, 0, ease);
 }
 
-Action_Remove_Self* Actions::remove_self(bool is_cleanup) {
+Action_Remove_Self* Action::remove_self(bool is_cleanup) {
     Action_Remove_Self* remove = new Action_Remove_Self();
     remove->set_cleanup(is_cleanup);
     remove->set_type(Action_Type::ALWAY_HAPPEN);
     return remove;
 }
 
-Action_Visible* Actions::show() {
+Action_Visible* Action::show() {
     Action_Visible* visible = new Action_Visible();
     visible->set_show(true);
     visible->set_type(Action_Type::ALWAY_HAPPEN);
     return visible;
 }
 
-Action_Visible* Actions::hide() {
+Action_Visible* Action::hide() {
     Action_Visible* visible = new Action_Visible();
     visible->set_show(false);
     visible->set_type(Action_Type::ALWAY_HAPPEN);
     return visible;
 }
 
-Action_Progression* Actions::progress_to(float duration, float progression_to, Action_Ease ease) {
+Action_Progression* Action::progress_to(float duration, float progression_to, Action_Ease ease) {
     Action_Progression* progression = new Action_Progression();
     progression->set_subtype(Action_Subtype::TO);
     progression->set_ease_type(ease);
@@ -305,7 +305,7 @@ Action_Progression* Actions::progress_to(float duration, float progression_to, A
     return progression;
 }
 
-Action_Progression* Actions::progress_by(float duration, float progression_by, Action_Ease ease) {
+Action_Progression* Action::progress_by(float duration, float progression_by, Action_Ease ease) {
     Action_Progression* progression = new Action_Progression();
     progression->set_subtype(Action_Subtype::BY);
     progression->set_ease_type(ease);
@@ -314,7 +314,7 @@ Action_Progression* Actions::progress_by(float duration, float progression_by, A
     return progression;
 }
 
-Base_Action* Actions::sequence(std::vector<Base_Action*> actions) {
+Base_Action* Action::sequence(std::vector<Base_Action*> actions) {
     Base_Action* first = nullptr;
     if (actions.size() > 0) {
         first = actions.front();
@@ -327,7 +327,7 @@ Base_Action* Actions::sequence(std::vector<Base_Action*> actions) {
     return first;
 }
 
-Base_Action* Actions::spawn(std::vector<Base_Action*> actions) {
+Base_Action* Action::spawn(std::vector<Base_Action*> actions) {
     Base_Action* first = nullptr;
     if (actions.size() > 0) {
         first = actions.front();

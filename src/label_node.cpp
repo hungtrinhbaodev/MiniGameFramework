@@ -41,7 +41,7 @@ void Label_Node::set_font(std::string font) {
 }
 
 void Label_Node::set_font_size(int size) {
-    this->font_size = font_size;
+    this->font_size = size;
 }
 
 void Label_Node::set_text(std::string text) {

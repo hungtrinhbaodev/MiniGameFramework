@@ -295,7 +295,8 @@ void Base_Node::travel(float delta_time) {
     visit_handle_personal_task();
     // Loop all node to draw into scene
     int start_draw_index = 0;
-    visit_draw(transform, delta_time, start_draw_index);
+    Custom::Transform world_transform = transform;
+    visit_draw(world_transform, delta_time, start_draw_index);
 }
 
 void Base_Node::remove_from_parent(bool is_cleanup) {

@@ -64,11 +64,18 @@ void Touch_System::on_touched(Touch_Detail touch_detail) {
         handled_touches_information.erase(id);
     }
 
+    /** Loop and handle touch by priority */
     for (int i = 0; i < touches.size(); i++) {
         Touch_Component& touch = touches[i];
         int touch_id = touch.get_touch_id();
         if (touch.is_in_touch_area(touch_detail.touch_position)) {
-            handled_touches_information[touch_id] = touch_detail;
+            if (handled_touches_information.find(touch_id) != handled_touches_information.end()) {
+                handled_touches_information[touch_id] = touch_detail;
+            } else {
+                if (touch_detail.type != Touch_Type::END) {
+                    handled_touches_information[touch_id] = touch_detail;
+                }
+            }
             if (touch.is_swallow_touches()) {
                 for (int j = i + 1; j < touches.size(); j++) {
                     Touch_Component& touch = touches[j];

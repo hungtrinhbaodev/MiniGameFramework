@@ -78,7 +78,10 @@ void draw_parts(int i, const Custom::Draw_Attributes attribute, int& draw_index)
 }
 
 Custom::Size Image_UI_Node::get_renderer_size() {
-    return this->renderer_size;
+    if (this->enable_nine_scale) {
+        return this->renderer_size;
+    }
+    return get_content_size();
 }
 
 bool Image_UI_Node::is_enable_nine_scale() {
@@ -91,6 +94,7 @@ Node_Type Image_UI_Node::get_type() {
 
 void Image_UI_Node::set_enable_nine_scale(bool enable_nine_scale) {
     this->enable_nine_scale = enable_nine_scale;
+    this->set_renderer_size(this->get_content_size());
 }
 
 void Image_UI_Node::set_renderer_size(Custom::Size size) {
@@ -122,15 +126,18 @@ void Image_UI_Node::draw_without_nine_scale(Custom::Transform& world_transform, 
     if (this->enable_boundary || Libs_Wrapper::is_debug_mode()) {
         Custom::Rectangle rec = {size.width, size.height};
         Custom::Color color = {255, 0, 255};
-        draw_index += rec.draw_rectangle(world_transform, {0.f, 0.f}, draw_index, color);
+        draw_index += rec.draw_rectangle(world_transform, this->anchor, draw_index, color);
     }
-    glm::vec2 scale_renderer{this->renderer_size.width / size.width, this->renderer_size.height / size.height};
+    glm::vec2 scale_renderer{1, 1};
+    if (this->enable_nine_scale) {
+        scale_renderer = {this->renderer_size.width / size.width, this->renderer_size.height / size.height};
+    }
     world_transform.scale *= scale_renderer;
     Libs_Wrapper::draw_image(
         this->get_image(),
         {world_transform, this->anchor, draw_index},
-        enable_force_renderer_color,
-        force_renderer_color
+        this->enable_force_renderer_color,
+        this->force_renderer_color
     );
     world_transform.scale /= scale_renderer;
     draw_index++;

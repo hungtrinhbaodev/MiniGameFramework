@@ -70,7 +70,7 @@ void Image_Node::handle_personal_task() {
 void Image_Node::update_world_transform_information(Custom::Transform& world_transform, int draw_index) {
     if (touch_info.is_listening) {
         Custom::Size size = get_touch_size();
-        Custom::Rectangle rec{size.width, size.width};
+        Custom::Rectangle rec{size.width, size.height};
         touch_info.touch_area.points = rec.apply(world_transform, this->anchor);
         touch_info.priority = draw_index;
         Touch_System::get()->request_update_touch(touch_component_id, touch_info);

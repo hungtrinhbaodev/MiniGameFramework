@@ -48,8 +48,8 @@ namespace Custom {
         glm::vec2 scale{1.0f, 1.0f};
         float rotation = 0.0f;
         unsigned char opacity = 255;
-        Color color;  // TODO: use later.
-        Flipped flipped;
+        Color color{255, 255, 255};  // TODO: use later.
+        Flipped flipped{false, false};
 
         void forward(const Transform& other, bool is_cascade_opacity, Flipped forward_flipped);
         void inverse(const Transform& other, unsigned char inverse_opacity, Flipped inverse_flipped);
@@ -86,7 +86,7 @@ namespace Custom {
     };
 
     struct Rectangle {
-        Size size;
+        Size size{0, 0};
         Rectangle(float size_x, float size_y);
         std::array<glm::vec2, 4> apply(const Transform& transform, const Anchor_Point& anchor);
         int draw_rectangle(

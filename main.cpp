@@ -1,5 +1,6 @@
 #include <actions.h>
 #include <animation_node.h>
+#include <button_node.h>
 #include <image_ui_node.h>
 #include <label_node.h>
 #include <layer_node.h>
@@ -25,6 +26,7 @@ Image_UI_Node* ui_child = nullptr;
 Image_Node* image = nullptr;
 Image_Node* image2 = nullptr;
 Progression_Node* progression = nullptr;
+Button_Node* btn = nullptr;
 
 void start_test_node() {
     scene = new Scene_Node();
@@ -56,16 +58,16 @@ void start_test_node() {
     sub_layer->set_show_boundary(true);
 
     layer = new Layer_Node{{800.f, 480.f}};
-    layer->set_rotation(10.f);
+    // layer->set_rotation(10.f);
     layer->set_show_boundary(true);
     layer->set_clipping(false);
 
-    label = new Label_Node("Trinh Bao Hung", "res/fonts/KnightWarrior-w16n8.otf", 28);
+    label = new Label_Node("START!", "res/fonts/default.otf", 28);
     label->set_anchor({0.5, 0.5});
     label->set_position({0.f, 200.f});
     label->set_color({220, 50, 100});
     label->set_scale({1.f, 1.f});
-    label->do_action(Actions::sequence(Actions::rotate_by(1, 360, Action_Ease::SINE_OUT))->repeat_forever());
+    label->do_action(Action::sequence(Action::rotate_by(1, 360, Action_Ease::SINE_OUT))->repeat_forever());
 
     ui = new Image_UI_Node();
     ui->set_image("res/Png/Ui/AddonBoxNumber.png");
@@ -75,7 +77,7 @@ void start_test_node() {
     ui->set_renderer_size({160.f, 40.f});
     ui->set_scale({1.5f, 1.2f});
     ui->set_rotation(30);
-    ui->do_action(Actions::sequence(Actions::rotate_by(3, 360, Action_Ease::SINE_OUT))->repeat_forever());
+    ui->do_action(Action::sequence(Action::rotate_by(3, 360, Action_Ease::SINE_OUT))->repeat_forever());
 
     ui_child = new Image_UI_Node();
     ui_child->set_image("res/Png/Ui/AddonBoxNumber.png");
@@ -111,8 +113,20 @@ void start_test_node() {
 
     progression =
         Progression_Node::make("res/Png/Ui/AddonBoxNumber.png", {30, 10, 74, 31}, {200, 40}, {20, 160, 20}, {6, 8});
-    progression->set_position({0.f, 0.f});
-    progression->do_action(Actions::sequence(Actions::rotate_by(3, 360, Action_Ease::SINE_OUT))->repeat_forever());
+    progression->set_position({120.f, 40.f});
+    progression->do_action(Action::sequence(Action::rotate_by(3, 360, Action_Ease::SINE_OUT))->repeat_forever());
+
+    btn = Button_Node::make(
+        "res/Png/Ui/BtnGreen.png",
+        "START!",
+        [](Button_Node* btn) { std::cout << "Hi pressed me 3!" << std::endl; },
+        {180, 70},
+        {30, 20, 280, 82},
+        {20, 20, 20},
+        "res/fonts/default.otf",
+        28
+    );
+    btn->set_position({400.f, 240.f});
 
     layer->add_child(sub_layer);
     sub_layer->add_child(animation_2);
@@ -122,15 +136,16 @@ void start_test_node() {
     sub_layer->add_child(progression);
     scene->add_child(layer);
     scene->add_child(image);
+    scene->add_child(btn);
 }
 
 void loop_test_node(float delta_time) {
     if (IsKeyPressed(KEY_A)) {
         progression->stop_action(5);
-        progression->do_action(Actions::progress_by(0.5, -10, Action_Ease::SINE_IN), 5);
+        progression->do_action(Action::progress_by(0.5, -10, Action_Ease::SINE_IN), 5);
     } else if (IsKeyPressed(KEY_D)) {
         progression->stop_action(5);
-        progression->do_action(Actions::progress_by(0.5, 10, Action_Ease::SINE_OUT), 5);
+        progression->do_action(Action::progress_by(0.5, 10, Action_Ease::SINE_OUT), 5);
     } else if (IsKeyPressed(KEY_S)) {
     } else if (IsKeyPressed(KEY_W)) {
     }
@@ -138,15 +153,15 @@ void loop_test_node(float delta_time) {
     if (IsKeyPressed(KEY_LEFT)) {
         animation_2->stop_action(5);
         animation_2->do_action(
-            Actions::spawn(
-                Actions::move_by(0.2 /*delta_time=*/, {-50.f, 0}, Action_Ease::LINEAR),
-                Actions::sequence(
-                    Actions::scale_to(0.1 /*delta_time=*/, {1.2f, 1.2f}, Action_Ease::LINEAR),
-                    Actions::scale_to(0.1 /*delta_time=*/, {1.f, 1.f}, Action_Ease::LINEAR)
+            Action::spawn(
+                Action::move_by(0.2 /*delta_time=*/, {-50.f, 0}, Action_Ease::LINEAR),
+                Action::sequence(
+                    Action::scale_to(0.1 /*delta_time=*/, {1.2f, 1.2f}, Action_Ease::LINEAR),
+                    Action::scale_to(0.1 /*delta_time=*/, {1.f, 1.f}, Action_Ease::LINEAR)
                 ),
-                Actions::sequence(
-                    Actions::fade_to(0.1 /*delta_time=*/, Math::random_int(125, 220), Action_Ease::LINEAR),
-                    Actions::fade_in(0.1 /*delta_time=*/, Action_Ease::LINEAR)
+                Action::sequence(
+                    Action::fade_to(0.1 /*delta_time=*/, Math::random_int(125, 220), Action_Ease::LINEAR),
+                    Action::fade_in(0.1 /*delta_time=*/, Action_Ease::LINEAR)
                 )
             ),
             5
@@ -154,14 +169,14 @@ void loop_test_node(float delta_time) {
         animation_2->set_flipped_x(true);
     } else if (IsKeyPressed(KEY_RIGHT)) {
         animation_2->stop_action(5);
-        animation_2->do_action(Actions::move_by(0.2, {50.f, 0}, Action_Ease::LINEAR), 5);
+        animation_2->do_action(Action::move_by(0.2, {50.f, 0}, Action_Ease::LINEAR), 5);
         animation_2->set_flipped_x(false);
     } else if (IsKeyPressed(KEY_UP)) {
         animation_2->stop_action(5);
-        animation_2->do_action(Actions::move_by(0.2, {0, 50.f}, Action_Ease::LINEAR), 5);
+        animation_2->do_action(Action::move_by(0.2, {0, 50.f}, Action_Ease::LINEAR), 5);
     } else if (IsKeyPressed(KEY_DOWN)) {
         animation_2->stop_action(5);
-        animation_2->do_action(Actions::move_by(0.2, {0, -50.f}, Action_Ease::LINEAR), 5);
+        animation_2->do_action(Action::move_by(0.2, {0, -50.f}, Action_Ease::LINEAR), 5);
     }
     scene->travel(delta_time);
 }

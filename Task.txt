@@ -19,6 +19,6 @@
 [Done]: Move transfrom and Rectangle into custom geometry.h -> (custom.h).
 [Done]: Using same structure to draw.
 
-[]: Add rect area to check touch. 
-[]: Add button ui.
+[Done]: Add rect area to check touch. 
+[Done]: Add button ui.
 []: Add colision system.
