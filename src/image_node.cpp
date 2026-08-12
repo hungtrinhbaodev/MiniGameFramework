@@ -34,6 +34,49 @@ void Image_Node::set_image(std::string image) {
     this->image_path = image;
 }
 
+void Image_Node::set_touch_enabled(bool touch_enabled) {
+    touch_info.is_listening = touch_enabled;
+    if (touch_enabled) {
+        if (this->touch_component_id == -1) {
+            this->touch_component_id = Touch_System::get()->request_touch_listenner();
+        }
+    }
+    Touch_System::get()->request_update_touch(this->touch_component_id, touch_info);
+}
+
+void Image_Node::set_swallow_touches(bool swallow_touches) {
+    touch_info.swallow_touches = swallow_touches;
+    Touch_System::get()->request_update_touch(this->touch_component_id, touch_info);
+}
+
+void Image_Node::set_touched_caller(std::function<void(glm::vec2, Base_Node*)> caller) {
+    this->caller = caller;
+}
+
+void Image_Node::handle_personal_task() {
+    if (touch_info.is_listening) {
+        Touch_Detail touch_detail = Touch_System::get()->query_touch_information(touch_component_id);
+        switch (touch_detail.type) {
+            case Touch_Type::BEGIN: {
+                if (caller != nullptr) {
+                    caller(touch_detail.touch_position, this);
+                }
+                break;
+            }
+        }
+    }
+}
+
+void Image_Node::update_world_transform_information(Custom::Transform& world_transform, int draw_index) {
+    if (touch_info.is_listening) {
+        Custom::Size size = get_touch_size();
+        Custom::Rectangle rec{size.width, size.width};
+        touch_info.touch_area.points = rec.apply(world_transform, this->anchor);
+        touch_info.priority = draw_index;
+        Touch_System::get()->request_update_touch(touch_component_id, touch_info);
+    }
+}
+
 void Image_Node::draw(Custom::Transform& world_transform, int& draw_index) {
     if (image_path == "")
         return;
@@ -44,4 +87,8 @@ void Image_Node::draw(Custom::Transform& world_transform, int& draw_index) {
     }
     Libs_Wrapper::draw_image(image_path, {world_transform, anchor, draw_index, {255, 255, 255}});
     draw_index++;
+}
+
+Custom::Size Image_Node::get_touch_size() {
+    return get_content_size();
 }

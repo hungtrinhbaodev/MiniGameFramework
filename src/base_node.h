@@ -32,6 +32,7 @@ public:
     bool is_flipped_y();
     Custom::Transform& modify_transform();
     Custom::Transform get_transform();
+    Custom::Transform get_world_transform();
     virtual Node_Type get_type();
 
     std::vector<Base_Node*>& get_children();
@@ -63,15 +64,25 @@ public:
     bool remove_child(Base_Node* child, bool is_cleanup = false);
 
 protected:
+    Custom::Transform world_transform;
     Custom::Transform transform;
     Custom::Anchor_Point anchor;
     Custom::Flipped flipped;
     bool casecade_opacity = false;
-    int z_order;
+    int z_order = 0;
     std::vector<Base_Node*> children;
     Base_Node* parent = nullptr;
+    int draw_index = -1;
 
-    void visit(Custom::Transform& world_transform, float delta_time, int& draw_index);
+    /**
+     * @Note: before draw we need visit all node once to handle task of each node
+     * like handle user inputs (touch, key board), handle some custom logic before draw,...
+     */
+    void visit_handle_personal_task();
+    void visit_draw(Custom::Transform& world_transform, float delta_time, int& draw_index);
+    void set_world_transform_information(Custom::Transform world_transform, int draw_index);
+    virtual void handle_personal_task();
+    virtual void update_world_transform_information(Custom::Transform& world_transform, int draw_index);
     virtual void before_draw_children(Custom::Transform& world_transform, int& draw_index);
     virtual void draw(Custom::Transform& world_transform, int& draw_index);
     virtual void after_draw_children(Custom::Transform& world_transform, int& draw_index);

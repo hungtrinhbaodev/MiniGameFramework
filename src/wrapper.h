@@ -53,6 +53,8 @@ namespace Libs_Wrapper {
 
     Text_Info text_info(std::string text, std::string font_path, int font_size);
 
+    void handle_inputs();
+
     void draw_frame();
 
     void clear_libs();

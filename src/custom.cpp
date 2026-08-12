@@ -105,4 +105,9 @@ namespace Custom {
         return points.size();
     }
 
+    bool Transformed_Rectangle::is_in_area(glm::vec2 point) const {
+        std::vector<glm::vec2> convex(std::begin(points), std::end(points));
+        return Math::is_in_convex(convex, point);
+    }
+
 }  // namespace Custom

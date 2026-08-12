@@ -23,6 +23,7 @@ Label_Node* label = nullptr;
 Image_UI_Node* ui = nullptr;
 Image_UI_Node* ui_child = nullptr;
 Image_Node* image = nullptr;
+Image_Node* image2 = nullptr;
 Progression_Node* progression = nullptr;
 
 void start_test_node() {
@@ -47,22 +48,17 @@ void start_test_node() {
     animation_2->set_position({0.f, 0.f});
     // animation_2->set_scale_x(-1.f);
 
-    layer = new Layer_Node{{800.f, 480.f}};
-    layer->set_rotation(10.f);
-    layer->set_show_boundary(true);
-    layer->set_clipping(true);
-
     Layer_Node* sub_layer = new Layer_Node{{600.f, 320.f}};
-    sub_layer->set_anchor({0.5f, 0.5f});
+    // sub_layer->set_anchor({0.5f, 0.5f});
     sub_layer->set_position({200.f, 120.f});
-    sub_layer->set_rotation(60.f);
+    sub_layer->set_rotation(0.f);
     sub_layer->set_clipping(true);
     sub_layer->set_show_boundary(true);
 
     layer = new Layer_Node{{800.f, 480.f}};
     layer->set_rotation(10.f);
     layer->set_show_boundary(true);
-    layer->set_clipping(true);
+    layer->set_clipping(false);
 
     label = new Label_Node("Trinh Bao Hung", "res/fonts/KnightWarrior-w16n8.otf", 28);
     label->set_anchor({0.5, 0.5});
@@ -79,7 +75,7 @@ void start_test_node() {
     ui->set_renderer_size({160.f, 40.f});
     ui->set_scale({1.5f, 1.2f});
     ui->set_rotation(30);
-    // ui->do_action(Actions::sequence(Actions::rotate_by(3, 360, Action_Ease::SINE_OUT))->repeat_forever());
+    ui->do_action(Actions::sequence(Actions::rotate_by(3, 360, Action_Ease::SINE_OUT))->repeat_forever());
 
     ui_child = new Image_UI_Node();
     ui_child->set_image("res/Png/Ui/AddonBoxNumber.png");
@@ -95,18 +91,37 @@ void start_test_node() {
     image->set_position({100.f, 200.f});
     image->set_anchor({0., 0.});
 
+    image->set_touch_enabled(true);
+    image->set_swallow_touches(true);
+    image->set_touched_caller([](glm::vec2 touch_position, Base_Node* image) {
+        std::cout << "Hi there, pressed me 1: " << touch_position.x << ", " << touch_position.y << std::endl;
+    });
+
+    image2 = new Image_Node();
+    image2->set_image("res/Png/Ui/AddOnSlotBtn.png");
+    image2->set_position({130.f, 205.f});
+    image2->set_anchor({0., 0.});
+    image2->set_rotation(30.f);
+
+    image2->set_touch_enabled(true);
+    image2->set_swallow_touches(true);
+    image2->set_touched_caller([](glm::vec2 touch_position, Base_Node* image) {
+        std::cout << "Hi there, pressed me 2! " << touch_position.x << ", " << touch_position.y << std::endl;
+    });
+
     progression =
         Progression_Node::make("res/Png/Ui/AddonBoxNumber.png", {30, 10, 74, 31}, {200, 40}, {20, 160, 20}, {6, 8});
-    progression->set_position({300, 120});
+    progression->set_position({0.f, 0.f});
     progression->do_action(Actions::sequence(Actions::rotate_by(3, 360, Action_Ease::SINE_OUT))->repeat_forever());
 
     layer->add_child(sub_layer);
-    scene->add_child(layer);
     sub_layer->add_child(animation_2);
     layer->add_child(label);
     scene->add_child(ui);
+    scene->add_child(image2);
+    sub_layer->add_child(progression);
+    scene->add_child(layer);
     scene->add_child(image);
-    scene->add_child(progression);
 }
 
 void loop_test_node(float delta_time) {
@@ -171,6 +186,7 @@ int main(void) {
         float delta_time = (float)(current - start) / 1000;
         start = current;
         loop_test_node(delta_time);
+        Libs_Wrapper::handle_inputs();
         Libs_Wrapper::draw_frame();
     }
 

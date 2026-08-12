@@ -24,6 +24,6 @@ protected:
 
 private:
     bool is_show_boundary = false;
-    bool is_clipping;
+    bool is_clipping = false;
     Custom::Size size;
 };

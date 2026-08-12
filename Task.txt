@@ -6,15 +6,15 @@
 [Done]: Add remove chain action to action been deleted.
 [Done]: Add rotate, opacity, bezier, delay to action.
 [Done]: Make repeat and repeat forever.
-[]: Separate action in multible file make tracking become easier.
-[Done]: Make sequence and spawn with args param when create it.
+[Pending]: Separate action in multible file make tracking become easier.
+[Done]: Make sequenc e and spawn with args param when create it.
 
-[]: Update shader push constain and don't need to end it.
+[Done]: Update shader push constain and don't need to end it.
 [Pending]: Recheck logic flipped add it into base_node.
 [Done]: Add clipping layer node.
 [Done]: Add scale9image node.
 [Done]: Add label node.
-[]: Add progression node (make health bar).
+[Done]: Add progression node (make health bar).
 
 [Done]: Move transfrom and Rectangle into custom geometry.h -> (custom.h).
 [Done]: Using same structure to draw.

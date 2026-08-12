@@ -1,5 +1,6 @@
 #include <layer_node.h>
 #include <math_custom.h>
+#include <touch_system.h>
 #include <utils.h>
 #include <wrapper.h>
 
@@ -168,11 +169,16 @@ namespace Libs_Wrapper {
         }
     };
 
+    /**Draw storages data information */
     std::map<std::string, RayLib_Texture_Info> rl_textures_storage;
-    std::map<std::string, Font> rl_fonts_storages;
+    std::map<std::string, Font> rl_fonts_storage;
     std::priority_queue<RayLib_Draw_Command> rl_queue_commands;
+
+    /**Debug information */
+    bool is_debug = false;
     std::vector<RayLib_Trace_Draw_Command> trace_commands;
 
+    /**Shader support information */
     Shader clipping_shader;
     int clipping_shader_points_location = 0;
     int clipping_shader_point_count_localtion = 0;
@@ -181,7 +187,10 @@ namespace Libs_Wrapper {
     std::vector<Vector2> clipping_points;
     bool enable_force_color_texture = false;
     Custom::Color force_color_texture{};
-    bool is_debug = false;
+
+    /**Event inputs handler information */
+    Touch_Type touch_state = Touch_Type::END;
+    Vector2 current_touched_position;
 
     RayLib_Texture_Info load_raylib_texture(std::string path) {
         path = Utils::get_root_path() + path;
@@ -199,15 +208,15 @@ namespace Libs_Wrapper {
 
     Font load_raylib_font(std::string path) {
         path = Utils::get_root_path() + path;
-        if (rl_fonts_storages.find(path) != rl_fonts_storages.end()) {
-            return rl_fonts_storages[path];
+        if (rl_fonts_storage.find(path) != rl_fonts_storage.end()) {
+            return rl_fonts_storage[path];
         }
 
         Font font = LoadFont(path.data());
         if (!IsFontValid(font)) {
             font = GetFontDefault();
         }
-        rl_fonts_storages[path] = font;
+        rl_fonts_storage[path] = font;
 
         return font;
     }
@@ -283,6 +292,47 @@ namespace Libs_Wrapper {
     void process_end_force_color_to_texture() {
         enable_force_color_texture = false;
         reload_shader();
+    }
+
+    void handle_touch_inputs() {
+        /**Note: handle touch, from now work with just one touch, multi touches handle later */
+        if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+            switch (touch_state) {
+                case Touch_Type::BEGIN: {
+                    touch_state = Touch_Type::MOVING;
+                    break;
+                }
+                case Touch_Type::MOVING: {
+                    touch_state = Touch_Type::MOVING;
+                    break;
+                }
+                case Touch_Type::END: {
+                    touch_state = Touch_Type::BEGIN;
+                    break;
+                }
+                default: {
+                    break;
+                }
+            }
+            current_touched_position = GetMousePosition();
+        } else {
+            switch (touch_state) {
+                case Touch_Type::BEGIN: {
+                    std::cout << "Warning handle touch logic: some state fail please check logic!" << std::endl;
+                    break;
+                }
+                case Touch_Type::MOVING: {
+                    touch_state = Touch_Type::END;
+                    break;
+                }
+                default: {
+                    break;
+                }
+            }
+        }
+        Touch_System::get()->on_touched(
+            {touch_state, {current_touched_position.x, get_screen_height() - current_touched_position.y}}
+        );
     }
 
     void init_libs() {
@@ -363,6 +413,10 @@ namespace Libs_Wrapper {
         rl_queue_commands.push(command);
     }
 
+    void handle_inputs() {
+        handle_touch_inputs();
+    }
+
     void draw_frame() {
         trace_commands.clear();
         BeginDrawing();
@@ -380,7 +434,7 @@ namespace Libs_Wrapper {
             float y = screen_height - transform.position.y;
 
             // Save command to trace and debug when need
-            if (is_debug) {
+            if (is_debug && command.type != RayLib_Draw_Type::LINE) {
                 std::map<std::string, std::string> extra_trace_information;
                 if (command.resource != nullptr) {
                     extra_trace_information = command.resource->get_trace();
@@ -498,7 +552,6 @@ namespace Libs_Wrapper {
                 for (auto& trace : trace_commands) {
                     std::cout << trace;
                 }
-                std::cout << std::endl;
             }
         }
         if (IsKeyPressed(KEY_B)) {

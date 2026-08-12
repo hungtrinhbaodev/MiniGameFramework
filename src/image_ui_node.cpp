@@ -252,3 +252,10 @@ void Image_UI_Node::draw(Custom::Transform& world_transform, int& draw_index) {
         }
     }
 }
+
+Custom::Size Image_UI_Node::get_touch_size() {
+    if (this->enable_nine_scale) {
+        return this->renderer_size;
+    }
+    return this->get_content_size();
+}

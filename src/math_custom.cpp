@@ -30,4 +30,20 @@ namespace Math {
         return {position.x * cos(angle) - position.y * sin(angle), position.x * sin(angle) + position.y * cos(angle)};
     }
 
+    bool right_side_edge(glm::vec2 start_point, glm::vec2 end_point, glm::vec2 check_point) {
+        return ((check_point.x - start_point.x) * (end_point.y - start_point.y) -
+                (check_point.y - start_point.y) * (end_point.x - start_point.x)) > 0;
+    }
+
+    bool is_in_convex(std::vector<glm::vec2> convex, glm::vec2 point) {
+        for (int i = 0; i < convex.size(); i++) {
+            int current = i;
+            int next = (current + 1) % convex.size();
+            if (right_side_edge(convex[current], convex[next], point)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
 }  // namespace Math

@@ -13,7 +13,14 @@ Base_Node::~Base_Node() {
     }
 }
 
-void Base_Node::visit(Custom::Transform& world_transform, float delta_time, int& draw_index) {
+void Base_Node::visit_handle_personal_task() {
+    this->handle_personal_task();
+    for (Base_Node* child : children) {
+        child->handle_personal_task();
+    }
+}
+
+void Base_Node::visit_draw(Custom::Transform& world_transform, float delta_time, int& draw_index) {
     // Update current node
     update(delta_time);
 
@@ -28,6 +35,9 @@ void Base_Node::visit(Custom::Transform& world_transform, float delta_time, int&
         world_transform.forward(transform, this->parent->is_cascade_opacity(), this->flipped);
     }
 
+    // Save one world transform to use latter
+    this->set_world_transform_information(world_transform, draw_index);
+
     // Sort node to draw one by one
     sort_nodes();
 
@@ -38,7 +48,7 @@ void Base_Node::visit(Custom::Transform& world_transform, float delta_time, int&
     // Cascade attributes into its children
     for (Base_Node* child : this->children) {
         if (child->z_order < 0) {
-            child->visit(world_transform, delta_time, draw_index);
+            child->visit_draw(world_transform, delta_time, draw_index);
         }
     }
     if (visible) {
@@ -46,10 +56,11 @@ void Base_Node::visit(Custom::Transform& world_transform, float delta_time, int&
     }
     for (Base_Node* child : this->children) {
         if (child->z_order >= 0) {
-            child->visit(world_transform, delta_time, draw_index);
+            child->visit_draw(world_transform, delta_time, draw_index);
         }
     }
 
+    // End wrapper caller
     this->after_draw_children(world_transform, draw_index);
 
     // Inverse to other visit can use again
@@ -57,6 +68,16 @@ void Base_Node::visit(Custom::Transform& world_transform, float delta_time, int&
         world_transform.inverse(transform, insverse_opacity, this->parent->flipped);
     }
 }
+
+void Base_Node::set_world_transform_information(Custom::Transform world_transform, int draw_index) {
+    this->world_transform = world_transform;
+    this->draw_index = draw_index;
+    this->update_world_transform_information(this->world_transform, draw_index);
+}
+
+void Base_Node::handle_personal_task() {}
+
+void Base_Node::update_world_transform_information(Custom::Transform& world_transform, int draw_index) {}
 
 void Base_Node::before_draw_children(Custom::Transform& world_transform, int& draw_index) {}
 
@@ -178,6 +199,10 @@ Custom::Transform Base_Node::get_transform() {
     return this->transform;
 }
 
+Custom::Transform Base_Node::get_world_transform() {
+    return this->world_transform;
+}
+
 Node_Type Base_Node::get_type() {
     return Node_Type::BASE_NODE;
 }
@@ -266,8 +291,11 @@ void Base_Node::add_child(Base_Node* child) {
 }
 
 void Base_Node::travel(float delta_time) {
+    // Handle personal task of each node before draw
+    visit_handle_personal_task();
+    // Loop all node to draw into scene
     int start_draw_index = 0;
-    visit(transform, delta_time, start_draw_index);
+    visit_draw(transform, delta_time, start_draw_index);
 }
 
 void Base_Node::remove_from_parent(bool is_cleanup) {

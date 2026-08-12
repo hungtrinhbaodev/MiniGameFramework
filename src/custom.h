@@ -98,6 +98,19 @@ namespace Custom {
         );
     };
 
+    struct Transformed_Rectangle {
+        std::array<glm::vec2, 4> points;
+        bool is_in_area(glm::vec2 point) const;
+        friend std::ostream& operator<<(std::ostream& os, const Transformed_Rectangle& rec) {
+            os << "Transformed_Rectangle: " << std::endl;
+            for (int i = 0; i < rec.points.size(); i++) {
+                std::cout << "Point " << i << ": " << "x: " << rec.points[i].x << " y: " << rec.points[i].y << "; ";
+            }
+            os << std::endl;
+            return os;
+        }
+    };
+
     struct Draw_Attributes {
         Transform transform;
         Anchor_Point anchor{0.f, 0.f};
@@ -106,7 +119,8 @@ namespace Custom {
         bool is_use_rect_texture = false;
         Rectangle_Area rect_texture = {0.f, 0.f, 0.f, 0.f};
         friend std::ostream& operator<<(std::ostream& os, const Draw_Attributes& attr) {
-            os << "draw_index: " << attr.draw_index << std::endl
+            os << "Draw_Attributes:" << std::endl
+               << "Draw_index: " << attr.draw_index << std::endl
                << attr.transform << attr.anchor << attr.tint << attr.rect_texture;
             return os;
         }
