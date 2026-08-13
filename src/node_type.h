@@ -8,6 +8,7 @@ enum Node_Type {
     IMAGE,
     LABEL,
     ANIMATION,
-    IMGE_UI,
+    IMAGE_UI,
     PROGRESSION,
+    BUTTON,
 };

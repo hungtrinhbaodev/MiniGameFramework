@@ -44,8 +44,11 @@ Button_Node::Button_Node() {
 
 Button_Node::~Button_Node() {}
 
+Node_Type Button_Node::get_type() {
+    return Node_Type::BUTTON;
+}
+
 void Button_Node::update_label(std::string font, int font_size, Custom::Color color) {
-    std::cout << "Button_Node::update_label " << font_size << std::endl;
     this->inner_label->set_font(font);
     this->inner_label->set_font_size(font_size);
     this->inner_label->set_color(color);

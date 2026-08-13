@@ -201,7 +201,7 @@ int main(void) {
         float delta_time = (float)(current - start) / 1000;
         start = current;
         loop_test_node(delta_time);
-        Libs_Wrapper::handle_inputs();
+        Libs_Wrapper::handle_frame();
         Libs_Wrapper::draw_frame();
     }
 

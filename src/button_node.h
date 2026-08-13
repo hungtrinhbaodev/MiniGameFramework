@@ -17,6 +17,8 @@ public:
     Button_Node();
     ~Button_Node();
 
+    Node_Type get_type() override;
+
     void update_label(std::string font, int font_size, Custom::Color color);
     void set_text(std::string text);
     void on_pressed(std::function<void(Button_Node*)> caller);

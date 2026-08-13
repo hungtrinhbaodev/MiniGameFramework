@@ -23,20 +23,17 @@ Touch_System::Touch_System() {}
 
 Touch_System::~Touch_System() {}
 
-int Touch_System::request_touch_listenner() {
-    Touch_Component touch{};
-    touch.set_touch_id(++current_generated_id);
+Touch_Information Touch_System::request_touch_listenner() {
+    Touch_Information touch{};
+    touch.touch_id = ++current_generated_id;
     this->touches.push_back(touch);
-    return touch.get_touch_id();
+    return touch;
 }
 
-void Touch_System::request_update_touch(int touch_id, Touch_Information update_info) {
-    for (Touch_Component& touch : touches) {
-        if (touch.get_touch_id() == touch_id) {
-            touch.set_priority(update_info.priority);
-            touch.set_touch_area(update_info.touch_area);
-            touch.set_swallow_touches(update_info.swallow_touches);
-            touch.set_active(update_info.is_listening);
+void Touch_System::request_update_touch(Touch_Information update_info) {
+    for (Touch_Information& touch : touches) {
+        if (touch.touch_id == update_info.touch_id) {
+            touch = update_info;
         }
     }
 }
@@ -49,8 +46,8 @@ Touch_Detail Touch_System::query_touch_information(int touch_id) {
 }
 
 void Touch_System::on_touched(Touch_Detail touch_detail) {
-    std::sort(touches.begin(), touches.end(), [](const Touch_Component& a, const Touch_Component& b) {
-        return a.get_priority() > b.get_priority();
+    std::sort(touches.begin(), touches.end(), [](const Touch_Information& a, const Touch_Information& b) {
+        return a.priority > b.priority;
     });
 
     /**Canceled and End touch state just contain in one frame after that we removed it! */
@@ -66,9 +63,9 @@ void Touch_System::on_touched(Touch_Detail touch_detail) {
 
     /** Loop and handle touch by priority */
     for (int i = 0; i < touches.size(); i++) {
-        Touch_Component& touch = touches[i];
-        int touch_id = touch.get_touch_id();
-        if (touch.is_in_touch_area(touch_detail.touch_position)) {
+        Touch_Information& touch = touches[i];
+        int touch_id = touch.touch_id;
+        if (touch.touch_area.is_in_area(touch_detail.touch_position)) {
             if (handled_touches_information.find(touch_id) != handled_touches_information.end()) {
                 handled_touches_information[touch_id] = touch_detail;
             } else {
@@ -76,10 +73,10 @@ void Touch_System::on_touched(Touch_Detail touch_detail) {
                     handled_touches_information[touch_id] = touch_detail;
                 }
             }
-            if (touch.is_swallow_touches()) {
+            if (touch.swallow_touches) {
                 for (int j = i + 1; j < touches.size(); j++) {
-                    Touch_Component& touch = touches[j];
-                    int cancel_id = touch.get_touch_id();
+                    Touch_Information& touch = touches[j];
+                    int cancel_id = touch.touch_id;
                     if (handled_touches_information.find(cancel_id) != handled_touches_information.end()) {
                         handled_touches_information[cancel_id].type = Touch_Type::CANCCELED;
                     }
@@ -90,6 +87,16 @@ void Touch_System::on_touched(Touch_Detail touch_detail) {
             if (handled_touches_information.find(touch_id) != handled_touches_information.end()) {
                 handled_touches_information[touch_id].type = Touch_Type::CANCCELED;
             }
+        }
+    }
+}
+
+void Touch_System::remove_touch_listener(int touch_id) {
+    for (int i = 0; i < touches.size(); i++) {
+        if (touches[i].touch_id == touch_id) {
+            touches[i] = touches.back();
+            touches.pop_back();
+            i--;
         }
     }
 }

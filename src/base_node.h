@@ -11,6 +11,8 @@ public:
     Base_Node();
     ~Base_Node();
 
+    /**Get type of node to cast when needed */
+    virtual Node_Type get_type();
     float get_x();
     float get_y();
     float get_scale_x();
@@ -33,8 +35,6 @@ public:
     Custom::Transform& modify_transform();
     Custom::Transform get_transform();
     Custom::Transform get_world_transform();
-    virtual Node_Type get_type();
-
     std::vector<Base_Node*>& get_children();
     Base_Node* get_child_by_tag(int tag);
     Base_Node* get_child_by_name(std::string name);
@@ -55,13 +55,15 @@ public:
     void set_cascade_opacity(bool cascade);
     void set_flipped_x(bool flipped_x);
     void set_flipped_y(bool flipped_y);
-
     void set_tag(int tag);
     void set_name(std::string name);
+
     void add_child(Base_Node* child);
-    void travel(float delta_time);
+
     void remove_from_parent(bool is_cleanup = true);
     bool remove_child(Base_Node* child, bool is_cleanup = false);
+
+    void travel(float delta_time);
 
 protected:
     Custom::Transform world_transform;
@@ -80,13 +82,13 @@ protected:
      */
     void visit_handle_personal_task();
     void visit_draw(Custom::Transform& world_transform, float delta_time, int& draw_index);
-    void set_world_transform_information(Custom::Transform world_transform, int draw_index);
+    virtual void set_world_transform_information(Custom::Transform world_transform, int draw_index);
     virtual void handle_personal_task();
+    virtual void update(float delta_time);
     virtual void update_world_transform_information(Custom::Transform& world_transform, int draw_index);
     virtual void before_draw_children(Custom::Transform& world_transform, int& draw_index);
     virtual void draw(Custom::Transform& world_transform, int& draw_index);
     virtual void after_draw_children(Custom::Transform& world_transform, int& draw_index);
-    virtual void update(float delta_time);
 
     // Call when node attach from parent
     virtual void enter();

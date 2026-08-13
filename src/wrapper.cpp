@@ -413,7 +413,7 @@ namespace Libs_Wrapper {
         rl_queue_commands.push(command);
     }
 
-    void handle_inputs() {
+    void handle_frame() {
         handle_touch_inputs();
     }
 

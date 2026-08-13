@@ -1,5 +1,6 @@
 #pragma once
-#include <touch_component.h>
+
+#include <custom.h>
 
 #include <glm/glm.hpp>
 #include <map>
@@ -13,6 +14,7 @@ struct Touch_Detail {
 };
 
 struct Touch_Information {
+    int touch_id;
     int priority;
     Custom::Transformed_Rectangle touch_area;
     bool swallow_touches;
@@ -30,12 +32,14 @@ public:
     Touch_System();
     ~Touch_System();
 
-    int request_touch_listenner();
-    void request_update_touch(int touch_id, Touch_Information update_info);
+    Touch_Information request_touch_listenner();
     Touch_Detail query_touch_information(int touch_id);
+
+    void request_update_touch(Touch_Information update_info);
     void on_touched(Touch_Detail touch_detail);
+    void remove_touch_listener(int touch_id);
 
 private:
-    std::vector<Touch_Component> touches;
+    std::vector<Touch_Information> touches;
     std::map<int, Touch_Detail> handled_touches_information;
 };

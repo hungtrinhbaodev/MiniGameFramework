@@ -9,6 +9,23 @@ Node::~Node() {
     for (Base_Action* action : actions) {
         delete (action);
     }
+    for (Base_Component* component : components) {
+        component->exit();
+        delete (component);
+    }
+}
+
+Base_Component* Node::get_component_by_name(std::string name) {
+    for (int i = 0; i < components.size(); i++) {
+        if (components[i]->get_name() == name) {
+            return components[i];
+        }
+    }
+    return nullptr;
+}
+
+void Node::add_component(Base_Component* component) {
+    this->components.push_back(component);
 }
 
 void Node::do_action(Base_Action* action, int tag) {
@@ -19,6 +36,23 @@ void Node::do_action(Base_Action* action, int tag) {
     action->assign_target_to_all_chain(this);
     action->set_target(this);
     actions.push_back(action);
+}
+
+void Node::remove_component(Base_Component* component) {
+    for (int i = 0; i < components.size(); i++) {
+        if (components[i] == component) {
+            components[i]->set_removed(true);
+            break;
+        }
+    }
+}
+
+void Node::remove_component(std::string component_name) {
+    for (int i = 0; i < components.size(); i++) {
+        if (components[i]->get_name() == component_name) {
+            components[i]->set_removed(true);
+        }
+    }
 }
 
 void Node::stop_action(int tag) {
@@ -49,6 +83,41 @@ Node_Type Node::get_type() {
 void Node::attach() {}
 
 void Node::detach() {}
+
+void Node::handle_personal_task() {
+    Base_Node::handle_personal_task();
+
+    /**We handle logic of all components of node here */
+    /**First: remove the component mark removed */
+    for (int i = 0; i < components.size(); i++) {
+        if (components[i]->is_removed()) {
+            components[i]->exit();
+            components[i] = components.back();
+            components.pop_back();
+            i--;
+        }
+    }
+    /**Second: handle it's task logic*/
+    for (int i = 0; i < components.size(); i++) {
+        if (components[i]->is_active() && components[i]->has_target()) {
+            components[i]->handle_task();
+        }
+    }
+}
+
+void Node::set_world_transform_information(Custom::Transform world_transform, int draw_index) {
+    Base_Node::set_world_transform_information(world_transform, draw_index);
+
+    /**Assign target to component and invoke enter to start loop */
+    for (int i = 0; i < components.size(); i++) {
+        if (!components[i]->has_target()) {
+            components[i]->assign_target(this);
+            components[i]->enter();
+        } else {
+            components[i]->update_information();
+        }
+    }
+}
 
 void Node::draw(Custom::Transform& world_transform, int& draw_index) {
     // Draw nothing because I am a node

@@ -53,7 +53,8 @@ namespace Libs_Wrapper {
 
     Text_Info text_info(std::string text, std::string font_path, int font_size);
 
-    void handle_inputs();
+    /**Notes: here is all input will handle and outside system like touch, collision, update it logic */
+    void handle_frame();
 
     void draw_frame();
 

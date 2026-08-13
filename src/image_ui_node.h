@@ -19,7 +19,6 @@ public:
 
 protected:
     void draw(Custom::Transform& world_transform, int& draw_index) override;
-    Custom::Size get_touch_size() override;
 
 private:
     bool enable_boundary = false;

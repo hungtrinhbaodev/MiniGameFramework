@@ -89,7 +89,7 @@ bool Image_UI_Node::is_enable_nine_scale() {
 }
 
 Node_Type Image_UI_Node::get_type() {
-    return Node_Type::IMGE_UI;
+    return Node_Type::IMAGE_UI;
 }
 
 void Image_UI_Node::set_enable_nine_scale(bool enable_nine_scale) {
@@ -258,11 +258,4 @@ void Image_UI_Node::draw(Custom::Transform& world_transform, int& draw_index) {
             draw_parts(i, attribute, draw_index);
         }
     }
-}
-
-Custom::Size Image_UI_Node::get_touch_size() {
-    if (this->enable_nine_scale) {
-        return this->renderer_size;
-    }
-    return this->get_content_size();
 }

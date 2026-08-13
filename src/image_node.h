@@ -14,9 +14,11 @@ public:
     std::string get_image();
     Custom::Size get_content_size();
     Node_Type get_type() override;
+    std::function<void(glm::vec2, Base_Node*)> get_touch_caller();
+    bool is_enable_touched();
+    bool is_swallow_touches();
 
     void set_image(std::string image_path);
-
     /**Handle touch to Image */
     void set_touch_enabled(bool touch_enabled);
     void set_swallow_touches(bool swallow_touches);
@@ -28,18 +30,13 @@ public:
     void set_touched_caller(std::function<void(glm::vec2, Base_Node*)> caller);
 
 protected:
-    void handle_personal_task() override;
-    void update_world_transform_information(Custom::Transform& world_transform, int draw_index) override;
     void draw(Custom::Transform& world_transform, int& draw_index) override;
-
-    /**Handle touch to Image */
-    virtual Custom::Size get_touch_size();
 
 private:
     std::string image_path = "";
 
     /**Handle touches */
-    int touch_component_id = -1;
-    Touch_Information touch_info;
-    std::function<void(glm::vec2, Base_Node*)> caller = nullptr;
+    bool touch_enabled = false;
+    bool swallow_touches = false;
+    std::function<void(glm::vec2, Base_Node*)> touch_caller = nullptr;
 };

@@ -1,45 +1,100 @@
+#include <image_ui_node.h>
 #include <touch_component.h>
+
+#include <stdexcept>
 
 Touch_Component::Touch_Component() {}
 
 Touch_Component::~Touch_Component() {}
 
-bool Touch_Component::is_swallow_touches() const {
-    return this->swallow_touches;
+Touch_Information& Touch_Component::modify_infomation() {
+    return this->touch_information;
 }
 
-bool Touch_Component::is_in_touch_area(glm::vec2 point) const {
-    return this->touch_area.is_in_area(point);
+void Touch_Component::enter() {
+    this->touch_information = Touch_System::get()->request_touch_listenner();
 }
 
-bool Touch_Component::is_active() const {
-    return this->active;
+void Touch_Component::exit() {
+    Touch_System::get()->remove_touch_listener(this->touch_information.touch_id);
 }
 
-int Touch_Component::get_touch_id() const {
-    return this->touch_id;
+void Touch_Component::update_information() {
+    Custom::Size size_target{0, 0};
+    Node_Type type = this->target->get_type();
+    bool swallow_touches = false;
+    bool is_active = false;
+    switch (type) {
+        case Node_Type::PROGRESSION:
+        case Node_Type::BUTTON:
+        case Node_Type::IMAGE_UI: {
+            Image_UI_Node* image_ui = reinterpret_cast<Image_UI_Node*>(this->target);
+            size_target = image_ui->get_renderer_size();
+            swallow_touches = image_ui->is_swallow_touches();
+            is_active = image_ui->is_enable_touched();
+            break;
+        }
+        case Node_Type::ANIMATION:
+        case Node_Type::IMAGE: {
+            Image_Node* image = reinterpret_cast<Image_Node*>(this->target);
+            size_target = image->get_content_size();
+            swallow_touches = image->is_swallow_touches();
+            is_active = image->is_enable_touched();
+            break;
+        }
+        default: {
+            throw std::runtime_error(
+                std::string("Touch error warnning: Unsuported type of Node ") + std::to_string(type) + "!"
+            );
+            break;
+        }
+    }
+    this->set_active(is_active);
+    if (is_active) {
+        Custom::Transform world_transform = target->get_world_transform();
+        Custom::Anchor_Point anchor = target->get_anchor();
+        int priority = 0;
+        this->touch_information = {
+            this->touch_information.touch_id,
+            0,
+            Custom::Transformed_Rectangle{
+                Custom::Rectangle{size_target.width, size_target.height}.apply(world_transform, anchor)
+            },
+            swallow_touches,
+            is_active
+        };
+        Touch_System::get()->request_update_touch(this->touch_information);
+    }
 }
 
-int Touch_Component::get_priority() const {
-    return this->priority;
-}
-
-void Touch_Component::set_touch_id(int touch_id) {
-    this->touch_id = touch_id;
-}
-
-void Touch_Component::set_touch_area(Custom::Transformed_Rectangle touch_area) {
-    this->touch_area = touch_area;
-}
-
-void Touch_Component::set_priority(int priority) {
-    this->priority = priority;
-}
-
-void Touch_Component::set_swallow_touches(bool swallow_touches) {
-    this->swallow_touches = swallow_touches;
-}
-
-void Touch_Component::set_active(bool active) {
-    this->active = active;
+void Touch_Component::handle_task() {
+    if (this->target != nullptr) {
+        Touch_Detail touch_detail = Touch_System::get()->query_touch_information(this->touch_information.touch_id);
+        switch (touch_detail.type) {
+            case Touch_Type::END: {
+                Node_Type type = this->target->get_type();
+                switch (type) {
+                    case Node_Type::PROGRESSION:
+                    case Node_Type::BUTTON:
+                    case Node_Type::IMAGE_UI:
+                    case Node_Type::ANIMATION:
+                    case Node_Type::IMAGE: {
+                        Image_Node* image = reinterpret_cast<Image_Node*>(this->target);
+                        auto caller = image->get_touch_caller();
+                        if (caller != nullptr) {
+                            caller(touch_detail.touch_position, image);
+                        }
+                        break;
+                    }
+                    default: {
+                        throw std::runtime_error(
+                            std::string("Touch component error: Unsuported type of Node ") + std::to_string(type) + "!"
+                        );
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+    }
 }
