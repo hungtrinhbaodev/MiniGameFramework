@@ -151,7 +151,7 @@ namespace Custom {
 
     float Transformed_Rectangle::distance_from(const Transformed_Rectangle& other) const {
         std::vector<glm::vec2> my_convex(std::begin(points), std::end(points));
-        std::vector<glm::vec2> other_convex(std::begin(points), std::end(points));
+        std::vector<glm::vec2> other_convex(std::begin(other.points), std::end(other.points));
         glm::vec2 my_center = Math::get_convex_center(my_convex);
         glm::vec2 other_center = Math::get_convex_center(other_convex);
         return glm::distance(my_center, other_center);

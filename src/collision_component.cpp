@@ -60,7 +60,7 @@ void Collision_Component::set_track_layer(int track_layer) {
     this->track_layer = track_layer;
 }
 
-void Collision_Component::set_delta_position(glm::vec2 position) {
+void Collision_Component::set_delta_position(glm::vec2 delta_position) {
     this->delta_position = delta_position;
 }
 

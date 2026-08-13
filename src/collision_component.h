@@ -26,7 +26,7 @@ public:
     void set_tag(int tag);
     void set_owner_data(void* owner_data);
     void set_box_size(Custom::Size size);
-    void set_delta_position(glm::vec2 position);
+    void set_delta_position(glm::vec2 delta_position);
     void set_track_layer(int track_layer);
     void set_collision_handler(std::function<void(Base_Node* target, std::vector<Collision_Information>)> handler);
 
