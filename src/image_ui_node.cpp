@@ -145,7 +145,6 @@ void Image_UI_Node::draw_without_nine_scale(Custom::Transform& world_transform, 
 }
 
 void Image_UI_Node::draw(Custom::Transform& world_transform, int& draw_index) {
-    Node::draw(world_transform, draw_index);
     Custom::Size size = this->get_content_size();
     if (!this->enable_nine_scale) {
         this->draw_without_nine_scale(world_transform, draw_index);
@@ -171,6 +170,7 @@ void Image_UI_Node::draw(Custom::Transform& world_transform, int& draw_index) {
         this->draw_without_nine_scale(world_transform, draw_index);
         return;
     }
+    Node::draw(world_transform, draw_index);
     Custom::Size renderer_size = {
         std::max(min_width, this->renderer_size.width), std::max(min_height, this->renderer_size.height)
     };
