@@ -146,6 +146,11 @@ namespace Custom {
                 return true;
             }
         }
+        for (int i = 0; i < points.size(); i++) {
+            if (other.is_in_area(points[i])) {
+                return true;
+            }
+        }
         return false;
     }
 
