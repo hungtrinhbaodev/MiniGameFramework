@@ -69,13 +69,14 @@ void Image_Node::set_touched_caller(std::function<void(glm::vec2, Base_Node*)> c
 }
 
 void Image_Node::draw(Custom::Transform& world_transform, int& draw_index) {
+    Node::draw(world_transform, draw_index);
     if (image_path == "")
         return;
     if (Libs_Wrapper::is_debug_mode()) {
         Custom::Size size = get_content_size();
         Custom::Rectangle rec{size.width, size.height};
-        draw_index += rec.draw_rectangle(world_transform, this->anchor, draw_index, {255, 0, 255});
+        draw_index += rec.draw_border_rectangle(world_transform, this->anchor, draw_index, {255, 0, 255});
     }
-    Libs_Wrapper::draw_image(image_path, {world_transform, anchor, draw_index, {255, 255, 255}});
+    Libs_Wrapper::draw_image(image_path, {world_transform, this->anchor, draw_index, {255, 255, 255}});
     draw_index++;
 }

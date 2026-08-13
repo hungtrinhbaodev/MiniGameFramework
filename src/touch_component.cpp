@@ -1,5 +1,6 @@
 #include <image_ui_node.h>
 #include <touch_component.h>
+#include <wrapper.h>
 
 #include <stdexcept>
 
@@ -17,6 +18,36 @@ void Touch_Component::enter() {
 
 void Touch_Component::exit() {
     Touch_System::get()->remove_touch_listener(this->touch_information.touch_id);
+}
+
+void Touch_Component::draw(int& draw_index) {
+    if (!Libs_Wrapper::is_debug_mode())
+        return;
+    Custom::Size size;
+    Node_Type type = this->target->get_type();
+    switch (type) {
+        case Node_Type::PROGRESSION:
+        case Node_Type::BUTTON:
+        case Node_Type::IMAGE_UI: {
+            Image_UI_Node* image_ui = reinterpret_cast<Image_UI_Node*>(this->target);
+            size = image_ui->get_renderer_size();
+            break;
+        }
+        case Node_Type::ANIMATION:
+        case Node_Type::IMAGE: {
+            Image_Node* image = reinterpret_cast<Image_Node*>(this->target);
+            size = image->get_content_size();
+            break;
+        }
+        default: {
+            throw std::runtime_error(
+                std::string("Touch component error: Unsuported type of Node ") + std::to_string(type) + "!"
+            );
+            break;
+        }
+    }
+    Custom::Rectangle rec{size.width, size.height};
+    draw_index += rec.draw_rectangle(target->get_world_transform(), target->get_anchor(), draw_index, {0, 0, 120}, 120);
 }
 
 void Touch_Component::update_information() {
@@ -44,7 +75,7 @@ void Touch_Component::update_information() {
         }
         default: {
             throw std::runtime_error(
-                std::string("Touch error warnning: Unsuported type of Node ") + std::to_string(type) + "!"
+                std::string("Touch component error: Unsuported type of Node ") + std::to_string(type) + "!"
             );
             break;
         }
@@ -53,10 +84,10 @@ void Touch_Component::update_information() {
     if (is_active) {
         Custom::Transform world_transform = target->get_world_transform();
         Custom::Anchor_Point anchor = target->get_anchor();
-        int priority = 0;
+        int priority = target->get_draw_index();
         this->touch_information = {
             this->touch_information.touch_id,
-            0,
+            priority,
             Custom::Transformed_Rectangle{
                 Custom::Rectangle{size_target.width, size_target.height}.apply(world_transform, anchor)
             },

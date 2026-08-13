@@ -42,4 +42,6 @@ void Base_Component::exit() {}
 
 void Base_Component::handle_task() {}
 
+void Base_Component::draw(int& draw_index) {}
+
 void Base_Component::update_information() {}

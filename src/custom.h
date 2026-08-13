@@ -89,18 +89,29 @@ namespace Custom {
         Size size{0, 0};
         Rectangle(float size_x, float size_y);
         std::array<glm::vec2, 4> apply(const Transform& transform, const Anchor_Point& anchor);
+        int draw_border_rectangle(
+            const Transform& transform,
+            const Anchor_Point& anchor,
+            int base_draw_index = 0,
+            Color color = {255, 0, 0},
+            float thin = 1.5f,
+            bool is_dashed = false
+        );
         int draw_rectangle(
             const Transform& transform,
             const Anchor_Point& anchor,
             int base_draw_index = 0,
             Color color = {255, 0, 0},
-            float thin = 3.f
+            unsigned char opacity = 255
         );
     };
 
     struct Transformed_Rectangle {
         std::array<glm::vec2, 4> points;
         bool is_in_area(glm::vec2 point) const;
+        bool is_collision_with(const Transformed_Rectangle& other) const;
+        float distance_from(const Transformed_Rectangle& other) const;
+        std::string to_string();
         friend std::ostream& operator<<(std::ostream& os, const Transformed_Rectangle& rec) {
             os << "Transformed_Rectangle: " << std::endl;
             for (int i = 0; i < rec.points.size(); i++) {

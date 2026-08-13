@@ -1,5 +1,6 @@
 #include <custom.h>
 #include <math_custom.h>
+#include <utils.h>
 #include <wrapper.h>
 
 namespace Custom {
@@ -91,23 +92,69 @@ namespace Custom {
         return {{bottom_left, bottom_right, top_right, top_left}};
     }
 
-    int Rectangle::draw_rectangle(
-        const Transform& transform, const Anchor_Point& anchor, int base_draw_index, Color color, float thin
+    int Rectangle::draw_border_rectangle(
+        const Transform& transform,
+        const Anchor_Point& anchor,
+        int base_draw_index,
+        Color color,
+        float thin,
+        bool is_dashed
     ) {
         std::array<glm::vec2, 4> points = apply(transform, anchor);
         for (int i = 0; i < points.size(); i++) {
             int current = i;
             int next = (current + 1) % points.size();
             Libs_Wrapper::draw_line(
-                points[current].x, points[current].y, points[next].x, points[next].y, base_draw_index++, color, thin
+                points[current].x,
+                points[current].y,
+                points[next].x,
+                points[next].y,
+                base_draw_index++,
+                color,
+                thin,
+                is_dashed
             );
         }
         return points.size();
     }
 
+    int Rectangle::draw_rectangle(
+        const Transform& transform, const Anchor_Point& anchor, int base_draw_index, Color color, unsigned char opacity
+    ) {
+        Custom::Transform copied_transform = transform;
+        copied_transform.opacity = opacity;
+        Libs_Wrapper::draw_rectangle(size.width, size.height, {copied_transform, anchor, base_draw_index, color});
+        return 1;
+    }
+
+    std::string Transformed_Rectangle::to_string() {
+        std::string str;
+        for (int i = 0; i < points.size(); i++) {
+            str += "point " + std::to_string(i) + ": " + Utils::vec2_to_string(points[i]) + " ";
+        }
+        return str;
+    }
+
     bool Transformed_Rectangle::is_in_area(glm::vec2 point) const {
         std::vector<glm::vec2> convex(std::begin(points), std::end(points));
         return Math::is_in_convex(convex, point);
+    }
+
+    bool Transformed_Rectangle::is_collision_with(const Transformed_Rectangle& other) const {
+        for (int i = 0; i < other.points.size(); i++) {
+            if (is_in_area(other.points[i])) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    float Transformed_Rectangle::distance_from(const Transformed_Rectangle& other) const {
+        std::vector<glm::vec2> my_convex(std::begin(points), std::end(points));
+        std::vector<glm::vec2> other_convex(std::begin(points), std::end(points));
+        glm::vec2 my_center = Math::get_convex_center(my_convex);
+        glm::vec2 other_center = Math::get_convex_center(other_convex);
+        return glm::distance(my_center, other_center);
     }
 
 }  // namespace Custom

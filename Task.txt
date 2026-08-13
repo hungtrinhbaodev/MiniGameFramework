@@ -21,4 +21,4 @@
 
 [Done]: Add rect area to check touch. 
 [Done]: Add button ui.
-[]: Add colision system.
+[Done]: Add colision system.

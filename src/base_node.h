@@ -32,6 +32,7 @@ public:
     Base_Node* get_parent();
     bool is_flipped_x();
     bool is_flipped_y();
+    int get_draw_index();
     Custom::Transform& modify_transform();
     Custom::Transform get_transform();
     Custom::Transform get_world_transform();
@@ -78,7 +79,7 @@ protected:
 
     /**
      * @Note: before draw we need visit all node once to handle task of each node
-     * like handle user inputs (touch, key board), handle some custom logic before draw,...
+     * like handle user inputs (touch, key board) and some custom logic before draw,...
      */
     void visit_handle_personal_task();
     void visit_draw(Custom::Transform& world_transform, float delta_time, int& draw_index);

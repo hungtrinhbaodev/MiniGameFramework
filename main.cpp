@@ -1,6 +1,7 @@
 #include <actions.h>
 #include <animation_node.h>
 #include <button_node.h>
+#include <collision_component.h>
 #include <image_ui_node.h>
 #include <label_node.h>
 #include <layer_node.h>
@@ -28,6 +29,8 @@ Image_Node* image2 = nullptr;
 Progression_Node* progression = nullptr;
 Button_Node* btn = nullptr;
 
+int COLISION_ANIMATION_TAG = 57;
+
 void start_test_node() {
     scene = new Scene_Node();
     scene->set_position({0.0, 0.0});
@@ -38,17 +41,40 @@ void start_test_node() {
     animation->play_animation("IDLE", 0.8f);
     animation->set_y(50.f);
     animation->set_cascade_opacity(false);
-    animation->set_position({0.f, 0.f});
+    animation->set_position({120.f, 200.f});
+    Collision_Component* collison_1 = Collision_Component::make(
+        COLISION_ANIMATION_TAG,
+        {100, 135},
+        0,
+        {0, 0},
+        nullptr,
+        [](Base_Node* animation_1, std::vector<Collision_Information> collisioned) {
+            std::cout << "Some one hit me animation_1: " << collisioned.size() << std::endl;
+        }
+    );
+    animation->add_component(collison_1);
 
     animation_2 = new Animation_Node();
     animation_2->make_animation("IDLE", "res/Png/Characters/C5/Idle/Character5-Idle_", 20, 0.06, ".png");
     animation_2->make_animation("SHOOT", "res/Png/Characters/C5/Shoot/Character5-Shoot_", 10, 0.08, ".png");
     animation_2->play_animation("IDLE", 0.8f);
-    animation_2->set_anchor({0., 0.});
     animation_2->set_y(50.f);
     animation_2->set_cascade_opacity(false);
     animation_2->set_position({0.f, 0.f});
     // animation_2->set_scale_x(-1.f);
+    Collision_Component* collison_2 = Collision_Component::make(
+        COLISION_ANIMATION_TAG,
+        {100, 135},
+        0,
+        {0, 0},
+        nullptr,
+        [](Base_Node* animation_2, std::vector<Collision_Information> collisioned) {
+            std::cout << "Some one hit me animation_2: " << collisioned.size() << std::endl;
+            /** test flow remove */
+            animation_2->remove_from_parent(false);
+        }
+    );
+    animation_2->add_component(collison_2);
 
     Layer_Node* sub_layer = new Layer_Node{{600.f, 320.f}};
     // sub_layer->set_anchor({0.5f, 0.5f});
@@ -129,7 +155,8 @@ void start_test_node() {
     btn->set_position({400.f, 240.f});
 
     layer->add_child(sub_layer);
-    sub_layer->add_child(animation_2);
+    layer->add_child(animation);
+    layer->add_child(animation_2);
     layer->add_child(label);
     scene->add_child(ui);
     scene->add_child(image2);
@@ -141,16 +168,38 @@ void start_test_node() {
 
 void loop_test_node(float delta_time) {
     if (IsKeyPressed(KEY_A)) {
-        progression->stop_action(5);
-        progression->do_action(Action::progress_by(0.5, -10, Action_Ease::SINE_IN), 5);
+        animation->stop_action(5);
+        animation->do_action(
+            Action::spawn(
+                Action::move_by(0.2 /*delta_time=*/, {-50.f, 0}, Action_Ease::LINEAR),
+                Action::sequence(
+                    Action::scale_to(0.1 /*delta_time=*/, {1.2f, 1.2f}, Action_Ease::LINEAR),
+                    Action::scale_to(0.1 /*delta_time=*/, {1.f, 1.f}, Action_Ease::LINEAR)
+                ),
+                Action::sequence(
+                    Action::fade_to(0.1 /*delta_time=*/, Math::random_int(125, 220), Action_Ease::LINEAR),
+                    Action::fade_in(0.1 /*delta_time=*/, Action_Ease::LINEAR)
+                )
+            ),
+            5
+        );
+        animation->set_flipped_x(true);
     } else if (IsKeyPressed(KEY_D)) {
-        progression->stop_action(5);
-        progression->do_action(Action::progress_by(0.5, 10, Action_Ease::SINE_OUT), 5);
+        animation->stop_action(5);
+        animation->do_action(Action::move_by(0.2, {50.f, 0}, Action_Ease::LINEAR), 5);
+        animation->set_flipped_x(false);
     } else if (IsKeyPressed(KEY_S)) {
+        animation->stop_action(5);
+        animation->do_action(Action::move_by(0.2, {0, 50.f}, Action_Ease::LINEAR), 5);
     } else if (IsKeyPressed(KEY_W)) {
+        animation->stop_action(5);
+        animation->do_action(Action::move_by(0.2, {0, -50.f}, Action_Ease::LINEAR), 5);
     }
 
     if (IsKeyPressed(KEY_LEFT)) {
+        if (animation_2->get_parent() == nullptr) {
+            layer->add_child(animation_2);
+        }
         animation_2->stop_action(5);
         animation_2->do_action(
             Action::spawn(
@@ -168,13 +217,22 @@ void loop_test_node(float delta_time) {
         );
         animation_2->set_flipped_x(true);
     } else if (IsKeyPressed(KEY_RIGHT)) {
+        if (animation_2->get_parent() == nullptr) {
+            layer->add_child(animation_2);
+        }
         animation_2->stop_action(5);
         animation_2->do_action(Action::move_by(0.2, {50.f, 0}, Action_Ease::LINEAR), 5);
         animation_2->set_flipped_x(false);
     } else if (IsKeyPressed(KEY_UP)) {
+        if (animation_2->get_parent() == nullptr) {
+            layer->add_child(animation_2);
+        }
         animation_2->stop_action(5);
         animation_2->do_action(Action::move_by(0.2, {0, 50.f}, Action_Ease::LINEAR), 5);
     } else if (IsKeyPressed(KEY_DOWN)) {
+        if (animation_2->get_parent() == nullptr) {
+            layer->add_child(animation_2);
+        }
         animation_2->stop_action(5);
         animation_2->do_action(Action::move_by(0.2, {0, -50.f}, Action_Ease::LINEAR), 5);
     }

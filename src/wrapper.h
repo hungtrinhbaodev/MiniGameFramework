@@ -42,8 +42,17 @@ namespace Libs_Wrapper {
     void draw_text(std::string font_path, std::string text, int font_size, Custom::Draw_Attributes attributes);
 
     void draw_line(
-        float start_x, float start_y, float end_x, float end_y, int draw_index, Custom::Color color, float thin = 1.0f
+        float start_x,
+        float start_y,
+        float end_x,
+        float end_y,
+        int draw_index,
+        Custom::Color color,
+        float thin = 1.0f,
+        bool is_dash = false
     );
+
+    void draw_rectangle(float width, float height, Custom::Draw_Attributes attributes);
 
     void start_draw_clipping(float width, float height, Custom::Draw_Attributes attributes);
 

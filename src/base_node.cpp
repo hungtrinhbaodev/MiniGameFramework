@@ -16,7 +16,7 @@ Base_Node::~Base_Node() {
 void Base_Node::visit_handle_personal_task() {
     this->handle_personal_task();
     for (Base_Node* child : children) {
-        child->handle_personal_task();
+        child->visit_handle_personal_task();
     }
 }
 
@@ -167,6 +167,10 @@ bool Base_Node::is_flipped_x() {
 
 bool Base_Node::is_flipped_y() {
     return this->flipped.y;
+}
+
+int Base_Node::get_draw_index() {
+    return this->draw_index;
 }
 
 std::vector<Base_Node*>& Base_Node::get_children() {

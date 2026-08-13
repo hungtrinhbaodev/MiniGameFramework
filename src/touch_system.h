@@ -24,8 +24,6 @@ struct Touch_Information {
 
 class Touch_System {
 public:
-    static int current_generated_id;
-    static Touch_System* instance;
     static Touch_System* get();
     static void clear();
 
@@ -40,6 +38,9 @@ public:
     void remove_touch_listener(int touch_id);
 
 private:
+    static int current_generated_id;
+    static Touch_System* instance;
+
     std::vector<Touch_Information> touches;
     std::map<int, Touch_Detail> handled_touches_information;
 };

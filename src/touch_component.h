@@ -11,6 +11,7 @@ public:
     Touch_Information& modify_infomation();
     void enter() override;
     void exit() override;
+    void draw(int& draw_index) override;
     void update_information() override;
     void handle_task() override;
 

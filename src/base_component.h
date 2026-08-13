@@ -20,6 +20,8 @@ public:
 
     virtual void enter();
     virtual void exit();
+    /**Using to debug mesh or collision when nessesary */
+    virtual void draw(int& draw_index);
     virtual void update_information();
     virtual void handle_task();
 

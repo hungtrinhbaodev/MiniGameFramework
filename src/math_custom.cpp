@@ -35,7 +35,7 @@ namespace Math {
                 (check_point.y - start_point.y) * (end_point.x - start_point.x)) > 0;
     }
 
-    bool is_in_convex(std::vector<glm::vec2> convex, glm::vec2 point) {
+    bool is_in_convex(const std::vector<glm::vec2>& convex, glm::vec2 point) {
         for (int i = 0; i < convex.size(); i++) {
             int current = i;
             int next = (current + 1) % convex.size();
@@ -44,6 +44,15 @@ namespace Math {
             }
         }
         return true;
+    }
+
+    glm::vec2 get_convex_center(const std::vector<glm::vec2>& convex) {
+        glm::vec2 center{0, 0};
+        for (auto& point : convex) {
+            center += point;
+        }
+        center /= (float)convex.size();
+        return center;
     }
 
 }  // namespace Math

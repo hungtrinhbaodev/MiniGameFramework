@@ -40,6 +40,10 @@ namespace Utils {
 #endif
     }
 
+    std::string vec2_to_string(glm::vec2 vec2) {
+        return std::string("{") + std::to_string(vec2.x) + ", " + std::to_string(vec2.y) + "}";
+    }
+
     std::string get_root_path() {
         if (DEFAULT_PATH == "") {
             DEFAULT_PATH = get_root().string();

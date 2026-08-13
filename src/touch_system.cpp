@@ -99,4 +99,5 @@ void Touch_System::remove_touch_listener(int touch_id) {
             i--;
         }
     }
+    handled_touches_information.erase(touch_id);
 }

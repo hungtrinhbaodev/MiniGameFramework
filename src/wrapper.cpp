@@ -1,4 +1,4 @@
-#include <layer_node.h>
+#include <collision_system.h>
 #include <math_custom.h>
 #include <touch_system.h>
 #include <utils.h>
@@ -11,10 +11,12 @@
 #include <stack>
 #include <stdexcept>
 
+#include "rlgl.h"
+
 int MAX_CLIPPING_POINTS = 64;
 
 namespace Libs_Wrapper {
-    enum RayLib_Draw_Type { IMAGE, TEXT, START_CLIPPING, END_CLIPPING, LINE };
+    enum RayLib_Draw_Type { IMAGE, TEXT, START_CLIPPING, END_CLIPPING, LINE, RECTANGLE };
 
     struct RayLib_Base_Draw_Resouce {
         virtual std::map<std::string, std::string> get_trace() {
@@ -71,14 +73,16 @@ namespace Libs_Wrapper {
         Vector2 end;
         Color color;
         float thin;
+        bool is_dashed;
 
         RayLib_Draw_Line_Resource(
-            float start_x, float start_y, float end_x, float end_y, Custom::Color color, float thin
+            float start_x, float start_y, float end_x, float end_y, Custom::Color color, float thin, bool is_dashed
         ) {
             this->start = {start_x, start_y};
             this->end = {end_x, end_y};
             this->color = {color.r, color.g, color.b, 255};
             this->thin = thin;
+            this->is_dashed = is_dashed;
         }
 
         std::map<std::string, std::string> get_trace() {
@@ -87,6 +91,23 @@ namespace Libs_Wrapper {
             extra_information.insert({std::string("Start y"), std::to_string(start.y)});
             extra_information.insert({std::string("End x"), std::to_string(end.x)});
             extra_information.insert({std::string("End y"), std::to_string(end.y)});
+            return extra_information;
+        }
+    };
+
+    struct RayLib_Draw_Rectangle_Resource : public RayLib_Base_Draw_Resouce {
+        float width;
+        float height;
+
+        RayLib_Draw_Rectangle_Resource(float width, float height) {
+            this->width = width;
+            this->height = height;
+        }
+
+        std::map<std::string, std::string> get_trace() {
+            std::map<std::string, std::string> extra_information;
+            extra_information.insert({std::string("width"), std::to_string(width)});
+            extra_information.insert({std::string("height"), std::to_string(height)});
             return extra_information;
         }
     };
@@ -378,12 +399,28 @@ namespace Libs_Wrapper {
     }
 
     void draw_line(
-        float start_x, float start_y, float end_x, float end_y, int draw_index, Custom::Color color, float thin
+        float start_x,
+        float start_y,
+        float end_x,
+        float end_y,
+        int draw_index,
+        Custom::Color color,
+        float thin,
+        bool is_dash
     ) {
         Custom::Draw_Attributes attr{};
         attr.draw_index = draw_index;
         RayLib_Draw_Command command{
-            RayLib_Draw_Type::LINE, attr, new RayLib_Draw_Line_Resource(start_x, start_y, end_x, end_y, color, thin)
+            RayLib_Draw_Type::LINE,
+            attr,
+            new RayLib_Draw_Line_Resource(start_x, start_y, end_x, end_y, color, thin, is_dash)
+        };
+        rl_queue_commands.push(command);
+    }
+
+    void draw_rectangle(float width, float height, Custom::Draw_Attributes attributes) {
+        RayLib_Draw_Command command{
+            RayLib_Draw_Type::RECTANGLE, attributes, new RayLib_Draw_Rectangle_Resource(width, height)
         };
         rl_queue_commands.push(command);
     }
@@ -415,6 +452,7 @@ namespace Libs_Wrapper {
 
     void handle_frame() {
         handle_touch_inputs();
+        Collision_System::get()->handle_collisions();
     }
 
     void draw_frame() {
@@ -488,6 +526,22 @@ namespace Libs_Wrapper {
                     command.clean();
                     break;
                 }
+                case RayLib_Draw_Type::RECTANGLE: {
+                    RayLib_Draw_Rectangle_Resource* resource =
+                        reinterpret_cast<RayLib_Draw_Rectangle_Resource*>(command.resource);
+                    float width = resource->width * transform.scale.x;
+                    float height = resource->height * transform.scale.y;
+                    Rectangle source{x, y, width, height};
+                    Vector2 origin = {anchor.x * width, (1 - anchor.y) * height};
+                    DrawRectanglePro(
+                        source,
+                        origin,
+                        transform.rotation,
+                        {attributes.tint.r, attributes.tint.g, attributes.tint.b, transform.opacity}
+                    );
+                    command.clean();
+                    break;
+                }
                 case RayLib_Draw_Type::TEXT: {
                     RayLib_Draw_Text_Resource* resource =
                         reinterpret_cast<RayLib_Draw_Text_Resource*>(command.resource);
@@ -515,7 +569,13 @@ namespace Libs_Wrapper {
                         reinterpret_cast<RayLib_Draw_Line_Resource*>(command.resource);
                     resource->start.y = screen_height - resource->start.y;
                     resource->end.y = screen_height - resource->end.y;
-                    DrawLineEx(resource->start, resource->end, resource->thin, resource->color);
+                    if (!resource->is_dashed) {
+                        DrawLineEx(resource->start, resource->end, resource->thin, resource->color);
+                    } else {
+                        rlSetLineWidth(3.0f);
+                        DrawLineDashed(resource->start, resource->end, 5, 5, resource->color);
+                        rlSetLineWidth(1.0f);
+                    }
                     command.clean();
                     break;
                 }
@@ -555,6 +615,8 @@ namespace Libs_Wrapper {
         for (const auto& [_, texture_info] : rl_textures_storage) {
             UnloadTexture(texture_info.data);
         }
+        Collision_System::clear();
+        Touch_System::clear();
     }
 
 }  // namespace Libs_Wrapper

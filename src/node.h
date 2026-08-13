@@ -36,5 +36,11 @@ protected:
 private:
     std::vector<Base_Action*> cleanup_actions;
     std::vector<Base_Component*> components;
+    /**
+     * Note: In some case not is remove from parent but the
+     * components is not remove we keep it in this vector
+     * and if node enter again we add it again!
+     */
+    std::vector<Base_Component*> dettached_components;
     void cleanup_stopped_actions();
 };

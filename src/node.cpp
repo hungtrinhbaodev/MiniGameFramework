@@ -10,7 +10,12 @@ Node::~Node() {
         delete (action);
     }
     for (Base_Component* component : components) {
-        component->exit();
+        if (!component->is_removed()) {
+            component->exit();
+        }
+        delete (component);
+    }
+    for (Base_Component* component : dettached_components) {
         delete (component);
     }
 }
@@ -42,6 +47,7 @@ void Node::remove_component(Base_Component* component) {
     for (int i = 0; i < components.size(); i++) {
         if (components[i] == component) {
             components[i]->set_removed(true);
+            components[i]->exit();
             break;
         }
     }
@@ -51,6 +57,7 @@ void Node::remove_component(std::string component_name) {
     for (int i = 0; i < components.size(); i++) {
         if (components[i]->get_name() == component_name) {
             components[i]->set_removed(true);
+            components[i]->exit();
         }
     }
 }
@@ -85,13 +92,10 @@ void Node::attach() {}
 void Node::detach() {}
 
 void Node::handle_personal_task() {
-    Base_Node::handle_personal_task();
-
     /**We handle logic of all components of node here */
     /**First: remove the component mark removed */
     for (int i = 0; i < components.size(); i++) {
         if (components[i]->is_removed()) {
-            components[i]->exit();
             components[i] = components.back();
             components.pop_back();
             i--;
@@ -110,24 +114,42 @@ void Node::set_world_transform_information(Custom::Transform world_transform, in
 
     /**Assign target to component and invoke enter to start loop */
     for (int i = 0; i < components.size(); i++) {
+        if (components[i]->is_removed()) {
+            continue;
+        }
         if (!components[i]->has_target()) {
             components[i]->assign_target(this);
             components[i]->enter();
-        } else {
-            components[i]->update_information();
         }
+        components[i]->update_information();
     }
 }
 
 void Node::draw(Custom::Transform& world_transform, int& draw_index) {
-    // Draw nothing because I am a node
+    for (Base_Component* component : components) {
+        if (component->is_active() && component->has_target()) {
+            component->draw(draw_index);
+        }
+    }
 }
 
 void Node::enter() {
-    this->detach();
+    /**Add list waitting component into list commponent again when node enter again!*/
+    for (int i = 0; i < dettached_components.size(); i++) {
+        dettached_components[i]->assign_target(nullptr);
+        components.push_back(dettached_components[i]);
+    }
+    dettached_components.clear();
+    this->attach();
 }
 
 void Node::exit() {
+    /**Add list running component into list detach reserve wait to attach again!*/
+    for (int i = 0; i < components.size(); i++) {
+        components[i]->exit();
+        dettached_components.push_back(components[i]);
+    }
+    components.clear();
     this->detach();
     this->stop_all_action();
 }

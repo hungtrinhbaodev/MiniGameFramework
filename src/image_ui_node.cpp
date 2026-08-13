@@ -74,7 +74,7 @@ Custom::Distance_1D find_distance_y(
 void draw_parts(int i, const Custom::Draw_Attributes attribute, int& draw_index) {
     Custom::Rectangle rec = {attribute.rect_texture.width, attribute.rect_texture.height};
     Custom::Color color = {100, 255, 100};
-    draw_index += rec.draw_rectangle(attribute.transform, {0.f, 0.f}, draw_index, color);
+    draw_index += rec.draw_border_rectangle(attribute.transform, {0.f, 0.f}, draw_index, color);
 }
 
 Custom::Size Image_UI_Node::get_renderer_size() {
@@ -126,7 +126,7 @@ void Image_UI_Node::draw_without_nine_scale(Custom::Transform& world_transform, 
     if (this->enable_boundary || Libs_Wrapper::is_debug_mode()) {
         Custom::Rectangle rec = {size.width, size.height};
         Custom::Color color = {255, 0, 255};
-        draw_index += rec.draw_rectangle(world_transform, this->anchor, draw_index, color);
+        draw_index += rec.draw_border_rectangle(world_transform, this->anchor, draw_index, color);
     }
     glm::vec2 scale_renderer{1, 1};
     if (this->enable_nine_scale) {
@@ -141,9 +141,11 @@ void Image_UI_Node::draw_without_nine_scale(Custom::Transform& world_transform, 
     );
     world_transform.scale /= scale_renderer;
     draw_index++;
+    Node::draw(world_transform, draw_index);
 }
 
 void Image_UI_Node::draw(Custom::Transform& world_transform, int& draw_index) {
+    Node::draw(world_transform, draw_index);
     Custom::Size size = this->get_content_size();
     if (!this->enable_nine_scale) {
         this->draw_without_nine_scale(world_transform, draw_index);
