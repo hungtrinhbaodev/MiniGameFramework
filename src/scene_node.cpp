@@ -39,7 +39,12 @@ void Scene_Node::set_initialize(bool initialize) {
     this->initialize = initialize;
 }
 
+void Scene_Node::start() {
+    this->enter();
+}
+
 void Scene_Node::enter() {
+    Node::enter();
     this->schedule(Defined::SCENE_LABEL_FPS_SCHEDULER_KEY, 0.2, [](Base_Node* target, void* global_data) {
         Scene_Node* scene = reinterpret_cast<Scene_Node*>(target);
         scene->label_fps->set_text("frame rate: " + std::to_string((float)scene->fps_rate / 1000));

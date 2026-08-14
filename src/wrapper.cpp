@@ -493,7 +493,11 @@ namespace Libs_Wrapper {
                         reinterpret_cast<RayLib_Draw_Image_Resource*>(command.resource);
                     RayLib_Texture_Info texture_info = load_raylib_texture(resource->image_path);
                     Texture2D texture = texture_info.data;
-
+                    glm::vec2 rect_scale = attributes.rect_scale;
+                    auto need_rounded_pixel = [&transform, &rect_scale]() {
+                        return transform.rotation <= 3 && transform.scale.x / rect_scale.x <= 1.02f &&
+                               transform.scale.y / rect_scale.y <= 1.02f;
+                    };
                     Rectangle source = {0.0f, 0.0f, (float)texture.width, (float)texture.height};
                     if (attributes.is_use_rect_texture) {
                         Custom::Rectangle_Area& rect = attributes.rect_texture;
@@ -503,6 +507,14 @@ namespace Libs_Wrapper {
                             continue;
                         }
                         source = {rect.x, (float)texture.height - (rect.y + rect.height), rect.width, rect.height};
+                        if (need_rounded_pixel()) {
+                            source = {
+                                std::ceil(source.x),
+                                std::ceil(source.y),
+                                std::ceil(source.width),
+                                std::ceil(source.height)
+                            };
+                        }
                     }
 
                     float tex_width = source.width * std::abs(transform.scale.x);
@@ -511,6 +523,13 @@ namespace Libs_Wrapper {
                     source.height *= (transform.flipped.y ? -1.f : 1.f);
                     Rectangle dest = {x, y, tex_width, tex_height};
                     Vector2 origin = {anchor.x * tex_width, (1 - anchor.y) * tex_height};
+                    if (attributes.is_use_rect_texture) {
+                        if (need_rounded_pixel()) {
+                            dest = {
+                                std::ceil(dest.x), std::ceil(dest.y), std::round(dest.width), std::round(dest.height)
+                            };
+                        }
+                    }
                     if (resource->enable_force_color) {
                         process_start_force_color_to_texture(resource->force_color);
                     }

@@ -16,4 +16,10 @@ namespace Math {
 
     glm::vec2 get_convex_center(const std::vector<glm::vec2>& convex);
 
+    glm::vec2 get_bezier_point(glm::vec2 start_point, glm::vec2 middle_point, glm::vec2 end_point, float rate);
+
+    glm::vec2 get_middle_bezier_point(
+        glm::vec2 start_point, glm::vec2 end_point, float high = 200, float delta_to_middle = 0.5f, int sign = 0
+    );
+
 }  // namespace Math

@@ -33,7 +33,9 @@ private:
     /**Use this color instead of inner node when don't have it*/
     Custom::Color progression_color{};
     Image_UI_Node* inner_progression = nullptr;
-    /**TODO: implement later when having resource*/
+    /**
+     * TODO: implement later when having resource
+     * */
     Image_UI_Node* inner_custom_progression = nullptr;
     glm::vec2 inner_padding = {0.f, 0.f};
     glm::vec2 inner_delta_positon = {0.f, 0.f};

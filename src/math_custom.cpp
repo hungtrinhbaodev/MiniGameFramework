@@ -2,6 +2,7 @@
 #include <math.h>
 #include <math_custom.h>
 
+#include <cmath>
 #include <random>
 
 namespace Math {
@@ -53,6 +54,43 @@ namespace Math {
         }
         center /= (float)convex.size();
         return center;
+    }
+
+    glm::vec2 get_bezier_point(glm::vec2 start_point, glm::vec2 middle_point, glm::vec2 end_point, float rate) {
+        return {
+            std::pow(1.f - rate, 2) * start_point.x + 2 * (1.f - rate) * rate * middle_point.x +
+                std::pow(rate, 2) * end_point.x,
+            std::pow(1.f - rate, 2) * start_point.y + 2 * (1.f - rate) * rate * middle_point.y +
+                std::pow(rate, 2) * end_point.y
+        };
+    }
+
+    glm::vec2 get_middle_bezier_point(
+        glm::vec2 start_point, glm::vec2 end_point, float high, float delta_to_middle, int sign
+    ) {
+        glm::vec2 middle_position{0, 0};
+        middle_position.x = start_point.x + (end_point.x - start_point.x) * delta_to_middle;
+        middle_position.y = start_point.y + (end_point.y - start_point.y) * delta_to_middle;
+
+        auto vec_x = (end_point.x - start_point.x);
+        auto vec_y = (end_point.y - end_point.y);
+        auto distance = std::sqrt(vec_x * vec_x + vec_y * vec_y);
+        auto per_norm_vec = glm::vec2(vec_y / distance, -vec_x / distance);
+        auto temp_point = glm::vec2(per_norm_vec.x + start_point.x, per_norm_vec.y + end_point.y);
+        if (!sign) {
+            sign = 1;
+            if (!right_side_edge(start_point, temp_point, end_point))
+                sign = -1;
+
+            if (start_point.x > end_point.x)
+                sign *= -1;
+        }
+        middle_position.x += per_norm_vec.x * high * sign;
+        middle_position.y += per_norm_vec.y * high * sign;
+        if (std::isnan(middle_position.x) || std::isnan(middle_position.y)) {
+            return glm::vec2(start_point.x, start_point.y + high);
+        }
+        return middle_position;
     }
 
 }  // namespace Math

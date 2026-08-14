@@ -12,6 +12,7 @@ public:
     void set_global_data(void* global_data);
     void process_frame(float delta_time);
     void set_initialize(bool initialize);
+    void start();
 
 protected:
     void fix_update(float delta_time, void* global_data) override;

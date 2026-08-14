@@ -1,3 +1,5 @@
+#include <director.h>
+#include <meow_meow/loading_scene.h>
 #include <test/test_scene.h>
 #include <utils.h>
 #include <wrapper.h>
@@ -15,18 +17,21 @@ int main(void) {
     /**
      * TODO: don't know how to make an good entry so just manual do it
      * first by add your scene here, after that find the wait to have
-     * a smooth flow to entry game better!
+     * a smooth flow to entry better!
      * */
-    Director::get()->start(new Test_Scene(), nullptr);
+    Director::get()->start(new Meow_Meow::Loading_Scene(), nullptr);
+    // Director::get()->start(new Test_Scene(), nullptr);
 
     long start = Utils::now();
     while (!Libs_Wrapper::window_should_close(window)) {
         long current = Utils::now();
         float delta_time = (float)(current - start) / 1000;
         start = current;
+        Director::get()->start_frame();
         Libs_Wrapper::handle_frame();
         Director::get()->process_frame(delta_time);
         Libs_Wrapper::draw_frame();
+        Director::get()->end_frame();
     }
 
     Director::get()->end();

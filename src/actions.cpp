@@ -1,5 +1,7 @@
 #include <actions.h>
+#include <math_custom.h>
 #include <progression_node.h>
+#include <utils.h>
 
 #include <iostream>
 
@@ -207,6 +209,38 @@ void Action_Callback::apply(Base_Node* target, float delta_time) {
     }
 }
 
+Action_Bezier::Action_Bezier() {}
+
+Action_Bezier::~Action_Bezier() {}
+
+void Action_Bezier::set_start_point(glm::vec2 start_point) {
+    this->start_point = start_point;
+}
+
+void Action_Bezier::set_middle_point(glm::vec2 middle_point) {
+    this->middle_point = middle_point;
+}
+
+void Action_Bezier::set_end_point(glm::vec2 end_point) {
+    this->end_point = end_point;
+}
+
+void Action_Bezier::setup_target_to_action(Base_Node* target) {
+    if (this->subtype == Action_Subtype::TO) {
+        this->set_start_point(target->get_position());
+    }
+}
+
+void Action_Bezier::apply(Base_Node* target, float delta_time) {
+    float last_rate = this->get_rate();
+    Base_Action::apply(target, delta_time);
+    float current_rate = this->get_rate();
+
+    glm::vec2 last_bezier_position = Math::get_bezier_point(start_point, middle_point, end_point, last_rate);
+    glm::vec2 current_bezier_position = Math::get_bezier_point(start_point, middle_point, end_point, current_rate);
+    target->modify_transform().position += (current_bezier_position - last_bezier_position);
+}
+
 Action_Delay* Action::delay(float delay_time) {
     Action_Delay* delay = new Action_Delay();
     delay->set_duration(delay_time);
@@ -344,6 +378,16 @@ Action_Callback* Action::call_func(std::function<void(Base_Node*, void*)> caller
     callback->set_caller(caller);
     callback->set_type(Action_Type::ALWAY_HAPPEN);
     return callback;
+}
+
+Action_Bezier* Action::bezier_to(float duration, glm::vec2 middle_point, glm::vec2 end_point, Action_Ease ease) {
+    Action_Bezier* bezier = new Action_Bezier();
+    bezier->set_subtype(Action_Subtype::TO);
+    bezier->set_ease_type(ease);
+    bezier->set_middle_point(middle_point);
+    bezier->set_end_point(end_point);
+    bezier->set_duration(duration);
+    return bezier;
 }
 
 Base_Action* Action::sequence(std::vector<Base_Action*> actions) {

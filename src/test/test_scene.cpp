@@ -1,11 +1,12 @@
+#include <math_custom.h>
 #include <test/test_scene.h>
 
 #include "raylib.h"
 
 Test_Scene::Test_Scene() {
     animation = new Animation_Node();
-    animation->make_animation("IDLE", "res/Png/Characters/C3/Idle/Character3-Idle_", 20, 0.06, ".png");
-    animation->make_animation("SHOOT", "res/Png/Characters/C3/Shoot/Character3-Shoot_", 9, 0.08, ".png");
+    animation->make_animation("IDLE", "res/meow_meow/Characters/C3/Idle/Character3-Idle_", 20, 0.06, ".png");
+    animation->make_animation("SHOOT", "res/meow_meow/Characters/C3/Shoot/Character3-Shoot_", 9, 0.08, ".png");
     animation->play_animation("IDLE", 0.8f);
     animation->set_y(50.f);
     animation->set_cascade_opacity(false);
@@ -23,8 +24,8 @@ Test_Scene::Test_Scene() {
     animation->add_component(collison_1);
 
     animation_2 = new Animation_Node();
-    animation_2->make_animation("IDLE", "res/Png/Characters/C5/Idle/Character5-Idle_", 20, 0.06, ".png");
-    animation_2->make_animation("SHOOT", "res/Png/Characters/C5/Shoot/Character5-Shoot_", 10, 0.08, ".png");
+    animation_2->make_animation("IDLE", "res/meow_meow/Characters/C5/Idle/Character5-Idle_", 20, 0.06, ".png");
+    animation_2->make_animation("SHOOT", "res/meow_meow/Characters/C5/Shoot/Character5-Shoot_", 10, 0.08, ".png");
     animation_2->play_animation("IDLE", 0.8f);
     animation_2->set_y(50.f);
     animation_2->set_cascade_opacity(false);
@@ -64,7 +65,7 @@ Test_Scene::Test_Scene() {
     label->do_action(Action::sequence(Action::rotate_by(1, 360, Action_Ease::SINE_OUT))->repeat_forever());
 
     ui = new Image_UI_Node();
-    ui->set_image("res/Png/Ui/AddonBoxNumber.png");
+    ui->set_image("res/meow_meow/AddonBoxNumber.png");
     ui->set_enable_nine_scale(true);
     ui->set_cap_insets(30, 10, 74, 31);
     ui->set_position({400.f, 400.f});
@@ -83,7 +84,7 @@ Test_Scene::Test_Scene() {
     ui->add_child(ui_child);
 
     image = new Image_Node();
-    image->set_image("res/Png/Ui/AddonBtnyellow.png");
+    image->set_image("res/meow_meow/AddonBtnyellow.png");
     image->set_position({100.f, 200.f});
     image->set_anchor({0., 0.});
 
@@ -94,7 +95,7 @@ Test_Scene::Test_Scene() {
     });
 
     image2 = new Image_Node();
-    image2->set_image("res/Png/Ui/AddOnSlotBtn.png");
+    image2->set_image("res/meow_meow/AddOnSlotBtn.png");
     image2->set_position({130.f, 205.f});
     image2->set_anchor({0., 0.});
     image2->set_rotation(30.f);
@@ -106,12 +107,12 @@ Test_Scene::Test_Scene() {
     });
 
     progression =
-        Progression_Node::make("res/Png/Ui/AddonBoxNumber.png", {30, 10, 74, 31}, {200, 40}, {20, 160, 20}, {6, 8});
+        Progression_Node::make("res/meow_meow/AddonBoxNumber.png", {30, 10, 74, 31}, {200, 40}, {20, 160, 20}, {6, 8});
     progression->set_position({120.f, 40.f});
     progression->do_action(Action::sequence(Action::rotate_by(3, 360, Action_Ease::SINE_OUT))->repeat_forever());
 
     btn = Button_Node::make(
-        "res/Png/Ui/BtnGreen.png",
+        "res/meow_meow/BtnGreen.png",
         "START!",
         [](Button_Node* btn, void* global_data) { std::cout << "Hi pressed me 3!" << std::endl; },
         {180, 70},
@@ -179,6 +180,65 @@ void Test_Scene::fix_update(float delta_time, void* global_data) {
                 Action::call_func([](Base_Node* target, void* global_data) {
                     std::cout << "Move down finish!" << std::endl;
                 })
+            ),
+            5
+        );
+    } else if (IsKeyPressed(KEY_F)) {
+        animation->stop_action(5);
+        float duration = 0.5;
+        glm::vec2 start_position = animation->get_position();
+        glm::vec2 end_position =
+            start_position + glm::vec2{-Math::random_float(100, 150), -Math::random_float(50, 100)};
+        glm::vec2 middle_position = Math::get_middle_bezier_point(
+            start_position,
+            end_position,
+            Math::random_float(100, 200),
+            Math::random_float(0.5),
+            Math::random_float() >= 0.5 ? -1 : 1
+        );
+        animation->do_action(
+            Action::sequence(
+                Action::delay(0.1),
+                Action::spawn(
+                    Action::sequence(
+                        Action::scale_to(duration / 2, {1.2f, 1.2f}, Action_Ease::SINE_OUT),
+                        Action::scale_to(duration / 2, {1.f, 1.f}, Action_Ease::SINE_IN)
+                    ),
+                    Action::sequence(
+                        Action::rotate_by(duration / 2, -5, Action_Ease::SINE_OUT),
+                        Action::rotate_to(duration / 2, 0, Action_Ease::SINE_IN)
+                    ),
+                    Action::bezier_to(duration, middle_position, end_position, Action_Ease::SINE_OUT)
+                )
+            ),
+            5
+        );
+    } else if (IsKeyPressed(KEY_G)) {
+        animation->stop_action(5);
+        float duration = 0.5;
+        glm::vec2 start_position = animation->get_position();
+        glm::vec2 end_position = start_position + glm::vec2{Math::random_float(100, 150), Math::random_float(50, 100)};
+        glm::vec2 middle_position = Math::get_middle_bezier_point(
+            start_position,
+            end_position,
+            Math::random_float(100, 200),
+            Math::random_float(0.5),
+            Math::random_float() >= 0.5 ? -1 : 1
+        );
+        animation->do_action(
+            Action::sequence(
+                Action::delay(0.1),
+                Action::spawn(
+                    Action::sequence(
+                        Action::scale_to(duration / 2, {1.2f, 1.2f}, Action_Ease::SINE_OUT),
+                        Action::scale_to(duration / 2, {1.f, 1.f}, Action_Ease::SINE_IN)
+                    ),
+                    Action::sequence(
+                        Action::rotate_by(duration / 2, -5, Action_Ease::SINE_OUT),
+                        Action::rotate_to(duration / 2, 0, Action_Ease::SINE_IN)
+                    ),
+                    Action::bezier_to(duration, middle_position, end_position, Action_Ease::SINE_OUT)
+                )
             ),
             5
         );

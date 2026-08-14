@@ -192,6 +192,10 @@ void Image_UI_Node::draw(Custom::Transform& world_transform, int& draw_index) {
             nine_draw_parts[i].transform.scale.y = height_at_part <= 0 ? 0 : remain_height / height_at_part;
             size_at_parts[i].height = remain_height;
         }
+        /**
+         * @Note: save here to rect check at draw prevent the dot and dashed texture
+         */
+        nine_draw_parts[i].rect_scale = nine_draw_parts[i].transform.scale;
     }
     glm::vec2 origin_position = {-renderer_size.width * anchor.x, -renderer_size.height * anchor.y};
     // Update local position x of all parts

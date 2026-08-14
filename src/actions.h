@@ -131,6 +131,24 @@ private:
     std::function<void(Base_Node*, void*)> caller = nullptr;
 };
 
+class Action_Bezier : public Base_Action {
+public:
+    Action_Bezier();
+    ~Action_Bezier();
+
+    void set_start_point(glm::vec2 start_point);
+    void set_middle_point(glm::vec2 middle_point);
+    void set_end_point(glm::vec2 end_point);
+
+    void setup_target_to_action(Base_Node* target) override;
+    void apply(Base_Node* target, float delta_time) override;
+
+private:
+    glm::vec2 start_point;
+    glm::vec2 middle_point;
+    glm::vec2 end_point;
+};
+
 class Action {
 public:
     static Action_Delay* delay(float delay_time);
@@ -167,6 +185,10 @@ public:
     );
 
     static Action_Callback* call_func(std::function<void(Base_Node*, void*)> caller);
+
+    static Action_Bezier* bezier_to(
+        float duration, glm::vec2 middle_point, glm::vec2 end_point, Action_Ease ease = Action_Ease::LINEAR
+    );
 
     static Base_Action* sequence(std::vector<Base_Action*> actions);
     static Base_Action* spawn(std::vector<Base_Action*> actions);

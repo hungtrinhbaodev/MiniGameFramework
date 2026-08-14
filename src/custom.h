@@ -129,6 +129,11 @@ namespace Custom {
         Color tint{255, 255, 255};
         bool is_use_rect_texture = false;
         Rectangle_Area rect_texture = {0.f, 0.f, 0.f, 0.f};
+        /**
+         * @Note: use this in mode rect to prevent drawing dashed in pieces
+         * if not is_use_rect_texture = true we ignore this argument
+         */
+        glm::vec2 rect_scale{1.0f, 1.0f};
         friend std::ostream& operator<<(std::ostream& os, const Draw_Attributes& attr) {
             os << "Draw_Attributes:" << std::endl
                << "Draw_index: " << attr.draw_index << std::endl
