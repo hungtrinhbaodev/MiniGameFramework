@@ -1,3 +1,4 @@
+#pragma once
 #include <image_node.h>
 
 #include <map>

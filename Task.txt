@@ -27,6 +27,9 @@
 [Done]: Add delay time function.
 [Done]: Move action loop handle into handle_persional_task.
 [Done]: Add scene_global_data void pointer to get information when handle task.
-[]: Add schedule to node.
+[Done]: Add schedule to node.
+[]: Add director is entry of entire scene. manage change scene to render.
+[]: Add custom key press component.
 []: Add component state machine.
+
 [][Very difficult]: Add quad tree to collision system.
