@@ -6,7 +6,7 @@ int Button_Node::ACTION_PRESS_TAG = 5;
 Button_Node* Button_Node::make(
     std::string image_path,
     std::string text,
-    std::function<void(Button_Node*)> pressed_caller,
+    std::function<void(Button_Node*, void*)> pressed_caller,
     Custom::Size renderer_size,
     Custom::Rectangle_Area cap_insets,
     Custom::Color color,
@@ -33,12 +33,9 @@ Button_Node::Button_Node() {
 
     this->set_touch_enabled(true);
     this->set_swallow_touches(true);
-    this->set_touched_caller([this](glm::vec2 position, Base_Node* target) {
+    this->set_touched_caller([this](glm::vec2 position, Base_Node* target, void* global_data) {
         Button_Node* button = reinterpret_cast<Button_Node*>(target);
         button->run_pressed_action();
-        if (button->pressed_caller) {
-            button->pressed_caller(this);
-        }
     });
 }
 
@@ -58,7 +55,7 @@ void Button_Node::set_text(std::string text) {
     this->inner_label->set_text(text);
 }
 
-void Button_Node::on_pressed(std::function<void(Button_Node*)> caller) {
+void Button_Node::on_pressed(std::function<void(Button_Node*, void*)> caller) {
     this->pressed_caller = caller;
 }
 
@@ -78,7 +75,13 @@ void Button_Node::run_pressed_action() {
     this->do_action(
         Action::sequence(
             Action::scale_to(0.06, {1.1, 1.1}, Action_Ease::SINE_OUT),
-            Action::scale_to(0.06, {1.0, 1.0}, Action_Ease::SINE_IN)
+            Action::scale_to(0.06, {1.0, 1.0}, Action_Ease::SINE_IN),
+            Action::call_func([](Base_Node* target, void* global_data) {
+                Button_Node* button = reinterpret_cast<Button_Node*>(target);
+                if (button->pressed_caller) {
+                    button->pressed_caller(button, global_data);
+                }
+            })
         ),
         Button_Node::ACTION_PRESS_TAG
     );

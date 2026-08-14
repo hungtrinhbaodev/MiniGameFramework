@@ -316,7 +316,9 @@ namespace Libs_Wrapper {
     }
 
     void handle_touch_inputs() {
-        /**Note: handle touch, from now work with just one touch, multi touches handle later */
+        /**
+         * @Note: handle touch, from now work with just one touch, multi touches handle later
+         * */
         if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
             switch (touch_state) {
                 case Touch_Type::BEGIN: {

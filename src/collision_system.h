@@ -8,7 +8,9 @@
 struct Collision_Information {
     int collision_id = -1;
     int tag = -1;
-    /**Note: only objects with same track layer can be collision with each other!*/
+    /**
+     * @Note: only objects with same track layer can be collision with each other!
+     * */
     int track_layer = -1;
     Base_Node* onwner = nullptr;
     void* owner_data = nullptr;

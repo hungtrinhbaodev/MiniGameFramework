@@ -64,8 +64,6 @@ public:
     void remove_from_parent(bool is_cleanup = true);
     bool remove_child(Base_Node* child, bool is_cleanup = false);
 
-    void travel(float delta_time);
-
 protected:
     Custom::Transform world_transform;
     Custom::Transform transform;
@@ -81,10 +79,11 @@ protected:
      * @Note: before draw we need visit all node once to handle task of each node
      * like handle user inputs (touch, key board) and some custom logic before draw,...
      */
-    void visit_handle_personal_task();
+    void travel(float delta_time, void* global_data = nullptr);
+    void visit_handle_personal_task(float delta_time, void* global_data);
     void visit_draw(Custom::Transform& world_transform, float delta_time, int& draw_index);
     virtual void set_world_transform_information(Custom::Transform world_transform, int draw_index);
-    virtual void handle_personal_task();
+    virtual void handle_personal_task(float delta_time, void* global_data);
     virtual void update(float delta_time);
     virtual void update_world_transform_information(Custom::Transform& world_transform, int draw_index);
     virtual void before_draw_children(Custom::Transform& world_transform, int& draw_index);

@@ -8,11 +8,14 @@ public:
     ~Scene_Node();
 
     Node_Type get_type() override;
+    void process_frame(float delta_time);
 
 protected:
-    void update(float delta_time) override;
+    void fix_update(float delta_time, void* global_data) override;
 
 private:
-    Label_Node* label_fps;
+    Label_Node* label_fps = nullptr;
+    float fps_rate = 0.f;
     int frame_count;
+    void* global_data = nullptr;
 };

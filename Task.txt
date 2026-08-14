@@ -21,4 +21,12 @@
 
 [Done]: Add rect area to check touch. 
 [Done]: Add button ui.
-[Done]: Add colision system.
+[Done]: Add collision system.
+
+[Done]: Add action call function.
+[Done]: Add delay time function.
+[Done]: Move action loop handle into handle_persional_task.
+[Done]: Add scene_global_data void pointer to get information when handle task.
+[]: Add schedule to node.
+[]: Add component state machine.
+[][Very difficult]: Add quad tree to collision system.

@@ -18,7 +18,7 @@ public:
     void set_speed(float speed);
 
 protected:
-    void update(float delta_time);
+    void flex_update(float delta_time) override;
 
 private:
     struct Animation_Data {

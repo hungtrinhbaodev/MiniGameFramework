@@ -12,6 +12,10 @@ bool Base_Component::has_target() {
     return this->target != nullptr;
 }
 
+bool Base_Component::has_global_data() {
+    return this->global_data != nullptr;
+}
+
 bool Base_Component::is_active() {
     return this->active;
 }
@@ -34,6 +38,10 @@ void Base_Component::assign_target(Base_Node* target) {
 
 void Base_Component::set_removed(bool removed) {
     this->removed = removed;
+}
+
+void Base_Component::set_global_data(void* global_data) {
+    this->global_data = global_data;
 }
 
 void Base_Component::enter() {}

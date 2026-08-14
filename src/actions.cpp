@@ -3,6 +3,10 @@
 
 #include <iostream>
 
+Action_Delay::Action_Delay() {}
+
+Action_Delay::~Action_Delay() {}
+
 Action_Move::Action_Move() {}
 
 Action_Move::~Action_Move() {}
@@ -188,6 +192,27 @@ bool Action_Progression::is_valid_target(Base_Node* target) {
     return target->get_type() == Node_Type::PROGRESSION;
 }
 
+Action_Callback::Action_Callback() {}
+
+Action_Callback::~Action_Callback() {}
+
+void Action_Callback::set_caller(std::function<void(Base_Node*, void*)> caller) {
+    this->caller = caller;
+}
+
+void Action_Callback::apply(Base_Node* target, float delta_time) {
+    Base_Action::apply(target, delta_time);
+    if (target != nullptr && caller != nullptr) {
+        caller(target, this->global_data);
+    }
+}
+
+Action_Delay* Action::delay(float delay_time) {
+    Action_Delay* delay = new Action_Delay();
+    delay->set_duration(delay_time);
+    return delay;
+}
+
 Action_Move* Action::move_to(float duration, glm::vec2 position_to, Action_Ease ease) {
     Action_Move* move = new Action_Move();
     move->set_subtype(Action_Subtype::TO);
@@ -312,6 +337,13 @@ Action_Progression* Action::progress_by(float duration, float progression_by, Ac
     progression->set_delta(progression_by);
     progression->set_duration(duration);
     return progression;
+}
+
+Action_Callback* Action::call_func(std::function<void(Base_Node*, void*)> caller) {
+    Action_Callback* callback = new Action_Callback();
+    callback->set_caller(caller);
+    callback->set_type(Action_Type::ALWAY_HAPPEN);
+    return callback;
 }
 
 Base_Action* Action::sequence(std::vector<Base_Action*> actions) {

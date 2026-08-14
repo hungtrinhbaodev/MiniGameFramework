@@ -13,8 +13,8 @@ public:
     Base_Action();
     ~Base_Action();
 
-    void assign_target_to_all_chain(Base_Node* target);
-    bool travel(Base_Node* target, float delta_time);
+    void assign_target_to_all_chain(Base_Node* target, void* global_data);
+    bool travel(Base_Node* target, float delta_time, void* global_data);
     int get_tag();
 
     void set_tag(int tag);
@@ -23,6 +23,7 @@ public:
     void set_ease_type(Action_Ease ease);
     void set_duration(float duration);
     void set_target(Base_Node* target);
+    void set_global_data(void* global_data);
 
     void push_spawn(Base_Action* action);
     void push_sequence(Base_Action* action);
@@ -31,6 +32,7 @@ public:
 
 protected:
     Base_Node* target = nullptr;
+    void* global_data = nullptr;
     float total_duration = 0.f;
     float current_duration = 0.f;
     Action_Ease ease_type = Action_Ease::LINEAR;

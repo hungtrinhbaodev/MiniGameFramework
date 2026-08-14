@@ -113,7 +113,7 @@ void Touch_Component::handle_task() {
                         Image_Node* image = reinterpret_cast<Image_Node*>(this->target);
                         auto caller = image->get_touch_caller();
                         if (caller != nullptr) {
-                            caller(touch_detail.touch_position, image);
+                            caller(touch_detail.touch_position, image, this->global_data);
                         }
                         break;
                     }

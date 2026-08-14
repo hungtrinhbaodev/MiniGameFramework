@@ -10,6 +10,7 @@ public:
 
     std::string get_name();
     bool has_target();
+    bool has_global_data();
     bool is_active();
     bool is_removed();
 
@@ -17,6 +18,7 @@ public:
     void assign_target(Base_Node* target);
     void set_active(bool active);
     void set_removed(bool removed);
+    void set_global_data(void* global_data);
 
     virtual void enter();
     virtual void exit();
@@ -28,6 +30,7 @@ public:
 protected:
     std::string name = "";
     Base_Node* target = nullptr;
+    void* global_data = nullptr;
     bool active = true;
     bool removed = false;
 };

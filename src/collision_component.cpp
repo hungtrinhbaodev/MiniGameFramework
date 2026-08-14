@@ -12,7 +12,7 @@ Collision_Component* Collision_Component::make(
     int track_layer,
     glm::vec2 delta_position,
     void* owner_data,
-    std::function<void(Base_Node* target, std::vector<Collision_Information>)> caller
+    std::function<void(Base_Node*, void*, std::vector<Collision_Information>)> caller
 ) {
     Collision_Component* collision = new Collision_Component();
     collision->set_name(Defined::COMPONENT_COLLISION_NAME);
@@ -65,7 +65,7 @@ void Collision_Component::set_delta_position(glm::vec2 delta_position) {
 }
 
 void Collision_Component::set_collision_handler(
-    std::function<void(Base_Node* target, std::vector<Collision_Information>)> handler
+    std::function<void(Base_Node*, void*, std::vector<Collision_Information>)> handler
 ) {
     this->collision_handler = handler;
 }
@@ -92,7 +92,7 @@ void Collision_Component::draw(int& draw_index) {
 }
 
 void Collision_Component::update_information() {
-    if (this->target == nullptr) {
+    if (!this->has_target()) {
         return;
     }
     Custom::Transform local_transform{};
@@ -117,7 +117,7 @@ void Collision_Component::handle_task() {
         if (this->collision_handler != nullptr) {
             std::vector<Collision_Information> collsioneds = this->get_collisioneds();
             if (collsioneds.size() > 0) {
-                this->collision_handler(this->target, this->get_collisioneds());
+                this->collision_handler(this->target, this->global_data, this->get_collisioneds());
             }
         }
     }

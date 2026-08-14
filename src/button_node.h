@@ -7,7 +7,7 @@ public:
     static Button_Node* make(
         std::string image_path,
         std::string text,
-        std::function<void(Button_Node*)> pressed_caller,
+        std::function<void(Button_Node*, void*)> pressed_caller,
         Custom::Size renderer_size = {-1, -1},
         Custom::Rectangle_Area cap_insets = {0, 0, 0, 0},
         Custom::Color color = {165, 165, 165},
@@ -21,7 +21,7 @@ public:
 
     void update_label(std::string font, int font_size, Custom::Color color);
     void set_text(std::string text);
-    void on_pressed(std::function<void(Button_Node*)> caller);
+    void on_pressed(std::function<void(Button_Node*, void*)> caller);
 
     void set_image(std::string image);
     void set_renderer_size(Custom::Size size);
@@ -29,7 +29,7 @@ public:
 private:
     static int ACTION_PRESS_TAG;
     Label_Node* inner_label = nullptr;
-    std::function<void(Button_Node*)> pressed_caller;
+    std::function<void(Button_Node*, void*)> pressed_caller;
 
     void run_pressed_action();
     void sync_inner_label();

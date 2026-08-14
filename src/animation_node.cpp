@@ -45,7 +45,7 @@ void Animation_Node::play_animation(std::string name, float speed) {
     set_speed(speed);
 }
 
-void Animation_Node::update(float delta_time) {
+void Animation_Node::flex_update(float delta_time) {
     if (!is_valid_animation(current_animation)) {
         set_visible(false);
         return;
@@ -61,5 +61,4 @@ void Animation_Node::update(float delta_time) {
         total_delta_time = 0;
         current_frame = (current_frame + 1) % animation.number_frame;
     }
-    Node::update(delta_time);
 }

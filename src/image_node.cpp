@@ -32,7 +32,7 @@ Node_Type Image_Node::get_type() {
     return Node_Type::IMAGE;
 }
 
-std::function<void(glm::vec2, Base_Node*)> Image_Node::get_touch_caller() {
+std::function<void(glm::vec2, Base_Node*, void*)> Image_Node::get_touch_caller() {
     return this->touch_caller;
 }
 
@@ -64,7 +64,7 @@ void Image_Node::set_swallow_touches(bool swallow_touches) {
     this->swallow_touches = swallow_touches;
 }
 
-void Image_Node::set_touched_caller(std::function<void(glm::vec2, Base_Node*)> caller) {
+void Image_Node::set_touched_caller(std::function<void(glm::vec2, Base_Node*, void*)> caller) {
     this->touch_caller = caller;
 }
 

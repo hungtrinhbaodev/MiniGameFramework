@@ -13,10 +13,10 @@ Base_Node::~Base_Node() {
     }
 }
 
-void Base_Node::visit_handle_personal_task() {
-    this->handle_personal_task();
+void Base_Node::visit_handle_personal_task(float delta_time, void* global_data) {
+    this->handle_personal_task(delta_time, global_data);
     for (Base_Node* child : children) {
-        child->visit_handle_personal_task();
+        child->visit_handle_personal_task(delta_time, global_data);
     }
 }
 
@@ -75,7 +75,7 @@ void Base_Node::set_world_transform_information(Custom::Transform world_transfor
     this->update_world_transform_information(this->world_transform, draw_index);
 }
 
-void Base_Node::handle_personal_task() {}
+void Base_Node::handle_personal_task(float delta_time, void* global_data) {}
 
 void Base_Node::update_world_transform_information(Custom::Transform& world_transform, int draw_index) {}
 
@@ -294,9 +294,9 @@ void Base_Node::add_child(Base_Node* child) {
     child->enter();
 }
 
-void Base_Node::travel(float delta_time) {
+void Base_Node::travel(float delta_time, void* global_data) {
     // Handle personal task of each node before draw
-    visit_handle_personal_task();
+    visit_handle_personal_task(delta_time, global_data);
     // Loop all node to draw into scene
     int start_draw_index = 0;
     Custom::Transform world_transform = transform;

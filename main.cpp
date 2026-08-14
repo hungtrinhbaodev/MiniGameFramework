@@ -33,6 +33,7 @@ int COLISION_ANIMATION_TAG = 57;
 
 void start_test_node() {
     scene = new Scene_Node();
+    scene->set_name("debug");
     scene->set_position({0.0, 0.0});
 
     animation = new Animation_Node();
@@ -48,7 +49,7 @@ void start_test_node() {
         0,
         {0, 0},
         nullptr,
-        [](Base_Node* animation_1, std::vector<Collision_Information> collisioned) {
+        [](Base_Node* animation_1, void* global_data, std::vector<Collision_Information> collisioned) {
             std::cout << "Some one hit me animation_1: " << collisioned.size() << std::endl;
         }
     );
@@ -68,7 +69,7 @@ void start_test_node() {
         0,
         {0, 0},
         nullptr,
-        [](Base_Node* animation_2, std::vector<Collision_Information> collisioned) {
+        [](Base_Node* animation_2, void* global_data, std::vector<Collision_Information> collisioned) {
             std::cout << "Some one hit me animation_2: " << collisioned.size() << std::endl;
             /** test flow remove */
             animation_2->remove_from_parent(false);
@@ -121,7 +122,7 @@ void start_test_node() {
 
     image->set_touch_enabled(true);
     image->set_swallow_touches(true);
-    image->set_touched_caller([](glm::vec2 touch_position, Base_Node* image) {
+    image->set_touched_caller([](glm::vec2 touch_position, Base_Node* image, void* global_data) {
         std::cout << "Hi there, pressed me 1: " << touch_position.x << ", " << touch_position.y << std::endl;
     });
 
@@ -133,7 +134,7 @@ void start_test_node() {
 
     image2->set_touch_enabled(true);
     image2->set_swallow_touches(true);
-    image2->set_touched_caller([](glm::vec2 touch_position, Base_Node* image) {
+    image2->set_touched_caller([](glm::vec2 touch_position, Base_Node* image, void* global_data) {
         std::cout << "Hi there, pressed me 2! " << touch_position.x << ", " << touch_position.y << std::endl;
     });
 
@@ -145,7 +146,7 @@ void start_test_node() {
     btn = Button_Node::make(
         "res/Png/Ui/BtnGreen.png",
         "START!",
-        [](Button_Node* btn) { std::cout << "Hi pressed me 3!" << std::endl; },
+        [](Button_Node* btn, void* global_data) { std::cout << "Hi pressed me 3!" << std::endl; },
         {180, 70},
         {30, 20, 280, 82},
         {20, 20, 20},
@@ -188,12 +189,30 @@ void loop_test_node(float delta_time) {
         animation->stop_action(5);
         animation->do_action(Action::move_by(0.2, {50.f, 0}, Action_Ease::LINEAR), 5);
         animation->set_flipped_x(false);
-    } else if (IsKeyPressed(KEY_S)) {
-        animation->stop_action(5);
-        animation->do_action(Action::move_by(0.2, {0, 50.f}, Action_Ease::LINEAR), 5);
     } else if (IsKeyPressed(KEY_W)) {
         animation->stop_action(5);
-        animation->do_action(Action::move_by(0.2, {0, -50.f}, Action_Ease::LINEAR), 5);
+        animation->do_action(
+            Action::sequence(
+                Action::delay(0.2),
+                Action::move_by(0.2, {0, 50.f}, Action_Ease::LINEAR),
+                Action::call_func([](Base_Node* target, void* global_data) {
+                    std::cout << "Move up finish!" << std::endl;
+                })
+            ),
+            5
+        );
+    } else if (IsKeyPressed(KEY_S)) {
+        animation->stop_action(5);
+        animation->do_action(
+            Action::sequence(
+                Action::delay(0.5),
+                Action::move_by(0.2, {0, -50.f}, Action_Ease::LINEAR),
+                Action::call_func([](Base_Node* target, void* global_data) {
+                    std::cout << "Move down finish!" << std::endl;
+                })
+            ),
+            5
+        );
     }
 
     if (IsKeyPressed(KEY_LEFT)) {
@@ -236,7 +255,7 @@ void loop_test_node(float delta_time) {
         animation_2->stop_action(5);
         animation_2->do_action(Action::move_by(0.2, {0, -50.f}, Action_Ease::LINEAR), 5);
     }
-    scene->travel(delta_time);
+    scene->process_frame(delta_time);
 }
 
 void end_test_node() {

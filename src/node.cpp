@@ -21,9 +21,9 @@ Node::~Node() {
 }
 
 Base_Component* Node::get_component_by_name(std::string name) {
-    for (int i = 0; i < components.size(); i++) {
-        if (components[i]->get_name() == name) {
-            return components[i];
+    for (Base_Component* component : components) {
+        if (component->get_name() == name) {
+            return component;
         }
     }
     return nullptr;
@@ -38,9 +38,27 @@ void Node::do_action(Base_Action* action, int tag) {
         return;
     }
     action->set_tag(tag);
-    action->assign_target_to_all_chain(this);
     action->set_target(this);
     actions.push_back(action);
+}
+
+void Node::schedule(
+    const std::string& key,
+    float duration_schedule,
+    std::function<void(Base_Node*, void*)> caller,
+    bool is_schedule_once
+) {
+    if (schedulers.find(key) != schedulers.end()) {
+        std::cout << "Node warnning: scheduler key is duplicate, please check it again!" << std::endl;
+    }
+    Scheduler_Data scheduler{duration_schedule, 0, is_schedule_once, caller};
+    schedulers[key] = scheduler;
+}
+
+void Node::schedule_once(
+    const std::string& key, float duration_schedule, std::function<void(Base_Node*, void*)> caller
+) {
+    schedule(key, duration_schedule, caller, true);
 }
 
 void Node::remove_component(Base_Component* component) {
@@ -83,6 +101,12 @@ void Node::stop_all_action() {
     cleanup_stopped_actions();
 }
 
+void Node::unschedule(const std::string& key) {
+    if (schedulers.find(key) != schedulers.end()) {
+        schedulers[key].is_removed = true;
+    }
+}
+
 Node_Type Node::get_type() {
     return Node_Type::NODE;
 }
@@ -91,7 +115,11 @@ void Node::attach() {}
 
 void Node::detach() {}
 
-void Node::handle_personal_task() {
+void Node::fix_update(float delta_time, void* global_data) {}
+
+void Node::flex_update(float delta_time) {}
+
+void Node::handle_personal_task(float delta_time, void* global_data) {
     /**We handle logic of all components of node here */
     /**First: remove the component mark removed */
     for (int i = 0; i < components.size(); i++) {
@@ -102,26 +130,71 @@ void Node::handle_personal_task() {
         }
     }
     /**Second: handle it's task logic*/
-    for (int i = 0; i < components.size(); i++) {
-        if (components[i]->is_active() && components[i]->has_target()) {
-            components[i]->handle_task();
+    for (Base_Component* component : components) {
+        if (component->is_active() && component->has_target()) {
+            if (!component->has_global_data()) {
+                component->set_global_data(global_data);
+            }
+            component->handle_task();
         }
     }
+
+    /**After that we handle actions need to do in node*/
+    cleanup_stopped_actions();
+    for (int i = 0; i < actions.size(); i++) {
+        Base_Action* action = actions[i];
+        bool is_finish_all = action->travel(this, delta_time, global_data);
+        if (is_finish_all) {
+            cleanup_actions.push_back(action);
+            actions[i] = actions[actions.size() - 1];
+            actions.pop_back();
+            i--;
+        }
+    }
+
+    /**After action we check the schedulers logic to handle it!*/
+    /**First clear all scheduler is mark at remove */
+    std::vector<std::string> removed_keys;
+    for (auto& [key, scheduler] : schedulers) {
+        if (scheduler.is_removed) {
+            removed_keys.push_back(key);
+        }
+    }
+    for (auto& key : removed_keys) {
+        schedulers.erase(key);
+    }
+    /**Second loop all scheduler check time of it and handle it!*/
+    for (auto& [key, scheduler] : schedulers) {
+        scheduler.current_duration += delta_time;
+        if (scheduler.current_duration >= scheduler.duration_scheduler) {
+            if (scheduler.caller) {
+                scheduler.caller(this, global_data);
+            }
+            if (scheduler.is_scheduler_once) {
+                scheduler.is_removed = true;
+            } else {
+                scheduler.current_duration = 0;
+            }
+        }
+    }
+
+    /**Final we call fix update to cascade update into extended node to update it logic if needed*/
+    this->fix_update(delta_time, global_data);
 }
 
 void Node::set_world_transform_information(Custom::Transform world_transform, int draw_index) {
     Base_Node::set_world_transform_information(world_transform, draw_index);
 
     /**Assign target to component and invoke enter to start loop */
-    for (int i = 0; i < components.size(); i++) {
-        if (components[i]->is_removed()) {
+    for (Base_Component* component : components) {
+        if (component->is_removed()) {
             continue;
         }
-        if (!components[i]->has_target()) {
-            components[i]->assign_target(this);
-            components[i]->enter();
+        if (!component->has_target()) {
+            component->assign_target(this);
+            component->enter();
         }
-        components[i]->update_information();
+        component->update_information();
     }
 }
 
@@ -133,11 +206,16 @@ void Node::draw(Custom::Transform& world_transform, int& draw_index) {
     }
 }
 
+void Node::update(float delta_time) {
+    /**Cascade update flex into class children extended from node update it's graphic information */
+    this->flex_update(delta_time);
+}
+
 void Node::enter() {
     /**Add list waitting component into list commponent again when node enter again!*/
-    for (int i = 0; i < dettached_components.size(); i++) {
-        dettached_components[i]->assign_target(nullptr);
-        components.push_back(dettached_components[i]);
+    for (Base_Component* component : dettached_components) {
+        component->assign_target(nullptr);
+        components.push_back(component);
     }
     dettached_components.clear();
     this->attach();
@@ -145,29 +223,14 @@ void Node::enter() {
 
 void Node::exit() {
     /**Add list running component into list detach reserve wait to attach again!*/
-    for (int i = 0; i < components.size(); i++) {
-        components[i]->exit();
-        dettached_components.push_back(components[i]);
+    for (Base_Component* component : components) {
+        component->exit();
+        dettached_components.push_back(component);
     }
     components.clear();
+    schedulers.clear();
     this->detach();
     this->stop_all_action();
-}
-
-void Node::update(float delta_time) {
-    Base_Node::update(delta_time);
-    cleanup_stopped_actions();
-
-    for (int i = 0; i < actions.size(); i++) {
-        Base_Action* action = actions[i];
-        bool is_finish_all = action->travel(this, delta_time);
-        if (is_finish_all) {
-            cleanup_actions.push_back(action);
-            actions[i] = actions[actions.size() - 1];
-            actions.pop_back();
-            i--;
-        }
-    }
 }
 
 void Node::cleanup_stopped_actions() {

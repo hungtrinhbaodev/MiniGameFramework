@@ -86,7 +86,7 @@ void Collision_System::handle_collisions() {
             collisioneds.begin(),
             collisioneds.end(),
             /**
-             * Note: sometime the collision will be have many other collision with it, so we
+             * @Note: sometime the collision will be have many other collision with it, so we
              * sort it by nearest center to handle phase logic easier!
              */
             [&collision](const Collision_Information& a, const Collision_Information& b) {

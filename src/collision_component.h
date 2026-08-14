@@ -12,7 +12,7 @@ public:
         int track_layer = 0,
         glm::vec2 delta_position = {0.f, 0.f},
         void* owner_data = nullptr,
-        std::function<void(Base_Node* target, std::vector<Collision_Information>)> caller = nullptr
+        std::function<void(Base_Node* target, void*, std::vector<Collision_Information>)> caller = nullptr
     );
     Collision_Component();
     ~Collision_Component();
@@ -27,19 +27,25 @@ public:
     void set_owner_data(void* owner_data);
     void set_box_size(Custom::Size size);
     /**
-     * Note: the middle box will we place at anchor of object with
+     * @Note: the middle box will we place at anchor of object with
      * with case wanna custom position to box add it to here the
      * box will move more from anchor of object with this detla!
      */
     void set_delta_position(glm::vec2 delta_position);
+    /**
+     * @Note: only objects with same track layer can be collision with each other!
+     * */
     void set_track_layer(int track_layer);
     /**
-     * Note: caller will be applied in handle_personal_task of Node
+     * @Note: caller will be applied in before fix_update of Node
      * so if you don't wanna use functional you can extend object
-     * from node and call get_collisioneds in handle_personal_task
-     * that overrided from the base node to manully use!
+     * from node and call get_collisioneds in fix_update that
+     * overrided from the parent node class to manully use!
+     * @Param Base_Node*: target running this component.
+     * @Param void*: global user data.
+     * @Param std::vector<Collision_Information>: list collision object that collision with target object.
      */
-    void set_collision_handler(std::function<void(Base_Node* target, std::vector<Collision_Information>)> handler);
+    void set_collision_handler(std::function<void(Base_Node*, void*, std::vector<Collision_Information>)> handler);
 
     void enter() override;
     void exit() override;
@@ -52,10 +58,9 @@ private:
     int tag;
     /** Using this data to cast when collision happen */
     void* owner_data;
-    /**Note: only objects with same track layer can be collision with each other!*/
     int track_layer = -1;
     int collision_id = -1;
     Custom::Size box_size;
     glm::vec2 delta_position{0.f, 0.f};
-    std::function<void(Base_Node* target, std::vector<Collision_Information>)> collision_handler = nullptr;
+    std::function<void(Base_Node* target, void*, std::vector<Collision_Information>)> collision_handler = nullptr;
 };

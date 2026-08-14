@@ -1,7 +1,14 @@
 #pragma once
 #include <base_action.h>
 
+#include <functional>
 #include <type_traits>
+
+class Action_Delay : public Base_Action {
+public:
+    Action_Delay();
+    ~Action_Delay();
+};
 
 class Action_Move : public Base_Action {
 public:
@@ -111,8 +118,23 @@ private:
     float delta_progression;
 };
 
+class Action_Callback : public Base_Action {
+public:
+    Action_Callback();
+    ~Action_Callback();
+
+    void set_caller(std::function<void(Base_Node*, void*)> caller);
+
+    void apply(Base_Node* target, float delta_time) override;
+
+private:
+    std::function<void(Base_Node*, void*)> caller = nullptr;
+};
+
 class Action {
 public:
+    static Action_Delay* delay(float delay_time);
+
     static Action_Move* move_to(float duration, glm::vec2 position_to, Action_Ease ease = Action_Ease::LINEAR);
     static Action_Move* move_to(float duration, float x, float y, Action_Ease ease = Action_Ease::LINEAR);
 
@@ -143,6 +165,8 @@ public:
     static Action_Progression* progress_by(
         float duration, float progression_by, Action_Ease ease = Action_Ease::LINEAR
     );
+
+    static Action_Callback* call_func(std::function<void(Base_Node*, void*)> caller);
 
     static Base_Action* sequence(std::vector<Base_Action*> actions);
     static Base_Action* spawn(std::vector<Base_Action*> actions);

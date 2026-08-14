@@ -16,20 +16,30 @@ void Base_Action::set_target(Base_Node* target) {
     this->target = target;
 }
 
-void Base_Action::assign_target_to_all_chain(Base_Node* target) {
+void Base_Action::set_global_data(void* global_data) {
+    this->global_data = global_data;
+}
+
+void Base_Action::assign_target_to_all_chain(Base_Node* target, void* global_data) {
     this->setup_target_to_action(target);
     if (this->target == nullptr) {
         this->target = target;
     }
+    if (this->global_data == nullptr) {
+        this->global_data = global_data;
+    }
     this->is_setup = true;
     if (this->next_spawn_chain != nullptr) {
-        this->next_spawn_chain->assign_target_to_all_chain(target);
+        this->next_spawn_chain->assign_target_to_all_chain(target, global_data);
     }
 }
 
 void Base_Action::setup_target_to_action(Base_Node* target) {}
 
-bool Base_Action::travel(Base_Node* target, float delta_time) {
+bool Base_Action::travel(Base_Node* target, float delta_time, void* global_data) {
+    if (!this->is_setup) {
+        this->assign_target_to_all_chain(target, global_data);
+    }
     bool finish_all = true;
     if ((!this->is_end() || this->type == Action_Type::ALWAY_HAPPEN) && this->is_valid_target(target)) {
         if (this->type == Action_Type::ALWAY_HAPPEN) {
@@ -43,14 +53,14 @@ bool Base_Action::travel(Base_Node* target, float delta_time) {
         }
     }
     if (this->next_spawn_chain != nullptr) {
-        finish_all &= this->next_spawn_chain->travel(target, delta_time);
+        finish_all &= this->next_spawn_chain->travel(target, delta_time, global_data);
     }
     if (finish_all) {
         if (this->next_sequence_chain != nullptr) {
             if (!this->next_sequence_chain->is_setup) {
-                this->next_sequence_chain->assign_target_to_all_chain(target);
+                this->next_sequence_chain->assign_target_to_all_chain(target, global_data);
             }
-            finish_all &= this->next_sequence_chain->travel(target, delta_time);
+            finish_all &= this->next_sequence_chain->travel(target, delta_time, global_data);
         }
     }
     if (finish_all) {
