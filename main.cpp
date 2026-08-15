@@ -1,5 +1,7 @@
 #include <director.h>
-#include <meow_meow/loading_scene.h>
+#include <meow_meow/global_data.h>
+#include <meow_meow/scene/chosen_character_scene.h>
+#include <meow_meow/scene/loading_scene.h>
 #include <test/test_scene.h>
 #include <utils.h>
 #include <wrapper.h>
@@ -15,11 +17,12 @@ int main(void) {
     Libs_Wrapper::init_libs();
 
     /**
-     * TODO: don't know how to make an good entry so just manual do it
+     * @TODO: don't know how to make an good entry so just manual do it
      * first by add your scene here, after that find the wait to have
      * a smooth flow to entry better!
      * */
-    Director::get()->start(new Meow_Meow::Loading_Scene(), nullptr);
+    Director::get()->start(new Meow_Meow::Loading_Scene(), Meow_Meow::Global_Data::get());
+    // Director::get()->start(new Meow_Meow::Chosen_Character_Scene(), Meow_Meow::Global_Data::get());
     // Director::get()->start(new Test_Scene(), nullptr);
 
     long start = Utils::now();
@@ -34,6 +37,11 @@ int main(void) {
         Director::get()->end_frame();
     }
 
+    /**
+     * @TODO: in future add dispatcher to clean this flow clear singleton data
+     * from now just clear manualy!
+     */
+    Meow_Meow::Global_Data::clear();
     Director::get()->end();
     Libs_Wrapper::clear_libs();
     Libs_Wrapper::close_window(window);

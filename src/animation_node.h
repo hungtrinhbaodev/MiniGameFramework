@@ -17,6 +17,7 @@ public:
     );
     void play_animation(std::string name, float speed = 1.0f);
     void set_speed(float speed);
+    void clear_all_animation();
 
 protected:
     void flex_update(float delta_time) override;

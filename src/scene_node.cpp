@@ -9,6 +9,7 @@ Scene_Node::Scene_Node() {
     this->label_fps->set_position({10.f, 5.f});
     this->label_fps->set_anchor({0.f, 0.f});
     this->label_fps->set_color({125, 125, 125});
+    this->label_fps->set_z_order(1000);
     this->add_child(label_fps);
 }
 
@@ -40,11 +41,11 @@ void Scene_Node::set_initialize(bool initialize) {
 }
 
 void Scene_Node::start() {
-    this->enter();
+    this->enter(this->global_data);
 }
 
-void Scene_Node::enter() {
-    Node::enter();
+void Scene_Node::enter(void* global_data) {
+    Node::enter(global_data);
     this->schedule(Defined::SCENE_LABEL_FPS_SCHEDULER_KEY, 0.2, [](Base_Node* target, void* global_data) {
         Scene_Node* scene = reinterpret_cast<Scene_Node*>(target);
         scene->label_fps->set_text("frame rate: " + std::to_string((float)scene->fps_rate / 1000));

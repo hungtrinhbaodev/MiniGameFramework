@@ -235,7 +235,6 @@ void Action_Bezier::apply(Base_Node* target, float delta_time) {
     float last_rate = this->get_rate();
     Base_Action::apply(target, delta_time);
     float current_rate = this->get_rate();
-
     glm::vec2 last_bezier_position = Math::get_bezier_point(start_point, middle_point, end_point, last_rate);
     glm::vec2 current_bezier_position = Math::get_bezier_point(start_point, middle_point, end_point, current_rate);
     target->modify_transform().position += (current_bezier_position - last_bezier_position);

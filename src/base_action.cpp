@@ -147,11 +147,11 @@ float Base_Action::get_rate() {
         rate = 1.f;
     switch (ease_type) {
         case Action_Ease::SINE_OUT: {
-            rate = sin(rate * M_PI / 2);
+            rate = 1 + sin(rate * M_PI / 2);
             break;
         }
         case Action_Ease::SINE_IN: {
-            rate = sin((1 - rate) * -M_PI / 2);
+            rate = 1 + sin((1 - rate) * -M_PI / 2);
             break;
         }
         default: {

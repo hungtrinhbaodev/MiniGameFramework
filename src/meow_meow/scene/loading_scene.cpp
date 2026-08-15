@@ -1,7 +1,11 @@
 #include <actions.h>
 #include <director.h>
 #include <math_custom.h>
-#include <meow_meow/loading_scene.h>
+#include <meow_meow/animation/character_animation.h>
+#include <meow_meow/global_data.h>
+#include <meow_meow/scene/chosen_character_scene.h>
+#include <meow_meow/scene/loading_scene.h>
+#include <meow_meow/utils.h>
 #include <test/test_scene.h>
 
 namespace Meow_Meow {
@@ -37,30 +41,20 @@ namespace Meow_Meow {
     void Loading_Scene::init_bg() {
         Custom::Size screen_size = get_content_size();
         bg = new Image_Node("res/meow_meow/bg_loading_scene.png");
-        Custom::Size bg_size = bg->get_content_size();
-        bg->set_position({screen_size.width / 2, screen_size.height / 2});
-        float scale = std::max(screen_size.width / bg_size.width, screen_size.height / bg_size.height);
-        bg->set_scale({scale, scale});
+        fix_background_to_scene(bg, screen_size);
         this->add_child(bg);
     }
 
-    void Loading_Scene::attach() {
+    void Loading_Scene::attach(void* global_data) {
         loading->do_action(
             Action::sequence(
                 Action::progress_to(Math::random_float(3, 4), 100, Action_Ease::SINE_IN),
                 Action::call_func([](Base_Node* base_node, void* global_data) {
-                    Director::get()->change_scene(new Test_Scene(), nullptr);
+                    Director::get()->change_scene(new Chosen_Character_Scene(), Global_Data::get());
                 })
             )
         );
-        float duration = 0.35;
-        Base_Action* logo_action = Action::sequence(
-            Action::scale_to(duration / 2, glm::vec2({1.15, 1.15}) * ORIGIN_SCALE_LOGO, Action_Ease::SINE_OUT),
-            Action::scale_to(duration / 2, ORIGIN_SCALE_LOGO, Action_Ease::SINE_IN),
-            Action::rotate_by(duration / 2, -5, Action_Ease::SINE_IN),
-            Action::rotate_by(duration / 2, 5, Action_Ease::SINE_OUT)
-        );
-        logo->do_action(logo_action->repeat_forever());
+        run_action_idle_logo(logo, ORIGIN_SCALE_LOGO);
     }
 
 }  // namespace Meow_Meow

@@ -4,6 +4,8 @@
 #elif defined(__APPLE__)
 #include <mach-o/dyld.h>
 #endif
+#include <defined.h>
+
 #include <chrono>
 #include <filesystem>
 #include <stdexcept>
@@ -42,6 +44,34 @@ namespace Utils {
 
     std::string vec2_to_string(glm::vec2 vec2) {
         return std::string("{") + std::to_string(vec2.x) + ", " + std::to_string(vec2.y) + "}";
+    }
+
+    void save_transform_origin(Base_Node* node) {
+        void* data = node->get_user_data(Defined::KEY_SAVE_NODE_ORIGIN);
+        Custom::Transform* origin = nullptr;
+        if (data == nullptr) {
+            origin = new Custom::Transform();
+        } else {
+            origin = reinterpret_cast<Custom::Transform*>(data);
+        }
+        *origin = node->get_transform();
+        node->set_user_data(Defined::KEY_SAVE_NODE_ORIGIN, origin);
+    }
+
+    Custom::Transform get_transform_origin(Base_Node* node) {
+        void* data = node->get_user_data(Defined::KEY_SAVE_NODE_ORIGIN);
+        if (data == nullptr)
+            return {};
+        Custom::Transform* origin = reinterpret_cast<Custom::Transform*>(data);
+        return *origin;
+    }
+
+    void clean_transform_origin(Base_Node* node) {
+        void* data = node->get_user_data(Defined::KEY_SAVE_NODE_ORIGIN);
+        if (data == nullptr)
+            return;
+        Custom::Transform* origin = reinterpret_cast<Custom::Transform*>(data);
+        delete (origin);
     }
 
     std::string get_root_path() {

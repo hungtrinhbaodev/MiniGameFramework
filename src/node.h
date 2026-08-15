@@ -38,13 +38,13 @@ protected:
     void draw(Custom::Transform& world_transform, int& draw_index) override;
     void update(float delta_time) override;
     void exit() override;
-    void enter() override;
+    void enter(void* global_data) override;
 
     /**
      * @Note: Override function if need to custom class from Node
      * and use something work when node enter and exit!
      */
-    virtual void attach();
+    virtual void attach(void* global_data);
     virtual void detach();
 
     /**

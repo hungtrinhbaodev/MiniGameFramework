@@ -16,7 +16,7 @@ public:
 
 protected:
     void fix_update(float delta_time, void* global_data) override;
-    void enter() override;
+    void enter(void* global_data) override;
 
 private:
     Label_Node* label_fps = nullptr;

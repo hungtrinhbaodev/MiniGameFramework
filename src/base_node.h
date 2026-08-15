@@ -3,6 +3,7 @@
 #include <node_type.h>
 
 #include <glm/glm.hpp>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -27,12 +28,14 @@ public:
     int get_z_order();
     int get_tag();
     std::string get_name();
+    Custom::Color get_color();
     bool is_visible();
     bool is_cascade_opacity();
     Base_Node* get_parent();
     bool is_flipped_x();
     bool is_flipped_y();
     int get_draw_index();
+    void* get_user_data(std::string key);
     Custom::Transform& modify_transform();
     Custom::Transform get_transform();
     Custom::Transform get_world_transform();
@@ -58,6 +61,8 @@ public:
     void set_flipped_y(bool flipped_y);
     void set_tag(int tag);
     void set_name(std::string name);
+    void set_color(Custom::Color color);
+    void set_user_data(std::string key, void* data);
 
     void add_child(Base_Node* child);
 
@@ -82,6 +87,7 @@ protected:
     void travel(float delta_time, void* global_data = nullptr);
     void visit_handle_personal_task(float delta_time, void* global_data);
     void visit_draw(Custom::Transform& world_transform, float delta_time, int& draw_index);
+    void visit_cleanup_invalid_children(float delta_time, void* global_data);
     virtual void set_world_transform_information(Custom::Transform world_transform, int draw_index);
     virtual void handle_personal_task(float delta_time, void* global_data);
     virtual void update(float delta_time);
@@ -91,7 +97,7 @@ protected:
     virtual void after_draw_children(Custom::Transform& world_transform, int& draw_index);
 
     // Call when node attach from parent
-    virtual void enter();
+    virtual void enter(void* global_data);
     // Call when node detech from parent
     virtual void exit();
 
@@ -101,10 +107,14 @@ private:
     bool visible = true;
     int total_node = 1;
     std::vector<Base_Node*> cleanup_children;
+    std::vector<Base_Node*> waiting_added_children;
     // Invalid happen when node in list cleanup_children
     // with this node we don't keep track it anymore
     bool is_valid = true;
+    bool is_cleanup = false;
+    std::map<std::string, void*> user_data;
 
     void sort_nodes();
     void cleanup_invalid_children();
+    void added_waiting_children(float delta_time, void* global_data);
 };

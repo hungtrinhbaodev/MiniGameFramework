@@ -111,7 +111,7 @@ Node_Type Node::get_type() {
     return Node_Type::NODE;
 }
 
-void Node::attach() {}
+void Node::attach(void* global_data) {}
 
 void Node::detach() {}
 
@@ -211,14 +211,14 @@ void Node::update(float delta_time) {
     this->flex_update(delta_time);
 }
 
-void Node::enter() {
+void Node::enter(void* global_data) {
     /**Add list waitting component into list commponent again when node enter again!*/
     for (Base_Component* component : dettached_components) {
         component->assign_target(nullptr);
         components.push_back(component);
     }
     dettached_components.clear();
-    this->attach();
+    this->attach(global_data);
 }
 
 void Node::exit() {

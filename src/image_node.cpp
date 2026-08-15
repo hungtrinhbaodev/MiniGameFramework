@@ -77,6 +77,6 @@ void Image_Node::draw(Custom::Transform& world_transform, int& draw_index) {
         Custom::Rectangle rec{size.width, size.height};
         draw_index += rec.draw_border_rectangle(world_transform, this->anchor, draw_index, {255, 0, 255});
     }
-    Libs_Wrapper::draw_image(image_path, {world_transform, this->anchor, draw_index, {255, 255, 255}});
+    Libs_Wrapper::draw_image(image_path, {world_transform, this->anchor, draw_index, this->get_color()});
     draw_index++;
 }

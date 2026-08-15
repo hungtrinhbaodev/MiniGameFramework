@@ -30,6 +30,10 @@ void Animation_Node::set_speed(float speed) {
     speed_ratio = speed;
 }
 
+void Animation_Node::clear_all_animation() {
+    animations.clear();
+}
+
 void Animation_Node::play_animation(std::string name, float speed) {
     if (!is_valid_animation(name)) {
         std::cout << "Animation_Node WARNING: can't find animation " << name << " to play!" << std::endl;
@@ -57,6 +61,7 @@ void Animation_Node::flex_update(float delta_time) {
         std::string frame_number_str =
             current_frame < 10 ? ("0" + std::to_string(current_frame)) : std::to_string(current_frame);
         std::string current_image = animation.folder_path + frame_number_str + animation.extend_format;
+
         set_image(current_image);
         total_delta_time = 0;
         current_frame = (current_frame + 1) % animation.number_frame;

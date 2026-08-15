@@ -9,7 +9,7 @@ namespace Meow_Meow {
         ~Loading_Scene();
 
     protected:
-        void attach() override;
+        void attach(void* global_data) override;
 
     private:
         void init_bg();
