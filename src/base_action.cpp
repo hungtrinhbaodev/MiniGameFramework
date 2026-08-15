@@ -141,10 +141,6 @@ int Base_Action::get_tag() {
 
 float Base_Action::get_rate() {
     float rate = current_duration / total_duration;
-    if (rate < 0)
-        rate = 0.f;
-    if (rate > 1)
-        rate = 1.f;
     switch (ease_type) {
         case Action_Ease::SINE_OUT: {
             rate = 1 + sin(rate * M_PI / 2);
@@ -158,6 +154,7 @@ float Base_Action::get_rate() {
             break;
         }
     }
+    rate = std::max(0.f, std::min(1.f, rate));
     return rate;
 }
 
