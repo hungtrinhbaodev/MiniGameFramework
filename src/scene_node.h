@@ -13,10 +13,12 @@ public:
     void process_frame(float delta_time);
     void set_initialize(bool initialize);
     void start();
+    Base_Node* get_layer_background();
 
 protected:
-    void fix_update(float delta_time, void* global_data) override;
+    void handle_personal_task(float delta_time, void* global_data) override;
     void enter(void* global_data) override;
+    void track_layer_background(Base_Node* background);
 
 private:
     Label_Node* label_fps = nullptr;
@@ -29,4 +31,5 @@ private:
      * is set to make the right flow in travel
      */
     bool initialize = false;
+    Base_Node* layer_background = nullptr;
 };

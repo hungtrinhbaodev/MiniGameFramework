@@ -1,9 +1,11 @@
 #include <actions.h>
+#include <director.h>
 #include <math.h>
 #include <math_custom.h>
 #include <meow_meow/global_data.h>
 #include <meow_meow/scene/chosen_character_scene.h>
 #include <meow_meow/utils.h>
+#include <test/test_scene.h>
 #include <utils.h>
 
 namespace Meow_Meow {
@@ -25,6 +27,7 @@ namespace Meow_Meow {
         fix_background_to_scene(bg, screen_size);
         bg->set_color(ORIGIN_BG_COLOR);
         this->add_child(bg);
+        this->track_layer_background(bg);
     }
 
     void Chosen_Character_Scene::init_logo() {
@@ -88,7 +91,7 @@ namespace Meow_Meow {
         btn_start = Button_Node::make(
             "res/meow_meow/BtnGreen.png",
             "START!",
-            [](Button_Node* btn, void* global_data) { std::cout << "Hi pressed me 3!" << std::endl; },
+            [](Button_Node* btn, void* global_data) { Director::get()->change_scene(new Test_Scene(), nullptr); },
             {180, 70},
             {30, 20, 280, 82},
             {20, 20, 20},

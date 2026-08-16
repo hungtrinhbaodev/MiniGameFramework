@@ -2,6 +2,7 @@
 #include <meow_meow/global_data.h>
 #include <meow_meow/scene/chosen_character_scene.h>
 #include <meow_meow/scene/loading_scene.h>
+#include <test/image_test.h>
 #include <test/test_scene.h>
 #include <utils.h>
 #include <wrapper.h>
@@ -21,8 +22,9 @@ int main(void) {
      * first by add your scene here, after that find the wait to have
      * a smooth flow to entry better!
      * */
-    Director::get()->start(new Meow_Meow::Loading_Scene(), Meow_Meow::Global_Data::get());
-    // Director::get()->start(new Meow_Meow::Chosen_Character_Scene(), Meow_Meow::Global_Data::get());
+    // Director::get()->start(new Image_Test_Scene(), nullptr);
+    // Director::get()->start(new Meow_Meow::Loading_Scene(), Meow_Meow::Global_Data::get());
+    Director::get()->start(new Meow_Meow::Chosen_Character_Scene(), Meow_Meow::Global_Data::get());
     // Director::get()->start(new Test_Scene(), nullptr);
 
     long start = Utils::now();

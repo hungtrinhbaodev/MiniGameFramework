@@ -43,6 +43,7 @@ namespace Meow_Meow {
         bg = new Image_Node("res/meow_meow/bg_loading_scene.png");
         fix_background_to_scene(bg, screen_size);
         this->add_child(bg);
+        this->track_layer_background(bg);
     }
 
     void Loading_Scene::attach(void* global_data) {

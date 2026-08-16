@@ -58,3 +58,10 @@ void Director::end() {
         delete (this->next_scene);
     }
 }
+
+Base_Node* Director::get_running_scene_background() {
+    if (this->running_scene == nullptr) {
+        return nullptr;
+    }
+    return this->running_scene->get_layer_background();
+}

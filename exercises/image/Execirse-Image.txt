@@ -1,0 +1,21 @@
+Task 1: Open a window with size width: 800, height: 480.
+    - Require:
+        * The origin of window position (0, 0) is the bottom-left corner of window.
+        * The vector up with direction is from bottom to top.
+        * The vector right width direction is from left to right.
+Task 2: Draw a image with the 4 base attributes are position (vector2), scale (vector2), rotation (float), anchor point (vector2).
+    - Require:
+        * Image name: AddonBtnyellow.png
+        * Position: (602, 307).
+        * Scale: (1.2, 1.1).
+        * Rotation: 36.5.
+        * Anchor point: (0.3, 0.7).
+Task 3: Draw a small piece of image into screen, the piece of image with be describe as a rectangle (x, y, width, height) which (x, y) start position of rectangle from the bottom-left corner of image and (width, height) is size of rectangle that start from (x, y).
+for example if the recangle is (20, 30, 100, 120), you will draw pixels which x from 20 -> 120, y from 100->220, Constrant from now is that 0 <= x + width <= texture width, 0 <= y + height <= texture height.
+    - Require:
+        * Image name: BtnGreen.png
+        * Position: (240, 257).
+        * Scale: (1.1, 1.2).
+        * Rotation: 15.
+        * Anchor point: (0.5, 0.7).
+        * Rectangle: (20, 30, 220, 40).

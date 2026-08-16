@@ -16,6 +16,8 @@ public:
     void end_frame();
     void end();
 
+    Base_Node* get_running_scene_background();
+
 private:
     static Director* instance;
     Scene_Node* next_scene = nullptr;

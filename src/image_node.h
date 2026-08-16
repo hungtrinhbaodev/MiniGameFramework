@@ -32,6 +32,9 @@ public:
      * */
     void set_touched_caller(std::function<void(glm::vec2, Base_Node*, void*)> caller);
 
+    void set_enable_draw_rect(bool enable_draw_rect);
+    void set_draw_rect(Custom::Rectangle_Area draw_rect);
+
 protected:
     void draw(Custom::Transform& world_transform, int& draw_index) override;
 
@@ -42,4 +45,6 @@ private:
     bool touch_enabled = false;
     bool swallow_touches = false;
     std::function<void(glm::vec2, Base_Node*, void*)> touch_caller = nullptr;
+    bool enable_draw_rect = false;
+    Custom::Rectangle_Area draw_rect{0, 0, 0, 0};
 };

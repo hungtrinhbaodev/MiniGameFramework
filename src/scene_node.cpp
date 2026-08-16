@@ -44,6 +44,10 @@ void Scene_Node::start() {
     this->enter(this->global_data);
 }
 
+Base_Node* Scene_Node::get_layer_background() {
+    return this->layer_background;
+}
+
 void Scene_Node::enter(void* global_data) {
     Node::enter(global_data);
     this->schedule(Defined::SCENE_LABEL_FPS_SCHEDULER_KEY, 0.2, [](Base_Node* target, void* global_data) {
@@ -52,7 +56,12 @@ void Scene_Node::enter(void* global_data) {
     });
 }
 
-void Scene_Node::fix_update(float delta_time, void* global_data) {
-    Node::update(delta_time);
+void Scene_Node::track_layer_background(Base_Node* background) {
+    this->layer_background = background;
+}
+
+void Scene_Node::handle_personal_task(float delta_time, void* global_data) {
+    Node::handle_personal_task(delta_time, global_data);
     this->fps_rate = (int)((1.f / delta_time) * 1000);
+    this->label_fps->set_visible(!Libs_Wrapper::is_debug_mode());
 }

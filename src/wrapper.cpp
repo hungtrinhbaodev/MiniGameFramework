@@ -1,4 +1,6 @@
 #include <collision_system.h>
+#include <director.h>
+#include <label_node.h>
 #include <math_custom.h>
 #include <touch_system.h>
 #include <utils.h>
@@ -462,10 +464,45 @@ namespace Libs_Wrapper {
     }
 
     void draw_frame() {
+        if (is_debug_mode()) {
+            Label_Node* label = new Label_Node("", "", 10);
+            label->set_anchor({0, 0});
+            label->set_color({120, 120, 120});
+            int distance_x = 50, distance_y = 50;
+            Base_Node* background = Director::get()->get_running_scene_background();
+            int draw_index = -1;
+            Custom::Color color = {120, 120, 120};
+            if (background != nullptr) {
+                draw_index = background->get_draw_index();
+                color = {180, 180, 180};
+            }
+            for (int i = 0; i <= get_screen_width() / 50; i++) {
+                int x = i * distance_x;
+                draw_line(x, 0, x, get_screen_height(), draw_index, color, 1.0f, true);
+                std::string text = std::to_string(x);
+                label->set_position({x, 10});
+                label->set_text(text);
+                Libs_Wrapper::draw_text(
+                    "", text, 10, {label->get_transform(), label->get_anchor(), draw_index, label->get_color()}
+                );
+            }
+            for (int i = 0; i <= get_screen_height() / 50; i++) {
+                int y = i * distance_y;
+                draw_line(0, y, get_screen_width(), y, draw_index, color, 1.0f, true);
+                std::string text = std::to_string(y);
+                label->set_position({10, y});
+                label->set_text(text);
+                Libs_Wrapper::draw_text(
+                    "", text, 10, {label->get_transform(), label->get_anchor(), draw_index, label->get_color()}
+                );
+            }
+            delete (label);
+        }
+
         trace_commands.clear();
         BeginDrawing();
 
-        ClearBackground(RAYWHITE);
+        ClearBackground({230, 230, 230, 255});
         reload_shader();
 
         while (!rl_queue_commands.empty()) {

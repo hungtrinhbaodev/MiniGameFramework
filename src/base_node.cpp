@@ -8,7 +8,6 @@
 Base_Node::Base_Node() {}
 
 Base_Node::~Base_Node() {
-    cleanup_invalid_children();
     Utils::clean_transform_origin(this);
     for (Base_Node* child : children) {
         delete (child);
@@ -18,6 +17,11 @@ Base_Node::~Base_Node() {
 void Base_Node::visit_handle_personal_task(float delta_time, void* global_data) {
     this->added_waiting_children(delta_time, global_data);
     this->handle_personal_task(delta_time, global_data);
+
+    if (!this->is_valid) {
+        return;
+    }
+
     for (Base_Node* child : children) {
         child->visit_handle_personal_task(delta_time, global_data);
     }
@@ -38,11 +42,11 @@ void Base_Node::visit_draw(Custom::Transform& world_transform, float delta_time,
         world_transform.forward(transform, this->parent->is_cascade_opacity(), this->flipped);
     }
 
-    // Save one world transform to use latter
-    this->set_world_transform_information(world_transform, draw_index);
-
     // Don't update draw to node and its children when it invisible
     if (!this->visible) {
+        // Save one world transform to use latter
+        this->set_world_transform_information(world_transform, draw_index);
+
         world_transform.inverse(transform, insverse_opacity, this->parent->flipped);
         return;
     }
@@ -60,7 +64,12 @@ void Base_Node::visit_draw(Custom::Transform& world_transform, float delta_time,
             child->visit_draw(world_transform, delta_time, draw_index);
         }
     }
+
     draw(world_transform, draw_index);
+
+    // Save one world transform to use latter
+    this->set_world_transform_information(world_transform, draw_index);
+
     for (Base_Node* child : this->children) {
         if (child->z_order >= 0) {
             child->visit_draw(world_transform, delta_time, draw_index);
@@ -356,8 +365,9 @@ bool Base_Node::remove_child(Base_Node* child, bool is_cleanup) {
         }
     }
     if (is_removed) {
-        children.erase(children.begin() + remove_index);
+        // children.erase(children.begin() + remove_index);
         child->is_cleanup = is_cleanup;
+        child->is_valid = false;
         cleanup_children.push_back(child);
         return true;
     }
@@ -369,15 +379,19 @@ void Base_Node::sort_nodes() {
 }
 
 void Base_Node::cleanup_invalid_children() {
-    for (Base_Node* child : cleanup_children) {
-        child->exit();
-        child->is_valid = false;
-        child->parent = nullptr;
-        if (child->is_cleanup) {
-            delete (child);
+    for (int i = 0; i < children.size(); i++) {
+        Base_Node* child = children[i];
+        if (!child->is_valid) {
+            children[i] = children.back();
+            child->exit();
+            child->parent = nullptr;
+            if (child->is_cleanup) {
+                delete (child);
+            }
+            i--;
+            children.pop_back();
         }
     }
-    cleanup_children.clear();
 }
 
 void Base_Node::added_waiting_children(float delta_time, void* global_data) {

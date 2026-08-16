@@ -24,6 +24,9 @@ Custom::Size Image_Node::get_content_size() {
     if (image_path == "") {
         return {0, 0};
     }
+    if (enable_draw_rect) {
+        return {draw_rect.width, draw_rect.height};
+    }
     Image_Info image_info = Libs_Wrapper::image_info(image_path);
     return image_info.size;
 }
@@ -68,6 +71,14 @@ void Image_Node::set_touched_caller(std::function<void(glm::vec2, Base_Node*, vo
     this->touch_caller = caller;
 }
 
+void Image_Node::set_enable_draw_rect(bool enable_draw_rect) {
+    this->enable_draw_rect = enable_draw_rect;
+}
+
+void Image_Node::set_draw_rect(Custom::Rectangle_Area draw_rect) {
+    this->draw_rect = draw_rect;
+}
+
 void Image_Node::draw(Custom::Transform& world_transform, int& draw_index) {
     Node::draw(world_transform, draw_index);
     if (image_path == "")
@@ -77,6 +88,9 @@ void Image_Node::draw(Custom::Transform& world_transform, int& draw_index) {
         Custom::Rectangle rec{size.width, size.height};
         draw_index += rec.draw_border_rectangle(world_transform, this->anchor, draw_index, {255, 0, 255});
     }
-    Libs_Wrapper::draw_image(image_path, {world_transform, this->anchor, draw_index, this->get_color()});
+    Custom::Draw_Attributes draw_attributes = {world_transform, this->anchor, draw_index, this->get_color()};
+    draw_attributes.is_use_rect_texture = enable_draw_rect;
+    draw_attributes.rect_texture = draw_rect;
+    Libs_Wrapper::draw_image(image_path, draw_attributes);
     draw_index++;
 }
