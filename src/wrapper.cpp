@@ -177,6 +177,10 @@ namespace Libs_Wrapper {
                     type = "LINE";
                     break;
                 }
+                case RECTANGLE: {
+                    type = "RECTANGLE";
+                    break;
+                }
             }
             os << "Trace command: " << type << std::endl << trace.attributes;
             if (trace.trace_extra_information.size() > 0) {

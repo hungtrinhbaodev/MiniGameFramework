@@ -126,6 +126,9 @@ void Touch_Component::handle_task() {
                 }
                 break;
             }
+            default: {
+                break;
+            }
         }
     }
 }
