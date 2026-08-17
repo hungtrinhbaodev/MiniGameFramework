@@ -140,7 +140,7 @@ void Node::handle_personal_task(float delta_time, void* global_data) {
         Base_Action* action = actions[i];
         if (action->is_removed())
             continue;
-        bool is_finish_all = action->travel_action(this, delta_time, global_data);
+        bool is_finish_all = action->travel_action_2(this, delta_time, global_data);
         if (is_finish_all) {
             action->set_removed(true);
         }

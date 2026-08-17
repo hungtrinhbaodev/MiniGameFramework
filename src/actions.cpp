@@ -5,6 +5,60 @@
 
 #include <iostream>
 
+Action_Sequence::Action_Sequence() {}
+
+Action_Sequence::~Action_Sequence() {}
+
+bool Action_Sequence::update_action(
+    Base_Node* target,
+    float delta_time,
+    void* global_data,
+    std::vector<Action_Processing_Information>& processing_informations,
+    long& start_time_chain,
+    bool debug
+) {
+    bool finish_sequence = false;
+    bool is_finish_update =
+        Base_Action::update_action(target, delta_time, global_data, processing_informations, start_time_chain, debug);
+    if (this->next_sequence_chain != nullptr) {
+        finish_sequence = this->next_sequence_chain->sequence(
+            target, delta_time, global_data, processing_informations, start_time_chain, debug
+        );
+    }
+    return finish_sequence && is_finish_update;
+}
+
+std::string Action_Sequence::get_action_name() {
+    return "Sequence";
+}
+
+Action_Spawn::Action_Spawn() {}
+
+Action_Spawn::~Action_Spawn() {}
+
+bool Action_Spawn::update_action(
+    Base_Node* target,
+    float delta_time,
+    void* global_data,
+    std::vector<Action_Processing_Information>& processing_informations,
+    long& start_time_chain,
+    bool debug
+) {
+    bool finish_spawn = false;
+    bool is_finish_update =
+        Base_Action::update_action(target, delta_time, global_data, processing_informations, start_time_chain, debug);
+    if (this->next_spawn_chain != nullptr) {
+        finish_spawn = this->next_spawn_chain->spawn(
+            target, delta_time, global_data, processing_informations, start_time_chain, debug
+        );
+    }
+    return finish_spawn && is_finish_update;
+}
+
+std::string Action_Spawn::get_action_name() {
+    return "Spawn";
+}
+
 Action_Delay::Action_Delay() {}
 
 Action_Delay::~Action_Delay() {}
@@ -161,7 +215,7 @@ void Action_Opacity::apply(Base_Node* target, float delta_time) {
     float opacity_more = (current_rate - last_rate) * delta_opacity;
 
     target->modify_transform().opacity =
-        (unsigned char)std::max(std::min((int)(target->get_opacity() + opacity_more), 255), 0);
+        (unsigned char)std::max(std::min((int)((float)target->get_opacity() + opacity_more), 255), 0);
 }
 
 std::string Action_Opacity::get_action_name() {
@@ -458,26 +512,16 @@ Action_Bezier* Action::bezier_to(float duration, glm::vec2 middle_point, glm::ve
 }
 
 Base_Action* Action::sequence(std::vector<Base_Action*> actions) {
-    Base_Action* first = nullptr;
-    if (actions.size() > 0) {
-        first = actions.front();
-    } else {
-        first = new Base_Action();
-    }
-    for (int i = 1; i < actions.size(); i++) {
+    Base_Action* first = new Action_Sequence();
+    for (int i = 0; i < actions.size(); i++) {
         first->push_sequence(actions[i]);
     }
     return first;
 }
 
 Base_Action* Action::spawn(std::vector<Base_Action*> actions) {
-    Base_Action* first = nullptr;
-    if (actions.size() > 0) {
-        first = actions.front();
-    } else {
-        first = new Base_Action();
-    }
-    for (int i = 1; i < actions.size(); i++) {
+    Base_Action* first = new Action_Spawn();
+    for (int i = 0; i < actions.size(); i++) {
         first->push_spawn(actions[i]);
     }
     return first;

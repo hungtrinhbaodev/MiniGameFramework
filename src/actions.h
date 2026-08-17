@@ -4,6 +4,40 @@
 #include <functional>
 #include <type_traits>
 
+class Action_Sequence : public Base_Action {
+public:
+    Action_Sequence();
+    ~Action_Sequence();
+
+protected:
+    bool update_action(
+        Base_Node* target,
+        float delta_time,
+        void* global_data,
+        std::vector<Action_Processing_Information>& processing_informations,
+        long& start_time_chain,
+        bool debug = false
+    ) override;
+    std::string get_action_name() override;
+};
+
+class Action_Spawn : public Base_Action {
+public:
+    Action_Spawn();
+    ~Action_Spawn();
+
+protected:
+    bool update_action(
+        Base_Node* target,
+        float delta_time,
+        void* global_data,
+        std::vector<Action_Processing_Information>& processing_informations,
+        long& start_time_chain,
+        bool debug = false
+    ) override;
+    std::string get_action_name() override;
+};
+
 class Action_Delay : public Base_Action {
 public:
     Action_Delay();

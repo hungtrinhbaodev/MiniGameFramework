@@ -12,11 +12,30 @@ enum Action_Type { ALWAY_HAPPEN, TIMEER };
 
 class Base_Action {
 public:
+    struct Action_Processing_Information {
+        float start_time = 0.f;
+        float end_time = 0.f;
+        std::string action_name = "";
+        friend std::ostream& operator<<(std::ostream& os, const Action_Processing_Information& debug) {
+            std::cout << "Action information: " << debug.action_name << ", start time: " << debug.start_time
+                      << ", end time: " << debug.end_time << std::endl;
+            return os;
+        }
+        bool operator<(const Action_Processing_Information& other) {
+            if (start_time == other.start_time) {
+                return end_time < other.end_time;
+            }
+            return start_time < other.start_time;
+        }
+    };
+
     Base_Action();
     ~Base_Action();
 
     void assign_target_to_all_chain(Base_Node* target, void* global_data, bool debug = false);
+    void assign_target_2(Base_Node* target, void* global_data, bool debug = false);
     bool travel_action(Base_Node* target, float delta_time, void* global_data);
+    bool travel_action_2(Base_Node* target, float delta_time, void* global_data);
     int get_tag();
 
     void set_tag(int tag);
@@ -36,6 +55,23 @@ public:
     bool is_removed();
     bool is_debug();
     void show_debug();
+
+    bool sequence(
+        Base_Node* target,
+        float delta_time,
+        void* global_data,
+        std::vector<Action_Processing_Information>& processing_informations,
+        long& start_time_chain,
+        bool debug = false
+    );
+    bool spawn(
+        Base_Node* target,
+        float delta_time,
+        void* global_data,
+        std::vector<Action_Processing_Information>& processing_informations,
+        long& start_time_chain,
+        bool debug = false
+    );
 
 protected:
     Base_Node* target = nullptr;
@@ -63,26 +99,18 @@ protected:
     void deep_clean();
     virtual bool is_valid_target(Base_Node* target);
     virtual void setup_target_to_action(Base_Node* target);
+    virtual bool update_action(
+        Base_Node* target,
+        float delta_time,
+        void* global_data,
+        std::vector<Action_Processing_Information>& processing_informations,
+        long& start_time_chain,
+        bool debug = false
+    );
     virtual void apply(Base_Node* target, float delta_time);
     virtual std::string get_action_name();
 
 private:
-    struct Action_Processing_Information {
-        float start_time = 0.f;
-        float end_time = 0.f;
-        std::string action_name = "";
-        friend std::ostream& operator<<(std::ostream& os, const Action_Processing_Information& debug) {
-            std::cout << "Action information: " << debug.action_name << ", start time: " << debug.start_time
-                      << ", end time: " << debug.end_time << std::endl;
-            return os;
-        }
-        bool operator<(const Action_Processing_Information& other) {
-            if (start_time == other.start_time) {
-                return end_time < other.end_time;
-            }
-            return start_time < other.start_time;
-        }
-    };
     bool is_repeat_forever = false;
     /**
      * With action use once we apply once

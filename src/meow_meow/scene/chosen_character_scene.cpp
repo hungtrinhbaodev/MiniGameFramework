@@ -135,7 +135,7 @@ namespace Meow_Meow {
     }
 
     float Chosen_Character_Scene::effect_shake_light_when_change_character(float delay) {
-        float duration = 0.35;
+        float duration = 0.65;
         for (Image_Node* light : this->lights) {
             Custom::Transform origin = Utils::get_transform_origin(light);
             float rotation = origin.rotation;
@@ -148,7 +148,7 @@ namespace Meow_Meow {
                     Action::delay(delay),
                     Action::spawn(
                         Action::sequence(
-                            Action::rotate_to(duration * 0.5, rotation - rotation_sign * 8, Action_Ease::SINE_IN),
+                            Action::rotate_to(duration * 0.5, rotation - rotation_sign * 20, Action_Ease::SINE_IN),
                             Action::rotate_to(duration * 0.5, rotation, Action_Ease::SINE_OUT)
                         ),
                         Action::sequence(
@@ -156,7 +156,8 @@ namespace Meow_Meow {
                             Action::scale_to(duration * 0.5, scale, Action_Ease::SINE_OUT)
                         ),
                         Action::sequence(
-                            Action::fade_to(duration * 0.5, 10, Action_Ease::SINE_IN),
+                            Action::fade_out(duration * 0.8, Action_Ease::SINE_IN),
+                            Action::delay(duration * 0.2),
                             Action::fade_to(duration * 0.5, opacity, Action_Ease::SINE_OUT)
                         )
                     ),
@@ -270,12 +271,14 @@ namespace Meow_Meow {
                         Action::rotate_to(duration * 0.5, Math::random_float(15, 30), Action_Ease::SINE_OUT),
                         Action::rotate_to(duration * 0.35, 0, Action_Ease::SINE_IN)
                     ),
-                    Action::sequence(Action::fade_to(duration * 0.25, 200), Action::fade_in(duration * 0.75))
+                    Action::sequence(Action::fade_to(duration * 0.75, 200), Action::fade_in(duration * 0.75))
                 ),
                 Action::call_func([this](Base_Node* target, void* global_data) {
                     run_action_idle_logo(this->logo, ORIGIN_SCALE_LOGO);
                 })
-            )
+            ),
+            -1,
+            true
         );
         return duration;
     }
