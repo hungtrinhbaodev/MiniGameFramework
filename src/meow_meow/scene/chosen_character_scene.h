@@ -10,7 +10,6 @@ namespace Meow_Meow {
     public:
         Chosen_Character_Scene();
         ~Chosen_Character_Scene();
-        void on_change_character(int next_character);
 
     protected:
         void attach(void* global_data) override;
@@ -24,8 +23,13 @@ namespace Meow_Meow {
         void init_characters(void* global_data);
         void update_btn_side_state(Animation_Node* btn, bool is_disable);
         void effect_show_scene();
+        void effect_idle_light(Node* light);
         float effect_show_lights(float delay);
         float effect_show_logo(float delay);
+        float effect_blur_bg(float delay);
+
+        float effect_shake_light_when_change_character(float delay);
+        void on_change_character(int next_character);
 
         Custom::Color ORIGIN_BG_COLOR = {80, 80, 80};
         unsigned char ORIGIN_BG_OPACITY = 200;
@@ -43,6 +47,7 @@ namespace Meow_Meow {
         float ORIGIN_LIGHT_LEFT_ROTATION = -35;
         float ORIGIN_LIGHT_RIGHT_ROTATION = 35;
         unsigned char ORIGIN_LIGHT_OPACITY = 90;
+        glm::vec2 ORIGIN_LIGHT_SCALE = {1, 1};
 
         Image_Node* bg = nullptr;
         Image_Node* logo = nullptr;

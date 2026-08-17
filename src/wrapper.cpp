@@ -480,7 +480,7 @@ namespace Libs_Wrapper {
                 int x = i * distance_x;
                 draw_line(x, 0, x, get_screen_height(), draw_index, color, 1.0f, true);
                 std::string text = std::to_string(x);
-                label->set_position({x, 10});
+                label->set_position({x + 5, 8});
                 label->set_text(text);
                 Libs_Wrapper::draw_text(
                     "", text, 10, {label->get_transform(), label->get_anchor(), draw_index, label->get_color()}

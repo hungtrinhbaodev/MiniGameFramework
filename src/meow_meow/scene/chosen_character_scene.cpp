@@ -28,6 +28,7 @@ namespace Meow_Meow {
         bg->set_color(ORIGIN_BG_COLOR);
         this->add_child(bg);
         this->track_layer_background(bg);
+        Utils::save_transform_origin(bg);
     }
 
     void Chosen_Character_Scene::init_logo() {
@@ -55,9 +56,10 @@ namespace Meow_Meow {
             light->set_position(glm::vec2{screen_size.width, screen_size.height} * ratio_position);
             light->set_rotation(rotation);
             light->set_opacity(ORIGIN_LIGHT_OPACITY);
+            light->set_scale(ORIGIN_LIGHT_SCALE);
             this->add_child(light);
-            Utils::save_transform_origin(light);
             this->lights.push_back(light);
+            Utils::save_transform_origin(light);
         }
     }
 
@@ -68,8 +70,18 @@ namespace Meow_Meow {
         btn->make_animation("PAUSE", "res/meow_meow/ui/Up", 1, 0);
         btn->set_touch_enabled(true);
         btn->set_swallow_touches(true);
-        btn->set_touched_caller([this, is_left](glm::vec2, Base_Node*, void* global_data) {
+        btn->set_touched_caller([this, is_left](glm::vec2, Base_Node* target, void* global_data) {
             this->on_change_character(this->current_character_index + (is_left ? -1 : 1));
+            Node* btn = reinterpret_cast<Node*>(target);
+            btn->stop_all_action();
+            btn->set_scale({1, 1});
+            float duration = 0.15;
+            btn->do_action(
+                Action::sequence(
+                    Action::scale_to(duration / 2, {1.2, 1.2}, Action_Ease::SINE_OUT),
+                    Action::scale_to(duration / 2, {1, 1}, Action_Ease::SINE_IN)
+                )
+            );
         });
         float rotation = 90;
         glm::vec2 ratio = ORIGIN_RATIO_POSITION_BUTTON_RIGHT;
@@ -122,6 +134,42 @@ namespace Meow_Meow {
         btn->set_opacity(is_disable ? DISABLE_OPACITY_BUTTON_SIDES : 255);
     }
 
+    float Chosen_Character_Scene::effect_shake_light_when_change_character(float delay) {
+        float duration = 0.35;
+        for (Image_Node* light : this->lights) {
+            Custom::Transform origin = Utils::get_transform_origin(light);
+            float rotation = origin.rotation;
+            float rotation_sign = rotation / std::abs(rotation);
+            glm::vec2 scale = origin.scale;
+            unsigned char opacity = origin.opacity;
+            light->stop_all_action();
+            light->do_action(
+                Action::sequence(
+                    Action::delay(delay),
+                    Action::spawn(
+                        Action::sequence(
+                            Action::rotate_to(duration * 0.5, rotation - rotation_sign * 8, Action_Ease::SINE_IN),
+                            Action::rotate_to(duration * 0.5, rotation, Action_Ease::SINE_OUT)
+                        ),
+                        Action::sequence(
+                            Action::scale_to(duration * 0.5, scale * glm::vec2{1.1, 1}, Action_Ease::SINE_IN),
+                            Action::scale_to(duration * 0.5, scale, Action_Ease::SINE_OUT)
+                        ),
+                        Action::sequence(
+                            Action::fade_to(duration * 0.5, 10, Action_Ease::SINE_IN),
+                            Action::fade_to(duration * 0.5, opacity, Action_Ease::SINE_OUT)
+                        )
+                    ),
+                    Action::call_func([this](Base_Node* target, void* global_data) {
+                        Node* light = reinterpret_cast<Node*>(target);
+                        this->effect_idle_light(light);
+                    })
+                )
+            );
+        }
+        return duration;
+    }
+
     void Chosen_Character_Scene::on_change_character(int next_character) {
         next_character = std::max(0, std::min(next_character, (int)this->characters.size() - 1));
         if (this->current_character_index == next_character) {
@@ -136,10 +184,11 @@ namespace Meow_Meow {
         bool is_most_right = this->current_character_index >= this->characters.size() - 1;
         this->update_btn_side_state(this->btn_left, is_most_left);
         this->update_btn_side_state(this->btn_right, is_most_right);
+        this->effect_shake_light_when_change_character(0);
     }
 
     float Chosen_Character_Scene::effect_show_lights(float delay) {
-        float duration_show_light = 0.65;
+        float duration = 0.65;
         for (Image_Node* light : lights) {
             Custom::Transform origin = Utils::get_transform_origin(light);
             light->stop_all_action();
@@ -154,44 +203,44 @@ namespace Meow_Meow {
                     Action::delay(delay),
                     Action::spawn(
                         Action::sequence(
-                            Action::scale_to(
-                                duration_show_light / 2, glm::vec2(1.1, 1.1) * origin.scale, Action_Ease::SINE_OUT
-                            ),
-                            Action::scale_to(
-                                duration_show_light / 2, glm::vec2(1, 1) * origin.scale, Action_Ease::SINE_IN
-                            )
+                            Action::scale_to(duration / 2, glm::vec2(1.05, 1.1) * origin.scale, Action_Ease::SINE_OUT),
+                            Action::scale_to(duration / 2, glm::vec2(1, 1) * origin.scale, Action_Ease::SINE_IN)
                         ),
                         Action::sequence(
                             Action::rotate_to(
-                                duration_show_light * 0.65, origin.rotation + rotation_sign * 10, Action_Ease::SINE_OUT
+                                duration * 0.65, origin.rotation + rotation_sign * 5, Action_Ease::SINE_OUT
                             ),
-                            Action::rotate_to(duration_show_light * 0.35, origin.rotation, Action_Ease::SINE_IN)
+                            Action::rotate_to(duration * 0.35, origin.rotation, Action_Ease::SINE_IN)
                         ),
                         Action::sequence(
-                            Action::fade_to(duration_show_light * 0.65, 140),
-                            Action::fade_to(duration_show_light * 0.35, origin_opacity)
+                            Action::fade_to(duration * 0.65, 140), Action::fade_to(duration * 0.35, origin_opacity)
                         )
                     ),
-                    Action::call_func([origin_opacity, origin_scale](Base_Node* target, void* global_data) {
+                    Action::call_func([this](Base_Node* target, void* global_data) {
                         Node* light = reinterpret_cast<Node*>(target);
-                        Base_Action* action = Action::spawn(
-                            Action::sequence(
-                                Action::fade_to(
-                                    0.5, std::min((unsigned char)(origin_opacity * 1.2), (unsigned char)255)
-                                ),
-                                Action::fade_to(0.5, origin_opacity)
-                            ),
-                            Action::sequence(
-                                Action::scale_to(0.75, origin_scale * glm::vec2(1.1, 1.1), Action_Ease::SINE_OUT),
-                                Action::scale_to(0.75, origin_scale * glm::vec2(1, 1), Action_Ease::SINE_IN)
-                            )
-                        );
-                        light->do_action(action->repeat_forever());
+                        this->effect_idle_light(light);
                     })
                 )
             );
         }
-        return duration_show_light;
+        return duration;
+    }
+
+    void Chosen_Character_Scene::effect_idle_light(Node* light) {
+        Custom::Transform origin = Utils::get_transform_origin(light);
+        unsigned char origin_opacity = origin.opacity;
+        glm::vec2 origin_scale = origin.scale;
+        Base_Action* action = Action::spawn(
+            Action::sequence(
+                Action::fade_to(0.5, std::min((unsigned char)(origin_opacity * 1.2), (unsigned char)255)),
+                Action::fade_to(0.5, origin_opacity)
+            ),
+            Action::sequence(
+                Action::scale_to(0.75, origin_scale * glm::vec2(1.1, 1.1), Action_Ease::SINE_OUT),
+                Action::scale_to(0.75, origin_scale * glm::vec2(1, 1), Action_Ease::SINE_IN)
+            )
+        );
+        light->do_action(action->repeat_forever());
     }
 
     float Chosen_Character_Scene::effect_show_logo(float delay) {
@@ -231,9 +280,21 @@ namespace Meow_Meow {
         return duration;
     }
 
+    float Chosen_Character_Scene::effect_blur_bg(float delay) {
+        Custom::Transform origin = Utils::get_transform_origin(bg);
+        float duration = 1;
+        bg->set_opacity(255);
+        bg->do_action(
+            Action::sequence(Action::delay(delay), Action::fade_to(duration, origin.opacity, Action_Ease::SINE_IN))
+        );
+        return duration;
+    }
+
     void Chosen_Character_Scene::effect_show_scene() {
         float total_time = 0;
-        total_time += std::max(effect_show_lights(total_time), effect_show_logo(total_time));
+        total_time += std::max(
+            std::max(effect_show_lights(total_time), effect_show_logo(total_time)), effect_blur_bg(total_time)
+        );
     }
 
     void Chosen_Character_Scene::attach(void* global_data) {
