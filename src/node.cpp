@@ -33,12 +33,13 @@ void Node::add_component(Base_Component* component) {
     this->components.push_back(component);
 }
 
-void Node::do_action(Base_Action* action, int tag) {
+void Node::do_action(Base_Action* action, int tag, bool debug) {
     if (action == nullptr) {
         return;
     }
     action->set_tag(tag);
     action->set_target(this);
+    action->set_debug(debug);
     actions.push_back(action);
 }
 
@@ -84,21 +85,16 @@ void Node::stop_action(int tag) {
     Base_Action* action = nullptr;
     for (int i = 0; i < actions.size(); i++) {
         if (actions[i]->get_tag() == tag) {
-            delete (actions[i]);
-            actions[i] = actions[actions.size() - 1];
-            actions.pop_back();
-            i--;
+            actions[i]->set_removed(true);
         }
     }
 }
 
 void Node::stop_all_action() {
     for (Base_Action* action : actions) {
+        action->set_removed(true);
         cleanup_actions.push_back(action);
     }
-    actions.clear();
-
-    cleanup_stopped_actions();
 }
 
 void Node::unschedule(const std::string& key) {
@@ -140,30 +136,18 @@ void Node::handle_personal_task(float delta_time, void* global_data) {
     }
 
     /**After that we handle actions need to do in node*/
-    cleanup_stopped_actions();
     for (int i = 0; i < actions.size(); i++) {
         Base_Action* action = actions[i];
-        bool is_finish_all = action->travel(this, delta_time, global_data);
+        if (action->is_removed())
+            continue;
+        bool is_finish_all = action->travel_action(this, delta_time, global_data);
         if (is_finish_all) {
-            cleanup_actions.push_back(action);
-            actions[i] = actions[actions.size() - 1];
-            actions.pop_back();
-            i--;
+            action->set_removed(true);
         }
     }
 
     /**After action we check the schedulers logic to handle it!*/
-    /**First clear all scheduler is mark at remove */
-    std::vector<std::string> removed_keys;
-    for (auto& [key, scheduler] : schedulers) {
-        if (scheduler.is_removed) {
-            removed_keys.push_back(key);
-        }
-    }
-    for (auto& key : removed_keys) {
-        schedulers.erase(key);
-    }
-    /**Second loop all scheduler check time of it and handle it!*/
+    /**Loop all scheduler check time of it and handle it!*/
     for (auto& [key, scheduler] : schedulers) {
         scheduler.current_duration += delta_time;
         if (scheduler.current_duration >= scheduler.duration_scheduler) {
@@ -206,6 +190,22 @@ void Node::draw(Custom::Transform& world_transform, int& draw_index) {
     }
 }
 
+void Node::visit_cleanup(float delta_time, void* global_data) {
+    Base_Node::visit_cleanup(delta_time, global_data);
+    this->cleanup_stopped_actions();
+
+    /**Clear all scheduler is mark at removed */
+    std::vector<std::string> removed_keys;
+    for (auto& [key, scheduler] : schedulers) {
+        if (scheduler.is_removed) {
+            removed_keys.push_back(key);
+        }
+    }
+    for (auto& key : removed_keys) {
+        schedulers.erase(key);
+    }
+}
+
 void Node::update(float delta_time) {
     /**Cascade update flex into class children extended from node update it's graphic information */
     this->flex_update(delta_time);
@@ -234,8 +234,16 @@ void Node::exit() {
 }
 
 void Node::cleanup_stopped_actions() {
-    for (Base_Action* action : cleanup_actions) {
-        delete (action);
+    for (int i = 0; i < actions.size(); i++) {
+        Base_Action* action = actions[i];
+        if (action->is_removed()) {
+            if (action->is_debug()) {
+                action->show_debug();
+            }
+            delete (action);
+            actions[i] = actions.back();
+            actions.pop_back();
+            i--;
+        }
     }
-    cleanup_actions.clear();
 }

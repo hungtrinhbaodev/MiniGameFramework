@@ -14,7 +14,7 @@ public:
     Base_Component* get_component_by_name(std::string name);
 
     void add_component(Base_Component* component);
-    void do_action(Base_Action* action, int tag = -1);
+    void do_action(Base_Action* action, int tag = -1, bool debug = false);
     void schedule(
         const std::string& key,
         float duration_schedule,
@@ -36,6 +36,7 @@ protected:
     void handle_personal_task(float delta_time, void* global_data) override;
     void set_world_transform_information(Custom::Transform world_transform, int draw_index) override;
     void draw(Custom::Transform& world_transform, int& draw_index) override;
+    void visit_cleanup(float delta_time, void* global_data) override;
     void update(float delta_time) override;
     void exit() override;
     void enter(void* global_data) override;

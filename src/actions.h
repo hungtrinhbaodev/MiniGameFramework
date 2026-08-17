@@ -8,6 +8,9 @@ class Action_Delay : public Base_Action {
 public:
     Action_Delay();
     ~Action_Delay();
+
+protected:
+    std::string get_action_name() override;
 };
 
 class Action_Move : public Base_Action {
@@ -20,6 +23,9 @@ public:
 
     void setup_target_to_action(Base_Node* target) override;
     void apply(Base_Node* target, float delta_time) override;
+
+protected:
+    std::string get_action_name() override;
 
 private:
     float end_x, end_y;
@@ -37,6 +43,9 @@ public:
     void setup_target_to_action(Base_Node* target) override;
     void apply(Base_Node* target, float delta_time) override;
 
+protected:
+    std::string get_action_name() override;
+
 private:
     float end_x, end_y;
     glm::vec2 delta_scale;
@@ -53,6 +62,9 @@ public:
     void setup_target_to_action(Base_Node* target) override;
     void apply(Base_Node* target, float delta_time) override;
 
+protected:
+    std::string get_action_name() override;
+
 private:
     float end_rotation, delta_rotation;
 };
@@ -67,6 +79,9 @@ public:
 
     void setup_target_to_action(Base_Node* target) override;
     void apply(Base_Node* target, float delta_time) override;
+
+protected:
+    std::string get_action_name() override;
 
 private:
     unsigned char end_opacity;
@@ -83,6 +98,9 @@ public:
     void setup_target_to_action(Base_Node* target) override;
     void apply(Base_Node* target, float delta_time) override;
 
+protected:
+    std::string get_action_name() override;
+
 private:
     bool is_cleanup = true;
 };
@@ -96,6 +114,9 @@ public:
 
     void setup_target_to_action(Base_Node* target) override;
     void apply(Base_Node* target, float delta_time) override;
+
+protected:
+    std::string get_action_name() override;
 
 private:
     bool is_show = true;
@@ -113,6 +134,9 @@ public:
     void apply(Base_Node* target, float delta_time) override;
     bool is_valid_target(Base_Node* target) override;
 
+protected:
+    std::string get_action_name() override;
+
 private:
     float end_progression;
     float delta_progression;
@@ -124,8 +148,10 @@ public:
     ~Action_Callback();
 
     void set_caller(std::function<void(Base_Node*, void*)> caller);
-
     void apply(Base_Node* target, float delta_time) override;
+
+protected:
+    std::string get_action_name() override;
 
 private:
     std::function<void(Base_Node*, void*)> caller = nullptr;
@@ -142,6 +168,9 @@ public:
 
     void setup_target_to_action(Base_Node* target) override;
     void apply(Base_Node* target, float delta_time) override;
+
+protected:
+    std::string get_action_name() override;
 
 private:
     glm::vec2 start_point;

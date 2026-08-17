@@ -87,7 +87,7 @@ protected:
     void travel(float delta_time, void* global_data = nullptr);
     void visit_handle_personal_task(float delta_time, void* global_data);
     void visit_draw(Custom::Transform& world_transform, float delta_time, int& draw_index);
-    void visit_cleanup_invalid_children(float delta_time, void* global_data);
+    virtual void visit_cleanup(float delta_time, void* global_data);
     virtual void set_world_transform_information(Custom::Transform world_transform, int draw_index);
     virtual void handle_personal_task(float delta_time, void* global_data);
     virtual void update(float delta_time);

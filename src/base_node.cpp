@@ -85,10 +85,10 @@ void Base_Node::visit_draw(Custom::Transform& world_transform, float delta_time,
     }
 }
 
-void Base_Node::visit_cleanup_invalid_children(float delta_time, void* global_data) {
+void Base_Node::visit_cleanup(float delta_time, void* global_data) {
     this->cleanup_invalid_children();
     for (Base_Node* child : children) {
-        child->visit_cleanup_invalid_children(delta_time, global_data);
+        child->visit_cleanup(delta_time, global_data);
     }
 }
 
@@ -341,7 +341,7 @@ void Base_Node::travel(float delta_time, void* global_data) {
     int start_draw_index = 0;
     Custom::Transform world_transform = transform;
     visit_draw(world_transform, delta_time, start_draw_index);
-    visit_cleanup_invalid_children(delta_time, global_data);
+    visit_cleanup(delta_time, global_data);
 }
 
 void Base_Node::remove_from_parent(bool is_cleanup) {

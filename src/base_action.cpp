@@ -2,7 +2,9 @@
 
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include <utils.h>
 
+#include <algorithm>
 #include <iostream>
 
 Base_Action::Base_Action() {}
@@ -20,7 +22,15 @@ void Base_Action::set_global_data(void* global_data) {
     this->global_data = global_data;
 }
 
-void Base_Action::assign_target_to_all_chain(Base_Node* target, void* global_data) {
+void Base_Action::set_debug(bool debug) {
+    this->debug = debug;
+}
+
+void Base_Action::set_removed(bool removed) {
+    this->removed = removed;
+}
+
+void Base_Action::assign_target_to_all_chain(Base_Node* target, void* global_data, bool debug) {
     this->setup_target_to_action(target);
     if (this->target == nullptr) {
         this->target = target;
@@ -28,17 +38,34 @@ void Base_Action::assign_target_to_all_chain(Base_Node* target, void* global_dat
     if (this->global_data == nullptr) {
         this->global_data = global_data;
     }
+    if (debug) {
+        this->start_chain_time = Utils::now();
+    }
     this->is_setup = true;
     if (this->next_spawn_chain != nullptr) {
-        this->next_spawn_chain->assign_target_to_all_chain(target, global_data);
+        this->next_spawn_chain->assign_target_to_all_chain(target, global_data, debug);
     }
+}
+
+bool Base_Action::travel_action(Base_Node* target, float delta_time, void* global_data) {
+    return travel(target, delta_time, global_data, this->processing_informations, -1, this->debug);
 }
 
 void Base_Action::setup_target_to_action(Base_Node* target) {}
 
-bool Base_Action::travel(Base_Node* target, float delta_time, void* global_data) {
+bool Base_Action::travel(
+    Base_Node* target,
+    float delta_time,
+    void* global_data,
+    std::vector<Action_Processing_Information>& processing_informations,
+    long start_time_chain,
+    bool debug
+) {
     if (!this->is_setup) {
-        this->assign_target_to_all_chain(target, global_data);
+        this->assign_target_to_all_chain(target, global_data, debug);
+    }
+    if (debug && start_time_chain < 0) {
+        start_time_chain = this->start_chain_time;
     }
     bool finish_all = true;
     if ((!this->is_end() || this->type == Action_Type::ALWAY_HAPPEN) && this->is_valid_target(target)) {
@@ -52,16 +79,29 @@ bool Base_Action::travel(Base_Node* target, float delta_time, void* global_data)
             finish_all = false;
         }
     }
-    if (this->next_spawn_chain != nullptr) {
-        finish_all &= this->next_spawn_chain->travel(target, delta_time, global_data);
+    if (debug && finish_all && !this->added_into_processing_informations) {
+        long current_time = Utils::now();
+        processing_informations.push_back(
+            {(float)(this->start_chain_time - start_time_chain) / 1000,
+             (float)(current_time - start_time_chain) / 1000,
+             this->get_action_name()}
+        );
+        this->added_into_processing_informations = true;
     }
     if (finish_all) {
         if (this->next_sequence_chain != nullptr) {
             if (!this->next_sequence_chain->is_setup) {
-                this->next_sequence_chain->assign_target_to_all_chain(target, global_data);
+                this->next_sequence_chain->assign_target_to_all_chain(target, global_data, debug);
             }
-            finish_all &= this->next_sequence_chain->travel(target, delta_time, global_data);
+            finish_all &= this->next_sequence_chain->travel(
+                target, delta_time, global_data, processing_informations, start_time_chain, debug
+            );
         }
+    }
+    if (this->next_spawn_chain != nullptr) {
+        finish_all &= this->next_spawn_chain->travel(
+            target, delta_time, global_data, processing_informations, start_time_chain, debug
+        );
     }
     if (finish_all) {
         if (this->is_repeat_forever || this->repeat_time > 0) {
@@ -102,6 +142,10 @@ void Base_Action::apply(Base_Node* target, float delta_time) {
     }
 }
 
+std::string Base_Action::get_action_name() {
+    return "";
+}
+
 void Base_Action::push_sequence(Base_Action* action) {
     if (this->next_sequence_chain != nullptr) {
         this->next_sequence_chain->push_sequence(action);
@@ -129,6 +173,22 @@ Base_Action* Base_Action::repeat(int repeat_time) {
 Base_Action* Base_Action::repeat_forever() {
     this->is_repeat_forever = true;
     return this;
+}
+
+bool Base_Action::is_removed() {
+    return this->removed;
+}
+
+bool Base_Action::is_debug() {
+    return this->debug;
+}
+
+void Base_Action::show_debug() {
+    std::sort(processing_informations.begin(), processing_informations.end());
+    for (auto& debug : this->processing_informations) {
+        std::cout << debug;
+    }
+    std::cout << std::endl;
 }
 
 bool Base_Action::is_end() {
@@ -179,6 +239,8 @@ void Base_Action::set_duration(float duration) {
 }
 
 void Base_Action::recycle() {
+    processing_informations.clear();
+    this->added_into_processing_informations = false;
     this->current_duration = 0.0f;
     if (this->type == Action_Type::ALWAY_HAPPEN) {
         this->is_appled = false;

@@ -9,6 +9,10 @@ Action_Delay::Action_Delay() {}
 
 Action_Delay::~Action_Delay() {}
 
+std::string Action_Delay::get_action_name() {
+    return "Delay";
+}
+
 Action_Move::Action_Move() {}
 
 Action_Move::~Action_Move() {}
@@ -37,6 +41,17 @@ void Action_Move::apply(Base_Node* target, float delta_time) {
 
     glm::vec2 distance = (current_rate - last_rate) * delta_position;
     target->modify_transform().position += distance;
+}
+
+std::string Action_Move::get_action_name() {
+    switch (this->subtype) {
+        case Action_Subtype::TO: {
+            return "Move To";
+        }
+        default: {
+            return "Move By";
+        }
+    }
 }
 
 Action_Scale::Action_Scale() {}
@@ -69,6 +84,17 @@ void Action_Scale::apply(Base_Node* target, float delta_time) {
     target->modify_transform().scale += size;
 }
 
+std::string Action_Scale::get_action_name() {
+    switch (this->subtype) {
+        case Action_Subtype::TO: {
+            return "Scale To";
+        }
+        default: {
+            return "Scale By";
+        }
+    }
+}
+
 Action_Rotate::Action_Rotate() {}
 
 Action_Rotate::~Action_Rotate() {}
@@ -95,6 +121,17 @@ void Action_Rotate::apply(Base_Node* target, float delta_time) {
 
     float rotate_more = (current_rate - last_rate) * delta_rotation;
     target->modify_transform().rotation += rotate_more;
+}
+
+std::string Action_Rotate::get_action_name() {
+    switch (this->subtype) {
+        case Action_Subtype::TO: {
+            return "Rotate To";
+        }
+        default: {
+            return "Rotate By";
+        }
+    }
 }
 
 Action_Opacity::Action_Opacity() {}
@@ -127,6 +164,10 @@ void Action_Opacity::apply(Base_Node* target, float delta_time) {
         (unsigned char)std::max(std::min((int)(target->get_opacity() + opacity_more), 255), 0);
 }
 
+std::string Action_Opacity::get_action_name() {
+    return "Fade To";
+}
+
 Action_Remove_Self::Action_Remove_Self() {}
 
 Action_Remove_Self::~Action_Remove_Self() {}
@@ -144,6 +185,10 @@ void Action_Remove_Self::apply(Base_Node* target, float delta_time) {
     }
 }
 
+std::string Action_Remove_Self::get_action_name() {
+    return "Remove Self";
+}
+
 Action_Visible::Action_Visible() {}
 
 Action_Visible::~Action_Visible() {}
@@ -159,6 +204,10 @@ void Action_Visible::apply(Base_Node* target, float delta_time) {
     if (this->target != nullptr) {
         this->target->set_visible(this->is_show);
     }
+}
+
+std::string Action_Visible::get_action_name() {
+    return is_show ? "Show" : "Hide";
 }
 
 Action_Progression::Action_Progression() {}
@@ -194,6 +243,17 @@ bool Action_Progression::is_valid_target(Base_Node* target) {
     return target->get_type() == Node_Type::PROGRESSION;
 }
 
+std::string Action_Progression::get_action_name() {
+    switch (this->subtype) {
+        case Action_Subtype::TO: {
+            return "Progress To";
+        }
+        default: {
+            return "Progress By";
+        }
+    }
+}
+
 Action_Callback::Action_Callback() {}
 
 Action_Callback::~Action_Callback() {}
@@ -207,6 +267,10 @@ void Action_Callback::apply(Base_Node* target, float delta_time) {
     if (target != nullptr && caller != nullptr) {
         caller(target, this->global_data);
     }
+}
+
+std::string Action_Callback::get_action_name() {
+    return "Callback";
 }
 
 Action_Bezier::Action_Bezier() {}
@@ -238,6 +302,10 @@ void Action_Bezier::apply(Base_Node* target, float delta_time) {
     glm::vec2 last_bezier_position = Math::get_bezier_point(start_point, middle_point, end_point, last_rate);
     glm::vec2 current_bezier_position = Math::get_bezier_point(start_point, middle_point, end_point, current_rate);
     target->modify_transform().position += (current_bezier_position - last_bezier_position);
+}
+
+std::string Action_Bezier::get_action_name() {
+    return "Bezier To";
 }
 
 Action_Delay* Action::delay(float delay_time) {
