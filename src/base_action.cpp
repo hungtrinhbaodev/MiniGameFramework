@@ -111,7 +111,6 @@ bool Base_Action::update_action(
     }
     if (debug && finish_action && !this->added_into_processing_informations) {
         long current_time = Utils::now();
-        std::cout << "start_time_chain: " << start_time_chain << " " << current_time << std::endl;
         processing_informations.push_back(
             {(float)(this->start_chain_time - start_time_chain) / 1000,
              (float)(current_time - start_time_chain) / 1000,

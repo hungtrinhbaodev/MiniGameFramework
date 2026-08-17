@@ -28,9 +28,9 @@
 [Done]: Move action loop handle into handle_persional_task.
 [Done]: Add scene_global_data void pointer to get information when handle task.
 [Done]: Add schedule to node.
-[]: Recheck flow action see something wrong in sequence.
+[Done]: Recheck flow action see something wrong in sequence.
+[Done]: Add director is entry of entire scene. manage change scene to render.
 []: Add param global data into all function virtual of component to specify and clearly the flow of global data.
-[]: Add director is entry of entire scene. manage change scene to render.
 []: Add custom key press component.
 []: Add component state machine.
 
