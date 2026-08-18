@@ -2,6 +2,8 @@
 #include <base_action.h>
 #include <base_component.h>
 #include <base_node.h>
+#include <key_input_component.h>
+#include <key_input_system.h>
 
 #include <map>
 #include <string>
@@ -28,6 +30,19 @@ public:
     void stop_action(int tag);
     void stop_all_action();
     void unschedule(const std::string& key);
+
+    bool is_key_enabled(Custom::Key key);
+    bool is_swallow_keys_enabled(Custom::Key key);
+    std::function<void(Key_Input_Type, Base_Node*, void*)> get_key_press_caller(Custom::Key key);
+
+    void add_key_press_listener(
+        Custom::Key key,
+        std::function<void(Key_Input_Type, Base_Node*, void*)> caller = nullptr,
+        bool swallow_keys = false
+    );
+    void set_key_press_enabled(Custom::Key key, bool enabled);
+    void set_key_press_swallow_enabled(Custom::Key key, bool swallow_keys);
+    virtual void on_key_pressed(Custom::Key key, Key_Input_Type pressed_type);
 
     Node_Type get_type() override;
 
@@ -73,6 +88,14 @@ private:
     };
     std::vector<Base_Action*> cleanup_actions;
     std::vector<Base_Component*> components;
+
+    /**
+     * Key input handler will be here
+     */
+    std::map<Custom::Key, std::function<void(Key_Input_Type, Base_Node* target, void* global_data)>> key_input_callers;
+    Key_Input_Component* get_or_create_key_input_component();
+    Key_Input_Component* get_key_input_component();
+
     /**
      * @Note: In some case not is remove from parent but the
      * components is not remove we keep it in this vector

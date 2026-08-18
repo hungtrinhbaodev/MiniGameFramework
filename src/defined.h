@@ -5,6 +5,7 @@ namespace Defined {
     /**Component defined name */
     inline std::string COMPONENT_TOUCH_NAME = "COMPONENT_TOUCH";
     inline std::string COMPONENT_COLLISION_NAME = "COMPONENT_COLLISION";
+    inline std::string COMPONENT_KEY_INPUT_NAME = "COMPONENT_KEY_INPUT";
     inline std::string SCENE_LABEL_FPS_SCHEDULER_KEY = "SCENE_LABEL_FPS_SCHEDULER_KEY";
     inline std::string KEY_SAVE_NODE_ORIGIN = "KEY_SAVE_NODE_ORIGIN";
 }

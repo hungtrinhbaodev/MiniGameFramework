@@ -1,3 +1,4 @@
+#include <defined.h>
 #include <node.h>
 
 #include <algorithm>
@@ -102,6 +103,52 @@ void Node::unschedule(const std::string& key) {
         schedulers[key].is_removed = true;
     }
 }
+
+bool Node::is_key_enabled(Custom::Key key) {
+    Key_Input_Component* key_input_component = this->get_key_input_component();
+    if (key_input_component == nullptr) {
+        return false;
+    }
+    return key_input_component->is_key_listener_enabled(key);
+}
+
+bool Node::is_swallow_keys_enabled(Custom::Key key) {
+    Key_Input_Component* key_input_component = this->get_key_input_component();
+    if (key_input_component == nullptr) {
+        return false;
+    }
+    return key_input_component->is_swallow_keys_enabled(key);
+}
+
+std::function<void(Key_Input_Type, Base_Node*, void*)> Node::get_key_press_caller(Custom::Key key) {
+    if (this->key_input_callers.find(key) == this->key_input_callers.end()) {
+        return nullptr;
+    }
+    return this->key_input_callers[key];
+}
+
+void Node::add_key_press_listener(
+    Custom::Key key, std::function<void(Key_Input_Type, Base_Node*, void*)> caller, bool swallow_keys
+) {
+    this->key_input_callers[key] = caller;
+    this->set_key_press_enabled(key, true);
+    this->set_key_press_swallow_enabled(key, swallow_keys);
+}
+
+void Node::set_key_press_enabled(Custom::Key key, bool enabled) {
+    Key_Input_Component* key_input_component = this->get_or_create_key_input_component();
+    key_input_component->set_key_listener_enabled(key, enabled);
+}
+
+void Node::set_key_press_swallow_enabled(Custom::Key key, bool swallow_keys) {
+    Key_Input_Component* key_input_component = this->get_key_input_component();
+    if (key_input_component == nullptr) {
+        return;
+    }
+    key_input_component->set_swallow_keys_enabled(key, swallow_keys);
+}
+
+void Node::on_key_pressed(Custom::Key key, Key_Input_Type pressed_type) {}
 
 Node_Type Node::get_type() {
     return Node_Type::NODE;
@@ -231,6 +278,24 @@ void Node::exit() {
     schedulers.clear();
     this->detach();
     this->stop_all_action();
+}
+
+Key_Input_Component* Node::get_or_create_key_input_component() {
+    Base_Component* component = this->get_component_by_name(Defined::COMPONENT_KEY_INPUT_NAME);
+    if (component == nullptr) {
+        component = new Key_Input_Component();
+        component->set_name(Defined::COMPONENT_KEY_INPUT_NAME);
+        this->add_component(component);
+    }
+    Key_Input_Component* key_input_component = reinterpret_cast<Key_Input_Component*>(component);
+    return key_input_component;
+}
+
+Key_Input_Component* Node::get_key_input_component() {
+    Base_Component* component = this->get_component_by_name(Defined::COMPONENT_KEY_INPUT_NAME);
+    if (component == nullptr)
+        return nullptr;
+    return reinterpret_cast<Key_Input_Component*>(component);
 }
 
 void Node::cleanup_stopped_actions() {

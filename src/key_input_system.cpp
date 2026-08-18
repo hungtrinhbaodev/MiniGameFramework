@@ -2,6 +2,16 @@
 
 #include <algorithm>
 
+bool Key_Pressed_Information::has_key(Custom::Key key) {
+    return this->listened_keys.find(key) != this->listened_keys.end();
+}
+
+bool Key_Pressed_Information::is_key_listenning(Custom::Key key) {
+    if (!this->has_key(key))
+        return false;
+    return this->listened_keys[key].is_listened;
+}
+
 Key_Input_System* Key_Input_System::instance = nullptr;
 
 int Key_Input_System::current_generated_id = 0;
@@ -25,39 +35,51 @@ Key_Input_System::~Key_Input_System() {}
 
 int Key_Input_System::request_key_pressed_listener() {
     Key_Pressed_Information key{current_generated_id++, 0, {}};
+    this->keys.push_back(key);
     return key.key_pressed_id;
 }
 
-void Key_Input_System::request_add_key_listener(int id, Custom::Key key) {
+void Key_Input_System::request_update_listener(int id, Key_Pressed_Information updated) {
     if (!has_id(id))
         return;
-    Key_Pressed_Information& key_info = get_key_listener(id);
-    if (key_info.listened_keys.find(key) != key_info.listened_keys.end())
-        return;
-    key_info.listened_keys[key] = {key, true, false};
-}
-
-void Key_Input_System::request_press_enabled(int id, Custom::Key key, bool enabled) {
-    if (!has_id(id))
-        return;
-    Key_Pressed_Information& key_info = get_key_listener(id);
-    if (key_info.listened_keys.find(key) != key_info.listened_keys.end()) {
-        Key_Listener_Information& listener = key_info.listened_keys[key];
-        listener.is_listened = enabled;
+    Key_Pressed_Information& key_listener = get_key_listener(id);
+    key_listener = updated;
+    if (handled_keys.find(id) != handled_keys.end()) {
+        std::vector<Custom::Key> removed_keys;
+        std::map<Custom::Key, Key_Input_Type> handled_listeners;
+        for (auto& [key, handled_listener] : handled_listeners) {
+            if (!key_listener.is_key_listenning(key)) {
+                removed_keys.push_back(key);
+            }
+        }
+        for (auto removed_key : removed_keys) {
+            handled_listeners.erase(removed_key);
+        }
     }
 }
 
-void Key_Input_System::request_swallow_enabled(int id, Custom::Key key, bool enabled) {
+std::map<Custom::Key, Key_Input_Type> Key_Input_System::query_pressed_keys(int id) {
     if (!has_id(id))
-        return;
-    Key_Pressed_Information& key_info = get_key_listener(id);
-    if (key_info.listened_keys.find(key) != key_info.listened_keys.end()) {
-        Key_Listener_Information& listener = key_info.listened_keys[key];
-        listener.swallow_keys = enabled;
-    }
+        return {};
+    if (handled_keys.find(id) == handled_keys.end())
+        return {};
+    return handled_keys[id];
 }
 
-void Key_Input_System::handle_key_pressed(const std::map<Custom::Key, Key_Pressed_Detail>& keys_detail) {
+void Key_Input_System::remove_key_press_listener(int id) {
+    if (!has_id(id))
+        return;
+    for (int i = 0; i < keys.size(); i++) {
+        if (keys[i].key_pressed_id == id) {
+            keys[i] = keys.back();
+            keys.pop_back();
+            i--;
+        }
+    }
+    handled_keys.erase(id);
+}
+
+void Key_Input_System::handle_key_pressed(const std::map<Custom::Key, Key_Input_Type>& keys_detail) {
     std::sort(keys.begin(), keys.end());
     for (auto& key_info : keys) {
         int key_id = key_info.key_pressed_id;
@@ -75,9 +97,7 @@ void Key_Input_System::handle_key_pressed(const std::map<Custom::Key, Key_Presse
             }
         }
     }
-
-    for (auto& [key, detail] : keys_detail) {
-        bool swallow_keys = false;
+    for (auto& [key, type] : keys_detail) {
         for (int i = 0; i < keys.size(); i++) {
             Key_Pressed_Information& key_info = keys[i];
             int key_id = keys[i].key_pressed_id;
@@ -94,24 +114,22 @@ void Key_Input_System::handle_key_pressed(const std::map<Custom::Key, Key_Presse
             }
             std::map<Custom::Key, Key_Input_Type>& listener_keys_detail = handled_keys[key_id];
             if (listener_keys_detail.find(key) == listener_keys_detail.end()) {
-                if (detail.type == Key_Input_Type::PRESSED) {
-                    listener_keys_detail[key] = detail.type;
+                if (type == Key_Input_Type::PRESSED) {
+                    listener_keys_detail[key] = type;
                 }
             } else {
-                if (detail.type == Key_Input_Type::PRESSED) {
+                if (type == Key_Input_Type::PRESSED) {
                     if (listener_keys_detail[key] == Key_Input_Type::IDLE) {
-                        listener_keys_detail[key] = detail.type;
+                        listener_keys_detail[key] = type;
                     }
-                } else if (detail.type == Key_Input_Type::HOLDING) {
+                } else if (type == Key_Input_Type::HOLDING) {
                     if (listener_keys_detail[key] == Key_Input_Type::PRESSED) {
-                        listener_keys_detail[key] = detail.type;
+                        listener_keys_detail[key] = type;
                     }
-                } else if (detail.type == Key_Input_Type::RELEASE) {
+                } else if (type == Key_Input_Type::RELEASE) {
                     if (listener_keys_detail[key] == Key_Input_Type::HOLDING) {
-                        listener_keys_detail[key] = detail.type;
+                        listener_keys_detail[key] = type;
                     }
-                } else {
-                    listener_keys_detail[key] = Key_Input_Type::CANCEL;
                 }
             }
             if (listener_info.swallow_keys) {

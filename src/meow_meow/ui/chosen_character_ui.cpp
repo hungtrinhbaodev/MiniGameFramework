@@ -17,7 +17,7 @@ namespace Meow_Meow {
 
     void Chosen_Character_UI::attach(void* global_data) {
         Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
-        auto config = data->get_config();
+        auto& config = data->get_config();
         this->character->set_character_id(this->character_id);
         this->character->set_character_level(1);
         this->character_name->set_text(config.get_character_name(this->character_id));

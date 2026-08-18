@@ -6,13 +6,7 @@
 
 enum Key_Input_Type { PRESSED, HOLDING, RELEASE, IDLE, CANCEL };
 
-struct Key_Pressed_Detail {
-    Key_Input_Type type;
-    Custom::Key key;
-};
-
 struct Key_Listener_Information {
-    Custom::Key key;
     bool is_listened;
     bool swallow_keys;
 };
@@ -21,8 +15,10 @@ struct Key_Pressed_Information {
     int key_pressed_id;
     int priority;
     std::map<Custom::Key, Key_Listener_Information> listened_keys;
+    bool has_key(Custom::Key key);
+    bool is_key_listenning(Custom::Key key);
     bool operator<(const Key_Pressed_Information& other) {
-        return priority < other.priority;
+        return priority > other.priority;
     }
 };
 
@@ -35,11 +31,11 @@ public:
     ~Key_Input_System();
 
     int request_key_pressed_listener();
-    void request_add_key_listener(int id, Custom::Key key);
-    void request_press_enabled(int id, Custom::Key key, bool enabled);
-    void request_swallow_enabled(int id, Custom::Key key, bool enabled);
-    void request_remove_key(int id);
-    void handle_key_pressed(const std::map<Custom::Key, Key_Pressed_Detail>& keys_detail);
+    void request_update_listener(int id, Key_Pressed_Information updated);
+    void remove_key_press_listener(int id);
+    std::map<Custom::Key, Key_Input_Type> query_pressed_keys(int id);
+
+    void handle_key_pressed(const std::map<Custom::Key, Key_Input_Type>& keys_detail);
 
 private:
     static Key_Input_System* instance;

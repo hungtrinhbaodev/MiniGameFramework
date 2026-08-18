@@ -22,6 +22,30 @@ Test_Scene::Test_Scene() {
         }
     );
     animation->add_component(collison_1);
+    animation->add_key_press_listener(
+        Custom::Key::A,
+        [](Key_Input_Type type_press, Base_Node*, void*) {
+            switch (type_press) {
+                case Key_Input_Type::PRESSED: {
+                    std::cout << "Hi animation pressed A: pressed!" << std::endl;
+                    break;
+                }
+                case Key_Input_Type::HOLDING: {
+                    std::cout << "Hi animation pressed A: holding!" << std::endl;
+                    break;
+                }
+                case Key_Input_Type::RELEASE:
+                case Key_Input_Type::CANCEL: {
+                    std::cout << "Hi animation pressed A: release!" << std::endl;
+                    break;
+                }
+                default: {
+                    break;
+                }
+            }
+        },
+        true
+    );
 
     animation_2 = new Animation_Node();
     animation_2->make_animation("IDLE", "res/meow_meow/Characters/C5/Idle/", 20, 0.06, ".png");
@@ -44,6 +68,26 @@ Test_Scene::Test_Scene() {
         }
     );
     animation_2->add_component(collison_2);
+    animation_2->add_key_press_listener(Custom::Key::A, [](Key_Input_Type type_press, Base_Node*, void*) {
+        switch (type_press) {
+            case Key_Input_Type::PRESSED: {
+                std::cout << "Hi animation 2 pressed A: pressed!" << std::endl;
+                break;
+            }
+            case Key_Input_Type::HOLDING: {
+                std::cout << "Hi animation 2 pressed A: holding!" << std::endl;
+                break;
+            }
+            case Key_Input_Type::RELEASE:
+            case Key_Input_Type::CANCEL: {
+                std::cout << "Hi animation 2 pressed A: release!" << std::endl;
+                break;
+            }
+            default: {
+                break;
+            }
+        }
+    });
 
     Layer_Node* sub_layer = new Layer_Node{{600.f, 320.f}};
     // sub_layer->set_anchor({0.5f, 0.5f});
