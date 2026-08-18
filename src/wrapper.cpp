@@ -1,5 +1,6 @@
 #include <collision_system.h>
 #include <director.h>
+#include <key_input_system.h>
 #include <label_node.h>
 #include <math_custom.h>
 #include <touch_system.h>
@@ -215,9 +216,12 @@ namespace Libs_Wrapper {
     bool enable_force_color_texture = false;
     Custom::Color force_color_texture{};
 
-    /**Event inputs handler information */
+    /**Event touch handler information */
     Touch_Type touch_state = Touch_Type::END;
     Vector2 current_touched_position;
+
+    /**Event key press handler information */
+    std::map<Custom::Key, Key_Pressed_Detail> keys_detail;
 
     RayLib_Texture_Info load_raylib_texture(std::string path) {
         path = Utils::get_root_path() + path;
@@ -258,6 +262,54 @@ namespace Libs_Wrapper {
 
     float get_screen_height() {
         return (float)GetScreenHeight();
+    }
+
+    KeyboardKey form_key(Custom::Key key) {
+        switch (key) {
+            case Custom::Key::A: {
+                return KEY_A;
+            }
+            case Custom::Key::W: {
+                return KEY_W;
+            }
+            case Custom::Key::S: {
+                return KEY_S;
+            }
+            case Custom::Key::D: {
+                return KEY_D;
+            }
+            case Custom::Key::B: {
+                return KEY_B;
+            }
+            case Custom::Key::C: {
+                return KEY_C;
+            }
+            case Custom::Key::LEFT: {
+                return KEY_LEFT;
+            }
+            case Custom::Key::RIGHT: {
+                return KEY_RIGHT;
+            }
+            case Custom::Key::UP: {
+                return KEY_UP;
+            }
+            case Custom::Key::DOWN: {
+                return KEY_DOWN;
+            }
+            case Custom::Key::SPACE: {
+                return KEY_SPACE;
+            }
+            default: {
+                return KEY_NULL;
+            }
+        }
+    }
+
+    void init_keys_pressed_information() {
+        for (int i = 0; i < static_cast<int>(Custom::Key::COUNT); i++) {
+            Custom::Key current = static_cast<Custom::Key>(i);
+            keys_detail[current] = {Key_Input_Type::IDLE, current};
+        }
     }
 
     void flush_uniform_clipping_data() {
@@ -364,7 +416,39 @@ namespace Libs_Wrapper {
         );
     }
 
+    void handle_key_inputs() {
+        for (auto& [key, detail] : keys_detail) {
+            if (detail.type == Key_Input_Type::RELEASE) {
+                detail.type = Key_Input_Type::IDLE;
+            }
+        }
+        for (int i = 0; i < static_cast<int>(Custom::Key::COUNT); i++) {
+            Custom::Key current = static_cast<Custom::Key>(i);
+            KeyboardKey key = form_key(current);
+            if (key == KeyboardKey::KEY_NULL) {
+                std::cout << "Key inputs warning: Unsported key, please check {from_key} function again!" << std::endl;
+                continue;
+            }
+            Key_Pressed_Detail& detail = keys_detail[current];
+            if (IsKeyPressed(key)) {
+                if (detail.type == Key_Input_Type::IDLE) {
+                    detail.type = Key_Input_Type::PRESSED;
+                }
+            } else if (IsKeyReleased(key)) {
+                if (detail.type == Key_Input_Type::HOLDING) {
+                    detail.type = Key_Input_Type::RELEASE;
+                }
+            } else {
+                if (detail.type == Key_Input_Type::PRESSED) {
+                    detail.type = Key_Input_Type::HOLDING;
+                }
+            }
+        }
+        Key_Input_System::get()->handle_key_pressed(keys_detail);
+    }
+
     void init_libs() {
+        /**Init shader custom to clipping and force draw color*/
         clipping_shader = LoadShader(0, (Utils::get_root_path() + "shader/clipping.fs").data());
         if (!IsShaderValid(clipping_shader)) {
             throw std::runtime_error("Fail to load clipping shader please, try again!");
@@ -373,6 +457,9 @@ namespace Libs_Wrapper {
         clipping_shader_point_count_localtion = GetShaderLocation(clipping_shader, "u_point_count");
         shader_enable_force_color_location = GetShaderLocation(clipping_shader, "u_enable_force_color");
         shader_force_color_location = GetShaderLocation(clipping_shader, "u_force_color");
+
+        /**Init key pressed event handler information*/
+        init_keys_pressed_information();
     }
 
     void open_window(int width, int height, int FPS, std::string window_name, void* window) {
@@ -460,6 +547,7 @@ namespace Libs_Wrapper {
 
     void handle_frame() {
         handle_touch_inputs();
+        handle_key_inputs();
         Collision_System::get()->handle_collisions();
     }
 
@@ -679,6 +767,7 @@ namespace Libs_Wrapper {
         }
         Collision_System::clear();
         Touch_System::clear();
+        Key_Input_System::clear();
     }
 
 }  // namespace Libs_Wrapper

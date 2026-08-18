@@ -5,6 +5,8 @@
 
 namespace Custom {
 
+    enum Key { A, W, S, D, B, C, LEFT, RIGHT, UP, DOWN, SPACE, /** @Hack to loop key enum */ COUNT };
+
     struct Size {
         float width = 0.f;
         float height = 0.f;
@@ -146,6 +148,10 @@ namespace Custom {
     struct Distance_1D {
         float x;
         float length;
+        friend std::ostream& operator<<(std::ostream& os, const Distance_1D& distance) {
+            os << "Distance 1D: " << std::endl << "x: " << distance.x << ", distance: " << distance << std::endl;
+            return os;
+        }
     };
 
 }  // namespace Custom
