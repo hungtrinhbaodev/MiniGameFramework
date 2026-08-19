@@ -70,20 +70,20 @@ void Collision_Component::set_collision_handler(
     this->collision_handler = handler;
 }
 
-void Collision_Component::enter() {
+void Collision_Component::enter(Base_Node* target, void* global_data) {
     this->collision_id = Collision_System::get()->request_collision();
 }
 
-void Collision_Component::exit() {
+void Collision_Component::exit(Base_Node* target, void* global_data) {
     Collision_System::get()->remove_collision(this->collision_id);
 }
 
-void Collision_Component::draw(int& draw_index) {
+void Collision_Component::draw(Base_Node* target, int& draw_index) {
     if (!Libs_Wrapper::is_debug_mode())
         return;
     Custom::Transform local_transform{};
-    Custom::Transform world_transform = this->target->get_world_transform();
-    Custom::Anchor_Point anchor = this->target->get_anchor();
+    Custom::Transform world_transform = target->get_world_transform();
+    Custom::Anchor_Point anchor = target->get_anchor();
     local_transform = local_transform.set_position(delta_position);
     world_transform.forward(local_transform, false, {false, false});
     draw_index += Custom::Rectangle{box_size.width, box_size.height}.draw_rectangle(
@@ -91,20 +91,17 @@ void Collision_Component::draw(int& draw_index) {
     );
 }
 
-void Collision_Component::update_information() {
-    if (!this->has_target()) {
-        return;
-    }
+void Collision_Component::update_information(Base_Node* target, void* global_data) {
     Custom::Transform local_transform{};
-    Custom::Transform world_transform = this->target->get_world_transform();
-    Custom::Anchor_Point anchor = this->target->get_anchor();
+    Custom::Transform world_transform = target->get_world_transform();
+    Custom::Anchor_Point anchor = target->get_anchor();
     local_transform = local_transform.set_position(delta_position);
     world_transform.forward(local_transform, false, {false, false});
     Collision_System::get()->request_update_information(
         {this->collision_id,
          this->tag,
          this->track_layer,
-         this->target,
+         target,
          this->owner_data,
          Custom::Transformed_Rectangle{
              Custom::Rectangle{box_size.width, box_size.height}.apply(world_transform, anchor)
@@ -112,12 +109,12 @@ void Collision_Component::update_information() {
     );
 }
 
-void Collision_Component::handle_task() {
-    if (this->is_active() && this->has_target()) {
+void Collision_Component::handle_task(Base_Node* target, void* global_data) {
+    if (this->is_active()) {
         if (this->collision_handler != nullptr) {
             std::vector<Collision_Information> collsioneds = this->get_collisioneds();
             if (collsioneds.size() > 0) {
-                this->collision_handler(this->target, this->global_data, this->get_collisioneds());
+                this->collision_handler(target, global_data, this->get_collisioneds());
             }
         }
     }

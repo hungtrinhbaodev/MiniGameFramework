@@ -86,12 +86,14 @@ protected:
      */
     void travel(float delta_time, void* global_data = nullptr);
     void visit_handle_personal_task(float delta_time, void* global_data);
-    void visit_draw(Custom::Transform& world_transform, float delta_time, int& draw_index);
+    void visit_draw(Custom::Transform& world_transform, float delta_time, int& draw_index, void* global_data);
     virtual void visit_cleanup(float delta_time, void* global_data);
-    virtual void set_world_transform_information(Custom::Transform world_transform, int draw_index);
+    virtual void set_world_transform_information(Custom::Transform world_transform, int draw_index, void* global_data);
     virtual void handle_personal_task(float delta_time, void* global_data);
     virtual void update(float delta_time);
-    virtual void update_world_transform_information(Custom::Transform& world_transform, int draw_index);
+    virtual void update_world_transform_information(
+        Custom::Transform& world_transform, int draw_index, void* global_data
+    );
     virtual void before_draw_children(Custom::Transform& world_transform, int& draw_index);
     virtual void draw(Custom::Transform& world_transform, int& draw_index);
     virtual void after_draw_children(Custom::Transform& world_transform, int& draw_index);
@@ -99,7 +101,7 @@ protected:
     // Call when node attach from parent
     virtual void enter(void* global_data);
     // Call when node detech from parent
-    virtual void exit();
+    virtual void exit(void* global_data);
 
 private:
     int tag = -1;
@@ -115,6 +117,6 @@ private:
     std::map<std::string, void*> user_data;
 
     void sort_nodes();
-    void cleanup_invalid_children();
+    void cleanup_invalid_children(void* global_data);
     void added_waiting_children(float delta_time, void* global_data);
 };

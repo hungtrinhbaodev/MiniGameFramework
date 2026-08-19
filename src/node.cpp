@@ -12,11 +12,12 @@ Node::~Node() {
     }
     for (Base_Component* component : components) {
         if (!component->is_removed()) {
-            component->exit();
+            component->detach_from_node(this, nullptr);
         }
         delete (component);
     }
-    for (Base_Component* component : dettached_components) {
+    for (Base_Component* component : detached_components) {
+        component->detach_from_node(this, nullptr);
         delete (component);
     }
 }
@@ -39,7 +40,6 @@ void Node::do_action(Base_Action* action, int tag, bool debug) {
         return;
     }
     action->set_tag(tag);
-    action->set_target(this);
     action->set_debug(debug);
     actions.push_back(action);
 }
@@ -67,7 +67,6 @@ void Node::remove_component(Base_Component* component) {
     for (int i = 0; i < components.size(); i++) {
         if (components[i] == component) {
             components[i]->set_removed(true);
-            components[i]->exit();
             break;
         }
     }
@@ -77,7 +76,6 @@ void Node::remove_component(std::string component_name) {
     for (int i = 0; i < components.size(); i++) {
         if (components[i]->get_name() == component_name) {
             components[i]->set_removed(true);
-            components[i]->exit();
         }
     }
 }
@@ -94,7 +92,6 @@ void Node::stop_action(int tag) {
 void Node::stop_all_action() {
     for (Base_Action* action : actions) {
         action->set_removed(true);
-        cleanup_actions.push_back(action);
     }
 }
 
@@ -148,7 +145,7 @@ void Node::set_key_press_swallow_enabled(Custom::Key key, bool swallow_keys) {
     key_input_component->set_swallow_keys_enabled(key, swallow_keys);
 }
 
-void Node::on_key_pressed(Custom::Key key, Key_Input_Type pressed_type) {}
+void Node::on_key_pressed(Custom::Key key, Key_Input_Type pressed_type, void* global_data) {}
 
 Node_Type Node::get_type() {
     return Node_Type::NODE;
@@ -164,21 +161,10 @@ void Node::flex_update(float delta_time) {}
 
 void Node::handle_personal_task(float delta_time, void* global_data) {
     /**We handle logic of all components of node here */
-    /**First: remove the component mark removed */
-    for (int i = 0; i < components.size(); i++) {
-        if (components[i]->is_removed()) {
-            components[i] = components.back();
-            components.pop_back();
-            i--;
-        }
-    }
-    /**Second: handle it's task logic*/
+    /**Handle it's task logic*/
     for (Base_Component* component : components) {
-        if (component->is_active() && component->has_target()) {
-            if (!component->has_global_data()) {
-                component->set_global_data(global_data);
-            }
-            component->handle_task();
+        if (component->is_active()) {
+            component->handle_task(this, global_data);
         }
     }
 
@@ -213,26 +199,22 @@ void Node::handle_personal_task(float delta_time, void* global_data) {
     this->fix_update(delta_time, global_data);
 }
 
-void Node::set_world_transform_information(Custom::Transform world_transform, int draw_index) {
-    Base_Node::set_world_transform_information(world_transform, draw_index);
+void Node::set_world_transform_information(Custom::Transform world_transform, int draw_index, void* global_data) {
+    Base_Node::set_world_transform_information(world_transform, draw_index, global_data);
 
-    /**Assign target to component and invoke enter to start loop */
+    /**Assign target to component and invoke apply_from_node to loop */
     for (Base_Component* component : components) {
         if (component->is_removed()) {
             continue;
         }
-        if (!component->has_target()) {
-            component->assign_target(this);
-            component->enter();
-        }
-        component->update_information();
+        component->apply_from_node(this, global_data);
     }
 }
 
 void Node::draw(Custom::Transform& world_transform, int& draw_index) {
     for (Base_Component* component : components) {
-        if (component->is_active() && component->has_target()) {
-            component->draw(draw_index);
+        if (component->is_active()) {
+            component->draw(this, draw_index);
         }
     }
 }
@@ -240,6 +222,16 @@ void Node::draw(Custom::Transform& world_transform, int& draw_index) {
 void Node::visit_cleanup(float delta_time, void* global_data) {
     Base_Node::visit_cleanup(delta_time, global_data);
     this->cleanup_stopped_actions();
+
+    /**Remove the component mark removed */
+    for (int i = 0; i < components.size(); i++) {
+        if (components[i]->is_removed()) {
+            components[i]->detach_from_node(this, global_data);
+            components[i] = components.back();
+            components.pop_back();
+            i--;
+        }
+    }
 
     /**Clear all scheduler is mark at removed */
     std::vector<std::string> removed_keys;
@@ -260,19 +252,18 @@ void Node::update(float delta_time) {
 
 void Node::enter(void* global_data) {
     /**Add list waitting component into list commponent again when node enter again!*/
-    for (Base_Component* component : dettached_components) {
-        component->assign_target(nullptr);
+    for (Base_Component* component : detached_components) {
         components.push_back(component);
     }
-    dettached_components.clear();
+    detached_components.clear();
     this->attach(global_data);
 }
 
-void Node::exit() {
+void Node::exit(void* global_data) {
     /**Add list running component into list detach reserve wait to attach again!*/
     for (Base_Component* component : components) {
-        component->exit();
-        dettached_components.push_back(component);
+        component->detach_from_node(this, global_data);
+        detached_components.push_back(component);
     }
     components.clear();
     schedulers.clear();

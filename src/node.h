@@ -34,7 +34,6 @@ public:
     bool is_key_enabled(Custom::Key key);
     bool is_swallow_keys_enabled(Custom::Key key);
     std::function<void(Key_Input_Type, Base_Node*, void*)> get_key_press_caller(Custom::Key key);
-
     void add_key_press_listener(
         Custom::Key key,
         std::function<void(Key_Input_Type, Base_Node*, void*)> caller = nullptr,
@@ -42,18 +41,18 @@ public:
     );
     void set_key_press_enabled(Custom::Key key, bool enabled);
     void set_key_press_swallow_enabled(Custom::Key key, bool swallow_keys);
-    virtual void on_key_pressed(Custom::Key key, Key_Input_Type pressed_type);
+    virtual void on_key_pressed(Custom::Key key, Key_Input_Type pressed_type, void* global_data);
 
     Node_Type get_type() override;
 
 protected:
     std::vector<Base_Action*> actions;
     void handle_personal_task(float delta_time, void* global_data) override;
-    void set_world_transform_information(Custom::Transform world_transform, int draw_index) override;
+    void set_world_transform_information(Custom::Transform world_transform, int draw_index, void* global_data) override;
     void draw(Custom::Transform& world_transform, int& draw_index) override;
     void visit_cleanup(float delta_time, void* global_data) override;
     void update(float delta_time) override;
-    void exit() override;
+    void exit(void* global_data) override;
     void enter(void* global_data) override;
 
     /**
@@ -101,7 +100,7 @@ private:
      * components is not remove we keep it in this vector
      * and if node enter again we add it again!
      */
-    std::vector<Base_Component*> dettached_components;
+    std::vector<Base_Component*> detached_components;
     std::map<std::string, Scheduler_Data> schedulers;
     void cleanup_stopped_actions();
 };

@@ -9,10 +9,10 @@ public:
     Key_Input_Component();
     ~Key_Input_Component();
 
-    void enter() override;
-    void exit() override;
-    void update_information() override;
-    void handle_task() override;
+    void enter(Base_Node* target, void* global_data) override;
+    void exit(Base_Node* target, void* global_data = nullptr) override;
+    void update_information(Base_Node* target, void* global_data) override;
+    void handle_task(Base_Node* target, void* global_data) override;
 
     bool is_key_listener_enabled(Custom::Key key);
     bool is_swallow_keys_enabled(Custom::Key key);

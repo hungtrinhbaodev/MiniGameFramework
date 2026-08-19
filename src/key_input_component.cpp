@@ -22,11 +22,11 @@ Key_Input_Component::Key_Input_Component() {}
 
 Key_Input_Component::~Key_Input_Component() {}
 
-void Key_Input_Component::enter() {
+void Key_Input_Component::enter(Base_Node* target, void* global_data) {
     this->listener_id = Key_Input_System::get()->request_key_pressed_listener();
 }
 
-void Key_Input_Component::exit() {
+void Key_Input_Component::exit(Base_Node* target, void* global_data) {
     Key_Input_System::get()->remove_key_press_listener(this->listener_id);
 }
 
@@ -55,8 +55,8 @@ void Key_Input_Component::set_swallow_keys_enabled(Custom::Key key, bool swallow
     this->keys_listener[key].swallow_keys = swallow_keys;
 }
 
-void Key_Input_Component::update_information() {
-    Node* node = convert_target_to_node(this->target);
+void Key_Input_Component::update_information(Base_Node* target, void* global_data) {
+    Node* node = convert_target_to_node(target);
     if (node == nullptr)
         return;
     Key_Input_System::get()->request_update_listener(
@@ -64,8 +64,8 @@ void Key_Input_Component::update_information() {
     );
 }
 
-void Key_Input_Component::handle_task() {
-    Node* node = convert_target_to_node(this->target);
+void Key_Input_Component::handle_task(Base_Node* target, void* global_data) {
+    Node* node = convert_target_to_node(target);
     if (node == nullptr)
         return;
     std::map<Custom::Key, Key_Input_Type> handled_keys = Key_Input_System::get()->query_pressed_keys(listener_id);
@@ -75,9 +75,9 @@ void Key_Input_Component::handle_task() {
         }
         auto caller = node->get_key_press_caller(key);
         if (caller != nullptr) {
-            caller(type, this->target, this->global_data);
+            caller(type, target, global_data);
         } else {
-            node->on_key_pressed(key, type);
+            node->on_key_pressed(key, type, global_data);
         }
     }
 }

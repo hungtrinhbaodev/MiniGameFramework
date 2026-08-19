@@ -43,7 +43,6 @@ public:
     void set_subtype(Action_Subtype subtype);
     void set_ease_type(Action_Ease ease);
     void set_duration(float duration);
-    void set_target(Base_Node* target);
     void set_global_data(void* global_data);
     void set_debug(bool debug);
     void set_removed(bool removed);
@@ -124,7 +123,7 @@ private:
      * */
     float start_chain_time = 0.f;
     std::vector<Action_Processing_Information> processing_informations;
-    bool debug;
+    bool debug = false;
     bool added_into_processing_informations = false;
 
     bool travel(

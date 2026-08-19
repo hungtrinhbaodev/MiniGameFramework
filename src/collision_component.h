@@ -47,11 +47,11 @@ public:
      */
     void set_collision_handler(std::function<void(Base_Node*, void*, std::vector<Collision_Information>)> handler);
 
-    void enter() override;
-    void exit() override;
-    void draw(int& draw_index) override;
-    void update_information() override;
-    void handle_task() override;
+    void enter(Base_Node* target, void* global_data) override;
+    void exit(Base_Node* target, void* global_data = nullptr) override;
+    void draw(Base_Node* target, int& draw_index) override;
+    void update_information(Base_Node* target, void* global_data) override;
+    void handle_task(Base_Node* target, void* global_data) override;
 
 private:
     /** Using this tag to cast inner data right away!*/

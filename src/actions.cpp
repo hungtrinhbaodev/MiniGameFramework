@@ -234,8 +234,8 @@ void Action_Remove_Self::setup_target_to_action(Base_Node* target) {}
 
 void Action_Remove_Self::apply(Base_Node* target, float delta_time) {
     Base_Action::apply(target, delta_time);
-    if (this->target != nullptr) {
-        this->target->remove_from_parent(this->is_cleanup);
+    if (target != nullptr) {
+        target->remove_from_parent(this->is_cleanup);
     }
 }
 
@@ -255,8 +255,8 @@ void Action_Visible::setup_target_to_action(Base_Node* target) {}
 
 void Action_Visible::apply(Base_Node* target, float delta_time) {
     Base_Action::apply(target, delta_time);
-    if (this->target != nullptr) {
-        this->target->set_visible(this->is_show);
+    if (target != nullptr) {
+        target->set_visible(this->is_show);
     }
 }
 

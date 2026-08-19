@@ -14,10 +14,6 @@ Base_Action::~Base_Action() {
     deep_clean();
 }
 
-void Base_Action::set_target(Base_Node* target) {
-    this->target = target;
-}
-
 void Base_Action::set_global_data(void* global_data) {
     this->global_data = global_data;
 }
@@ -32,9 +28,6 @@ void Base_Action::set_removed(bool removed) {
 
 void Base_Action::assign_target_to_all_chain(Base_Node* target, void* global_data, bool debug) {
     this->setup_target_to_action(target);
-    if (this->target == nullptr) {
-        this->target = target;
-    }
     if (this->global_data == nullptr) {
         this->global_data = global_data;
     }
@@ -49,9 +42,6 @@ void Base_Action::assign_target_to_all_chain(Base_Node* target, void* global_dat
 
 void Base_Action::assign_target_2(Base_Node* target, void* global_data, bool debug) {
     this->setup_target_to_action(target);
-    if (this->target == nullptr) {
-        this->target = target;
-    }
     if (this->global_data == nullptr) {
         this->global_data = global_data;
     }

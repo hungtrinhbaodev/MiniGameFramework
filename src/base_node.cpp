@@ -27,7 +27,7 @@ void Base_Node::visit_handle_personal_task(float delta_time, void* global_data) 
     }
 }
 
-void Base_Node::visit_draw(Custom::Transform& world_transform, float delta_time, int& draw_index) {
+void Base_Node::visit_draw(Custom::Transform& world_transform, float delta_time, int& draw_index, void* global_data) {
     // When some update the node valid we ignore it!
     if (!this->is_valid) {
         return;
@@ -45,7 +45,7 @@ void Base_Node::visit_draw(Custom::Transform& world_transform, float delta_time,
     // Don't update draw to node and its children when it invisible
     if (!this->visible) {
         // Save one world transform to use latter
-        this->set_world_transform_information(world_transform, draw_index);
+        this->set_world_transform_information(world_transform, draw_index, global_data);
 
         world_transform.inverse(transform, insverse_opacity, this->parent->flipped);
         return;
@@ -61,18 +61,18 @@ void Base_Node::visit_draw(Custom::Transform& world_transform, float delta_time,
     // Cascade attributes into its children
     for (Base_Node* child : this->children) {
         if (child->z_order < 0) {
-            child->visit_draw(world_transform, delta_time, draw_index);
+            child->visit_draw(world_transform, delta_time, draw_index, global_data);
         }
     }
 
     draw(world_transform, draw_index);
 
     // Save one world transform to use latter
-    this->set_world_transform_information(world_transform, draw_index);
+    this->set_world_transform_information(world_transform, draw_index, global_data);
 
     for (Base_Node* child : this->children) {
         if (child->z_order >= 0) {
-            child->visit_draw(world_transform, delta_time, draw_index);
+            child->visit_draw(world_transform, delta_time, draw_index, global_data);
         }
     }
 
@@ -86,21 +86,23 @@ void Base_Node::visit_draw(Custom::Transform& world_transform, float delta_time,
 }
 
 void Base_Node::visit_cleanup(float delta_time, void* global_data) {
-    this->cleanup_invalid_children();
+    this->cleanup_invalid_children(global_data);
     for (Base_Node* child : children) {
         child->visit_cleanup(delta_time, global_data);
     }
 }
 
-void Base_Node::set_world_transform_information(Custom::Transform world_transform, int draw_index) {
+void Base_Node::set_world_transform_information(Custom::Transform world_transform, int draw_index, void* global_data) {
     this->world_transform = world_transform;
     this->draw_index = draw_index;
-    this->update_world_transform_information(this->world_transform, draw_index);
+    this->update_world_transform_information(this->world_transform, draw_index, global_data);
 }
 
 void Base_Node::handle_personal_task(float delta_time, void* global_data) {}
 
-void Base_Node::update_world_transform_information(Custom::Transform& world_transform, int draw_index) {}
+void Base_Node::update_world_transform_information(
+    Custom::Transform& world_transform, int draw_index, void* global_data
+) {}
 
 void Base_Node::before_draw_children(Custom::Transform& world_transform, int& draw_index) {}
 
@@ -112,7 +114,7 @@ void Base_Node::update(float delta_time) {}
 
 void Base_Node::enter(void* global_data) {}
 
-void Base_Node::exit() {}
+void Base_Node::exit(void* global_data) {}
 
 float Base_Node::get_x() {
     return transform.position.x;
@@ -340,7 +342,7 @@ void Base_Node::travel(float delta_time, void* global_data) {
     // Loop all node to draw into scene
     int start_draw_index = 0;
     Custom::Transform world_transform = transform;
-    visit_draw(world_transform, delta_time, start_draw_index);
+    visit_draw(world_transform, delta_time, start_draw_index, global_data);
     visit_cleanup(delta_time, global_data);
 }
 
@@ -378,12 +380,12 @@ void Base_Node::sort_nodes() {
     std::sort(children.begin(), children.end(), [](Base_Node* a, Base_Node* b) { return a->z_order < b->z_order; });
 }
 
-void Base_Node::cleanup_invalid_children() {
+void Base_Node::cleanup_invalid_children(void* global_data) {
     for (int i = 0; i < children.size(); i++) {
         Base_Node* child = children[i];
         if (!child->is_valid) {
             children[i] = children.back();
-            child->exit();
+            child->exit(global_data);
             child->parent = nullptr;
             if (child->is_cleanup) {
                 delete (child);
