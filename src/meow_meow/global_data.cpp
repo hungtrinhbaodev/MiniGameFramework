@@ -18,6 +18,14 @@ namespace Meow_Meow {
         return config;
     }
 
+    Battle_Layer* Global_Data::get_battle_layer() {
+        return this->battle_layer;
+    }
+
+    void Global_Data::set_battle_layer(Battle_Layer* battle_layer) {
+        this->battle_layer = battle_layer;
+    }
+
     void Global_Data::clear() {
         if (instance != nullptr) {
             delete (instance);

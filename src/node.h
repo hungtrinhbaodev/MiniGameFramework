@@ -48,7 +48,9 @@ public:
 protected:
     std::vector<Base_Action*> actions;
     void handle_personal_task(float delta_time, void* global_data) override;
-    void set_world_transform_information(Custom::Transform world_transform, int draw_index, void* global_data) override;
+    void set_world_transform_information(
+        Custom::Transform world_transform, int draw_index, float delta_time, void* global_data
+    ) override;
     void draw(Custom::Transform& world_transform, int& draw_index) override;
     void visit_cleanup(float delta_time, void* global_data) override;
     void update(float delta_time) override;

@@ -127,6 +127,34 @@ namespace Custom {
         return 1;
     }
 
+    void Rectangle_Area::fix_with(const Rectangle_Area& other) {
+        this->x = std::max(other.x, this->x);
+        this->y = std::max(other.y, this->y);
+        if (this->width <= other.width && this->height <= other.height) {
+            if (this->x + this->width > other.width) {
+                this->x = other.width - this->width;
+            }
+            if (this->y + this->height > other.height) {
+                this->y = other.height - this->height;
+            }
+        } else if (this->width > other.width && this->height > other.height) {
+            this->x = 0;
+            this->y = 0;
+            this->width = other.width;
+            this->height = other.height;
+        } else {
+            if (this->height > other.height) {
+                this->y = 0;
+                this->height = other.height;
+                this->x = other.width - this->width;
+            } else {
+                this->x = 0;
+                this->width = other.width;
+                this->y = other.height - this->height;
+            }
+        }
+    }
+
     std::string Transformed_Rectangle::to_string() {
         std::string str;
         for (int i = 0; i < points.size(); i++) {

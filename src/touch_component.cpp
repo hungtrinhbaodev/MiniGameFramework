@@ -12,11 +12,11 @@ Touch_Information& Touch_Component::modify_infomation() {
     return this->touch_information;
 }
 
-void Touch_Component::enter(Base_Node* target, void* global_data) {
+void Touch_Component::attach(Base_Node* target, void* global_data) {
     this->touch_information = Touch_System::get()->request_touch_listenner();
 }
 
-void Touch_Component::exit(Base_Node* target, void* global_data) {
+void Touch_Component::detach(Base_Node* target, void* global_data) {
     Touch_System::get()->remove_touch_listener(this->touch_information.touch_id);
 }
 
@@ -50,7 +50,7 @@ void Touch_Component::draw(Base_Node* target, int& draw_index) {
     draw_index += rec.draw_rectangle(target->get_world_transform(), target->get_anchor(), draw_index, {0, 0, 120}, 120);
 }
 
-void Touch_Component::update_information(Base_Node* target, void* global_data) {
+void Touch_Component::update_information(Base_Node* target, float delta_time, void* global_data) {
     Custom::Size size_target{0, 0};
     Node_Type type = target->get_type();
     bool swallow_touches = false;
@@ -98,7 +98,7 @@ void Touch_Component::update_information(Base_Node* target, void* global_data) {
     }
 }
 
-void Touch_Component::handle_task(Base_Node* target, void* global_data) {
+void Touch_Component::handle_task(Base_Node* target, float delta_time, void* global_data) {
     Touch_Detail touch_detail = Touch_System::get()->query_touch_information(this->touch_information.touch_id);
     switch (touch_detail.type) {
         case Touch_Type::END: {

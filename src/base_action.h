@@ -73,7 +73,6 @@ public:
     );
 
 protected:
-    Base_Node* target = nullptr;
     void* global_data = nullptr;
     float total_duration = 0.f;
     float current_duration = 0.f;

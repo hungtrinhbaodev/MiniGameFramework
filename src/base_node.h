@@ -42,6 +42,8 @@ public:
     std::vector<Base_Node*>& get_children();
     Base_Node* get_child_by_tag(int tag);
     Base_Node* get_child_by_name(std::string name);
+    glm::vec2 get_world_position();
+    glm::vec2 local_position_from(glm::vec2 world_position);
 
     void set_x(float x);
     void set_y(float y);
@@ -87,12 +89,16 @@ protected:
     void travel(float delta_time, void* global_data = nullptr);
     void visit_handle_personal_task(float delta_time, void* global_data);
     void visit_draw(Custom::Transform& world_transform, float delta_time, int& draw_index, void* global_data);
+    virtual void compute_world_transform(Custom::Transform& world_transform);
+    virtual void inverse_world_transform(Custom::Transform& world_transform, unsigned char inverse_opacity);
     virtual void visit_cleanup(float delta_time, void* global_data);
-    virtual void set_world_transform_information(Custom::Transform world_transform, int draw_index, void* global_data);
+    virtual void set_world_transform_information(
+        Custom::Transform world_transform, int draw_index, float delta_time, void* global_data
+    );
     virtual void handle_personal_task(float delta_time, void* global_data);
     virtual void update(float delta_time);
     virtual void update_world_transform_information(
-        Custom::Transform& world_transform, int draw_index, void* global_data
+        Custom::Transform& world_transform, int draw_index, float delta_time, void* global_data
     );
     virtual void before_draw_children(Custom::Transform& world_transform, int& draw_index);
     virtual void draw(Custom::Transform& world_transform, int& draw_index);

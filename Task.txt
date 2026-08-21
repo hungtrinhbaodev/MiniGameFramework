@@ -30,9 +30,10 @@
 [Done]: Add schedule to node.
 [Done]: Recheck flow action see something wrong in sequence.
 [Done]: Add director is entry of entire scene. manage change scene to render.
-[]: Add custom key press component.
+[Done]: Add param global data into all function virtual of component to specify and clearly the flow of global data.
+[Done]: Add custom key press component.
 []: Add camera move with our character focus on layer game.
 []: Add component state machine.
-[]: Add param global data into all function virtual of component to specify and clearly the flow of global data.
 
+[]: Refactor variable name in key press system to read easier.
 [][Very difficult]: Add quad tree to collision system.

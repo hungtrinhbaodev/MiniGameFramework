@@ -11,6 +11,8 @@ namespace Meow_Meow {
 
     class Const {
     public:
+        inline static std::string CHARACTER_STATE_MACHINE_NAME = "CHARACTER_STATE_MACHINE";
+
         inline static int BASE_CHARACTER_ID = 0;
         inline static int NUMBER_CHARACTER = 3;
         inline static Const_Character_Information MEOW_FANCY{0, "FANCY MEOW"};

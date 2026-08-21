@@ -1,5 +1,6 @@
 #include <director.h>
 #include <meow_meow/global_data.h>
+#include <meow_meow/scene/battle_scene.h>
 #include <meow_meow/scene/chosen_character_scene.h>
 #include <meow_meow/scene/loading_scene.h>
 #include <test/image_test.h>
@@ -23,7 +24,8 @@ int main(void) {
      * a smooth flow to entry better!
      * */
     // Director::get()->start(new Image_Test_Scene(), nullptr);
-    Director::get()->start(new Meow_Meow::Loading_Scene(), Meow_Meow::Global_Data::get());
+    // Director::get()->start(new Meow_Meow::Loading_Scene(), Meow_Meow::Global_Data::get());
+    Director::get()->start(new Meow_Meow::Battle_Scene(), Meow_Meow::Global_Data::get());
     // Director::get()->start(new Test_Scene(), nullptr);
 
     long start = Utils::now();

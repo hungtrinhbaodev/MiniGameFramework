@@ -27,6 +27,14 @@ void Base_Node::visit_handle_personal_task(float delta_time, void* global_data) 
     }
 }
 
+void Base_Node::compute_world_transform(Custom::Transform& world_transform) {
+    world_transform.forward(this->transform, this->parent->is_cascade_opacity(), this->flipped);
+}
+
+void Base_Node::inverse_world_transform(Custom::Transform& world_transform, unsigned char inverse_opacity) {
+    world_transform.inverse(transform, inverse_opacity, this->parent->flipped);
+}
+
 void Base_Node::visit_draw(Custom::Transform& world_transform, float delta_time, int& draw_index, void* global_data) {
     // When some update the node valid we ignore it!
     if (!this->is_valid) {
@@ -39,15 +47,14 @@ void Base_Node::visit_draw(Custom::Transform& world_transform, float delta_time,
     // Draw current node
     unsigned char insverse_opacity = world_transform.opacity;
     if (this->parent != nullptr) {
-        world_transform.forward(transform, this->parent->is_cascade_opacity(), this->flipped);
+        this->compute_world_transform(world_transform);
     }
 
     // Don't update draw to node and its children when it invisible
     if (!this->visible) {
         // Save one world transform to use latter
-        this->set_world_transform_information(world_transform, draw_index, global_data);
-
-        world_transform.inverse(transform, insverse_opacity, this->parent->flipped);
+        this->set_world_transform_information(world_transform, draw_index, delta_time, global_data);
+        this->inverse_world_transform(world_transform, insverse_opacity);
         return;
     }
 
@@ -68,7 +75,7 @@ void Base_Node::visit_draw(Custom::Transform& world_transform, float delta_time,
     draw(world_transform, draw_index);
 
     // Save one world transform to use latter
-    this->set_world_transform_information(world_transform, draw_index, global_data);
+    this->set_world_transform_information(world_transform, draw_index, delta_time, global_data);
 
     for (Base_Node* child : this->children) {
         if (child->z_order >= 0) {
@@ -81,7 +88,7 @@ void Base_Node::visit_draw(Custom::Transform& world_transform, float delta_time,
 
     // Inverse to other visit can use again
     if (this->parent != nullptr) {
-        world_transform.inverse(transform, insverse_opacity, this->parent->flipped);
+        this->inverse_world_transform(world_transform, insverse_opacity);
     }
 }
 
@@ -92,16 +99,18 @@ void Base_Node::visit_cleanup(float delta_time, void* global_data) {
     }
 }
 
-void Base_Node::set_world_transform_information(Custom::Transform world_transform, int draw_index, void* global_data) {
+void Base_Node::set_world_transform_information(
+    Custom::Transform world_transform, int draw_index, float delta_time, void* global_data
+) {
     this->world_transform = world_transform;
     this->draw_index = draw_index;
-    this->update_world_transform_information(this->world_transform, draw_index, global_data);
+    this->update_world_transform_information(this->world_transform, draw_index, delta_time, global_data);
 }
 
 void Base_Node::handle_personal_task(float delta_time, void* global_data) {}
 
 void Base_Node::update_world_transform_information(
-    Custom::Transform& world_transform, int draw_index, void* global_data
+    Custom::Transform& world_transform, int draw_index, float delta_time, void* global_data
 ) {}
 
 void Base_Node::before_draw_children(Custom::Transform& world_transform, int& draw_index) {}

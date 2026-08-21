@@ -22,12 +22,16 @@ Key_Input_Component::Key_Input_Component() {}
 
 Key_Input_Component::~Key_Input_Component() {}
 
-void Key_Input_Component::enter(Base_Node* target, void* global_data) {
+void Key_Input_Component::attach(Base_Node* target, void* global_data) {
     this->listener_id = Key_Input_System::get()->request_key_pressed_listener();
 }
 
-void Key_Input_Component::exit(Base_Node* target, void* global_data) {
+void Key_Input_Component::detach(Base_Node* target, void* global_data) {
     Key_Input_System::get()->remove_key_press_listener(this->listener_id);
+}
+
+std::map<Custom::Key, Key_Input_Type> Key_Input_Component::get_key_inputs() {
+    return Key_Input_System::get()->query_pressed_keys(listener_id);
 }
 
 bool Key_Input_Component::is_key_listener_enabled(Custom::Key key) {
@@ -55,7 +59,7 @@ void Key_Input_Component::set_swallow_keys_enabled(Custom::Key key, bool swallow
     this->keys_listener[key].swallow_keys = swallow_keys;
 }
 
-void Key_Input_Component::update_information(Base_Node* target, void* global_data) {
+void Key_Input_Component::update_information(Base_Node* target, float delta_time, void* global_data) {
     Node* node = convert_target_to_node(target);
     if (node == nullptr)
         return;
@@ -64,7 +68,7 @@ void Key_Input_Component::update_information(Base_Node* target, void* global_dat
     );
 }
 
-void Key_Input_Component::handle_task(Base_Node* target, void* global_data) {
+void Key_Input_Component::handle_task(Base_Node* target, float delta_time, void* global_data) {
     Node* node = convert_target_to_node(target);
     if (node == nullptr)
         return;

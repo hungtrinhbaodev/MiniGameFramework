@@ -80,7 +80,7 @@ namespace Custom {
         float y = 0.f;
         float width = 0.f;
         float height = 0.f;
-
+        void fix_with(const Rectangle_Area& other);
         friend std::ostream& operator<<(std::ostream& os, const Rectangle_Area& area) {
             os << "Rectangle_Area: " << "x: " << area.x << ", y: " << area.y << ", width: " << area.width
                << ", height: " << area.height << std::endl;

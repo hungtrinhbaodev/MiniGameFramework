@@ -163,8 +163,11 @@ void Node::handle_personal_task(float delta_time, void* global_data) {
     /**We handle logic of all components of node here */
     /**Handle it's task logic*/
     for (Base_Component* component : components) {
+        if (!component->is_removed() && !component->is_setup()) {
+            component->attach_from_node(this, global_data);
+        }
         if (component->is_active()) {
-            component->handle_task(this, global_data);
+            component->handle_task(this, delta_time, global_data);
         }
     }
 
@@ -199,15 +202,17 @@ void Node::handle_personal_task(float delta_time, void* global_data) {
     this->fix_update(delta_time, global_data);
 }
 
-void Node::set_world_transform_information(Custom::Transform world_transform, int draw_index, void* global_data) {
-    Base_Node::set_world_transform_information(world_transform, draw_index, global_data);
+void Node::set_world_transform_information(
+    Custom::Transform world_transform, int draw_index, float delta_time, void* global_data
+) {
+    Base_Node::set_world_transform_information(world_transform, draw_index, delta_time, global_data);
 
     /**Assign target to component and invoke apply_from_node to loop */
     for (Base_Component* component : components) {
         if (component->is_removed()) {
             continue;
         }
-        component->apply_from_node(this, global_data);
+        component->apply_from_node(this, delta_time, global_data);
     }
 }
 

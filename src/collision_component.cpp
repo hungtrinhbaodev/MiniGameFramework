@@ -70,11 +70,11 @@ void Collision_Component::set_collision_handler(
     this->collision_handler = handler;
 }
 
-void Collision_Component::enter(Base_Node* target, void* global_data) {
+void Collision_Component::attach(Base_Node* target, void* global_data) {
     this->collision_id = Collision_System::get()->request_collision();
 }
 
-void Collision_Component::exit(Base_Node* target, void* global_data) {
+void Collision_Component::detach(Base_Node* target, void* global_data) {
     Collision_System::get()->remove_collision(this->collision_id);
 }
 
@@ -91,7 +91,7 @@ void Collision_Component::draw(Base_Node* target, int& draw_index) {
     );
 }
 
-void Collision_Component::update_information(Base_Node* target, void* global_data) {
+void Collision_Component::update_information(Base_Node* target, float delta_time, void* global_data) {
     Custom::Transform local_transform{};
     Custom::Transform world_transform = target->get_world_transform();
     Custom::Anchor_Point anchor = target->get_anchor();
@@ -109,7 +109,7 @@ void Collision_Component::update_information(Base_Node* target, void* global_dat
     );
 }
 
-void Collision_Component::handle_task(Base_Node* target, void* global_data) {
+void Collision_Component::handle_task(Base_Node* target, float delta_time, void* global_data) {
     if (this->is_active()) {
         if (this->collision_handler != nullptr) {
             std::vector<Collision_Information> collsioneds = this->get_collisioneds();

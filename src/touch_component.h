@@ -9,11 +9,11 @@ public:
     ~Touch_Component();
 
     Touch_Information& modify_infomation();
-    void enter(Base_Node* target, void* global_data) override;
-    void exit(Base_Node* target, void* global_data = nullptr) override;
+    void attach(Base_Node* target, void* global_data) override;
+    void detach(Base_Node* target, void* global_data = nullptr) override;
     void draw(Base_Node* target, int& draw_index) override;
-    void update_information(Base_Node* target, void* global_data) override;
-    void handle_task(Base_Node* target, void* global_data) override;
+    void update_information(Base_Node* target, float delta_time, void* global_data) override;
+    void handle_task(Base_Node* target, float delta_time, void* global_data) override;
 
 private:
     Touch_Information touch_information;
