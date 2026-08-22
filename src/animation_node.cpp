@@ -28,7 +28,7 @@ float Animation_Node::get_amimation_duration(std::string name) {
     if (!is_valid_animation(name)) {
         return -1.f;
     }
-    Animation_Data& animation = animations[current_animation];
+    Animation_Data& animation = animations[name];
     return animation.duration_loop * animation.number_frame;
 }
 
