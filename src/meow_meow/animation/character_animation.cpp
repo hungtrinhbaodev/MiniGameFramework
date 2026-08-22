@@ -8,7 +8,7 @@ namespace Meow_Meow {
     Character_Animation::Character_Animation(int character_id, int character_level) {
         this->set_character_id(character_id);
         this->set_character_level(character_level);
-        this->add_key_press_listener(Custom::Key::V);
+        this->set_name("Character_Animation");
     }
 
     Character_Animation::~Character_Animation() {}
@@ -23,13 +23,14 @@ namespace Meow_Meow {
         this->is_initialize = false;
     }
 
-    void Character_Animation::play_animation(std::string name, float speed) {
+    void Character_Animation::play_animation(std::string name, float speed, bool is_reset) {
         if (!this->is_initialize) {
             this->waiting_animation = name;
             this->waiting_rate = speed;
+            this->waiiting_is_reset = is_reset;
             return;
         }
-        Animation_Node::play_animation(name, speed);
+        Animation_Node::play_animation(name, speed, is_reset);
     }
 
     bool Character_Animation::intialize(void* global_data) {
@@ -71,7 +72,12 @@ namespace Meow_Meow {
             this->play_animation(this->waiting_animation, this->waiting_rate);
             this->waiting_animation = "";
             this->waiting_rate = 1.f;
+            this->waiiting_is_reset = false;
         }
+    }
+
+    void Character_Animation::draw(Custom::Transform& world_transform, int& draw_index) {
+        Image_Node::draw(world_transform, draw_index);
     }
 
 }  // namespace Meow_Meow

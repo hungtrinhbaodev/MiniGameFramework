@@ -19,8 +19,8 @@ namespace Meow_Meow {
         void init_image_bullet();
         void init_bullet_component();
 
-        const float VELOSITY = 800;
-        const float ACCELARATE = 2;
+        const float VELOSITY = 700;
+        const float ACCELARATE = 5;
 
         int character_id = -1;
         float velosity = VELOSITY;

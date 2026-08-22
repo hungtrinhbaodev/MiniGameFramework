@@ -130,6 +130,8 @@ void Key_Input_System::handle_key_pressed(const std::map<Custom::Key, Key_Input_
                     if (listener_keys_detail[key] == Key_Input_Type::HOLDING) {
                         listener_keys_detail[key] = type;
                     }
+                } else {
+                    listener_keys_detail[key] = type;
                 }
             }
             if (listener_info.swallow_keys) {

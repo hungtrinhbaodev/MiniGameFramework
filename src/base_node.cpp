@@ -5,6 +5,8 @@
 #include <algorithm>
 #include <iostream>
 
+int Base_Node::current_child_order = 0;
+
 Base_Node::Base_Node() {}
 
 Base_Node::~Base_Node() {
@@ -35,7 +37,9 @@ void Base_Node::inverse_world_transform(Custom::Transform& world_transform, unsi
     world_transform.inverse(transform, inverse_opacity, this->parent->flipped);
 }
 
-void Base_Node::visit_draw(Custom::Transform& world_transform, float delta_time, int& draw_index, void* global_data) {
+void Base_Node::visit_draw(
+    Custom::Transform& world_transform, float delta_time, int& draw_index, void* global_data, bool visible
+) {
     // When some update the node valid we ignore it!
     if (!this->is_valid) {
         return;
@@ -50,14 +54,6 @@ void Base_Node::visit_draw(Custom::Transform& world_transform, float delta_time,
         this->compute_world_transform(world_transform);
     }
 
-    // Don't update draw to node and its children when it invisible
-    if (!this->visible) {
-        // Save one world transform to use latter
-        this->set_world_transform_information(world_transform, draw_index, delta_time, global_data);
-        this->inverse_world_transform(world_transform, insverse_opacity);
-        return;
-    }
-
     // Sort node to draw one by one
     sort_nodes();
 
@@ -68,18 +64,20 @@ void Base_Node::visit_draw(Custom::Transform& world_transform, float delta_time,
     // Cascade attributes into its children
     for (Base_Node* child : this->children) {
         if (child->z_order < 0) {
-            child->visit_draw(world_transform, delta_time, draw_index, global_data);
+            child->visit_draw(world_transform, delta_time, draw_index, global_data, visible && this->visible);
         }
     }
 
-    draw(world_transform, draw_index);
+    if (visible) {
+        draw(world_transform, draw_index);
+    }
 
     // Save one world transform to use latter
     this->set_world_transform_information(world_transform, draw_index, delta_time, global_data);
 
     for (Base_Node* child : this->children) {
         if (child->z_order >= 0) {
-            child->visit_draw(world_transform, delta_time, draw_index, global_data);
+            child->visit_draw(world_transform, delta_time, draw_index, global_data, visible && this->visible);
         }
     }
 
@@ -342,6 +340,7 @@ void Base_Node::add_child(Base_Node* child) {
         return;
     }
     child->parent = this;
+    child->add_child_order = ++current_child_order;
     waiting_added_children.push_back(child);
 }
 
@@ -351,7 +350,7 @@ void Base_Node::travel(float delta_time, void* global_data) {
     // Loop all node to draw into scene
     int start_draw_index = 0;
     Custom::Transform world_transform = transform;
-    visit_draw(world_transform, delta_time, start_draw_index, global_data);
+    visit_draw(world_transform, delta_time, start_draw_index, global_data, this->visible);
     visit_cleanup(delta_time, global_data);
 }
 
@@ -367,42 +366,45 @@ bool Base_Node::remove_child(Base_Node* child, bool is_cleanup) {
         return false;
     }
     bool is_removed = false;
-    int remove_index = -1;
     for (int i = 0; i < children.size(); i++) {
         if (children[i] == child) {
             is_removed = true;
-            remove_index = i;
             break;
         }
     }
     if (is_removed) {
-        // children.erase(children.begin() + remove_index);
         child->is_cleanup = is_cleanup;
         child->is_valid = false;
-        cleanup_children.push_back(child);
-        return true;
     }
-    return false;
+    return is_removed;
 }
 
 void Base_Node::sort_nodes() {
-    std::sort(children.begin(), children.end(), [](Base_Node* a, Base_Node* b) { return a->z_order < b->z_order; });
+    std::sort(children.begin(), children.end(), [](Base_Node* a, Base_Node* b) {
+        if (a->z_order == b->z_order) {
+            return a->add_child_order < b->add_child_order;
+        }
+        return a->z_order < b->z_order;
+    });
 }
 
 void Base_Node::cleanup_invalid_children(void* global_data) {
+    int valid_child_count = 0;
     for (int i = 0; i < children.size(); i++) {
         Base_Node* child = children[i];
         if (!child->is_valid) {
-            children[i] = children.back();
             child->exit(global_data);
             child->parent = nullptr;
             if (child->is_cleanup) {
                 delete (child);
             }
-            i--;
+            children[i] = children.back();
             children.pop_back();
+        } else {
+            child->add_child_order = ++valid_child_count;
         }
     }
+    current_child_order = valid_child_count;
 }
 
 void Base_Node::added_waiting_children(float delta_time, void* global_data) {

@@ -139,8 +139,9 @@ namespace Meow_Meow {
         State_Machine_Component* state_machine_component =
             Utils::get_component<State_Machine_Component>(this, Const::CHARACTER_STATE_MACHINE_NAME);
 
-        state_machine_component->change_state_at(Const::TRACK_CONTROLL, Const::STATE_ATTACK, 0.35);
-        this->character_animtion->play_animation("SHOOT");
+        state_machine_component->change_state_at(Const::TRACK_CONTROLL, Const::STATE_ATTACK, DURATION_ATTACK);
+        float animation_duration = this->character_animtion->get_amimation_duration("SHOOT");
+        this->character_animtion->play_animation("SHOOT", DURATION_ATTACK / animation_duration, true);
 
         this->velocity = {0.f, 0.f};
         this->accelarate = {0.f, 0.f};
@@ -153,8 +154,8 @@ namespace Meow_Meow {
         if (!battle_layer)
             return;
         Bullet_Node* bullet = new Bullet_Node(this->character_id, this->horizontal_direction);
-        std::cout << "What is object number in layer: " << battle_layer->get_children().size() << std::endl;
-        bullet->set_position(this->get_position());
+        float sign_x = horizontal_direction == Const::DIRECTION::LEFT ? -1 : 1;
+        bullet->set_position(this->get_position() + glm::vec2{sign_x, 1} * DELTA_POSITION_BULLET);
         battle_layer->add_child(bullet);
     }
 

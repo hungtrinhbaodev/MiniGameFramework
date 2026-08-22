@@ -15,9 +15,10 @@ public:
         float duration_loop,
         std::string extend_format = ".png"
     );
-    void play_animation(std::string name, float speed = 1.0f);
+    void play_animation(std::string name, float speed = 1.0f, bool is_reset = false);
     void set_speed(float speed);
     void clear_all_animation();
+    float get_amimation_duration(std::string name);
 
 protected:
     void flex_update(float delta_time) override;

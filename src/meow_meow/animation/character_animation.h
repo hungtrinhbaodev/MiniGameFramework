@@ -10,10 +10,11 @@ namespace Meow_Meow {
 
         void set_character_id(int character_id);
         void set_character_level(int character_level);
-        void play_animation(std::string name, float speed = 1.0f);
+        void play_animation(std::string name, float speed = 1.0f, bool is_reset = false);
 
     protected:
         void fix_update(float delta_time, void* global_data) override;
+        void draw(Custom::Transform& world_transform, int& draw_index) override;
 
     private:
         int character_id = -1;
@@ -26,6 +27,7 @@ namespace Meow_Meow {
          */
         std::string waiting_animation = "";
         float waiting_rate = 1.f;
+        bool waiiting_is_reset = false;
 
         bool intialize(void* global_data);
     };

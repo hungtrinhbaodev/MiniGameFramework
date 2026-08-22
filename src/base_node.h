@@ -81,6 +81,7 @@ protected:
     std::vector<Base_Node*> children;
     Base_Node* parent = nullptr;
     int draw_index = -1;
+    bool is_valid = true;
 
     /**
      * @Note: before draw we need visit all node once to handle task of each node
@@ -88,15 +89,17 @@ protected:
      */
     void travel(float delta_time, void* global_data = nullptr);
     void visit_handle_personal_task(float delta_time, void* global_data);
-    void visit_draw(Custom::Transform& world_transform, float delta_time, int& draw_index, void* global_data);
+    void visit_draw(
+        Custom::Transform& world_transform, float delta_time, int& draw_index, void* global_data, bool visible
+    );
     virtual void compute_world_transform(Custom::Transform& world_transform);
     virtual void inverse_world_transform(Custom::Transform& world_transform, unsigned char inverse_opacity);
     virtual void visit_cleanup(float delta_time, void* global_data);
     virtual void set_world_transform_information(
         Custom::Transform world_transform, int draw_index, float delta_time, void* global_data
     );
-    virtual void handle_personal_task(float delta_time, void* global_data);
     virtual void update(float delta_time);
+    virtual void handle_personal_task(float delta_time, void* global_data);
     virtual void update_world_transform_information(
         Custom::Transform& world_transform, int draw_index, float delta_time, void* global_data
     );
@@ -110,15 +113,15 @@ protected:
     virtual void exit(void* global_data);
 
 private:
+    static int current_child_order;
     int tag = -1;
     std::string name = "";
     bool visible = true;
     int total_node = 1;
-    std::vector<Base_Node*> cleanup_children;
+    int add_child_order = -1;
     std::vector<Base_Node*> waiting_added_children;
     // Invalid happen when node in list cleanup_children
     // with this node we don't keep track it anymore
-    bool is_valid = true;
     bool is_cleanup = false;
     std::map<std::string, void*> user_data;
 

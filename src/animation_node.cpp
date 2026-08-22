@@ -21,25 +21,27 @@ void Animation_Node::make_animation(
 }
 
 void Animation_Node::set_speed(float speed) {
-    if (speed < 0.1f) {
-        speed = 0.1f;
+    speed_ratio = std::min(std::max(speed, 0.f), 1.f);
+}
+
+float Animation_Node::get_amimation_duration(std::string name) {
+    if (!is_valid_animation(name)) {
+        return -1.f;
     }
-    if (speed > 2.f) {
-        speed = 2.f;
-    }
-    speed_ratio = speed;
+    Animation_Data& animation = animations[current_animation];
+    return animation.duration_loop * animation.number_frame;
 }
 
 void Animation_Node::clear_all_animation() {
     animations.clear();
 }
 
-void Animation_Node::play_animation(std::string name, float speed) {
+void Animation_Node::play_animation(std::string name, float speed, bool is_reset) {
     if (!is_valid_animation(name)) {
         std::cout << "Animation_Node WARNING: can't find animation " << name << " to play!" << std::endl;
         return;
     }
-    if (current_animation == name) {
+    if (current_animation == name && !is_reset) {
         set_speed(speed);
         return;
     }

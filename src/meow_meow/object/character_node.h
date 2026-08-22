@@ -32,6 +32,8 @@ namespace Meow_Meow {
 
         int VELOCITY_MOVE_VALUE = 150;
         int ACCELARATE_MOVE_VALUE = 65;
+        float DURATION_ATTACK = 0.5;
+        glm::vec2 DELTA_POSITION_BULLET = glm::vec2(18, -12);
 
         int character_id = 0;
         Character_Animation* character_animtion = nullptr;

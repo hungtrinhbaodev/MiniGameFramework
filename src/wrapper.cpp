@@ -284,6 +284,9 @@ namespace Libs_Wrapper {
             case Custom::Key::C: {
                 return KEY_C;
             }
+            case Custom::Key::V: {
+                return KEY_V;
+            }
             case Custom::Key::LEFT: {
                 return KEY_LEFT;
             }
@@ -435,7 +438,7 @@ namespace Libs_Wrapper {
                     type = Key_Input_Type::PRESSED;
                 }
             } else if (IsKeyReleased(key) || IsKeyUp(key)) {
-                if (Key_Input_Type::PRESSED || type == Key_Input_Type::HOLDING) {
+                if (type == Key_Input_Type::PRESSED || type == Key_Input_Type::HOLDING) {
                     type = Key_Input_Type::RELEASE;
                 }
             } else {

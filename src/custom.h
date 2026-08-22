@@ -70,7 +70,8 @@ namespace Custom {
         friend std::ostream& operator<<(std::ostream& os, const Transform& transform) {
             os << "Transform: " << "x: " << transform.position.x << ", y: " << transform.position.y
                << ", scale_x: " << transform.scale.x << ", scale_y: " << transform.scale.y
-               << ", rotation: " << transform.rotation << std::endl;
+               << ", rotation: " << transform.rotation << ", opacity: " << (int)(transform.opacity)
+               << ", flip_x: " << transform.flipped.x << ", flip_y: " << transform.flipped.y << std::endl;
             return os;
         }
     };

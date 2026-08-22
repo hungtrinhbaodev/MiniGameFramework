@@ -23,7 +23,7 @@ namespace Meow_Meow {
         inline static std::string CHARACTER_DEFAULT_PATH = "res/meow_meow/Characters/C";
         inline static std::vector<std::string> CHARACTER_ANIMATION_NAMES = {"IDLE", "SHOOT"};
         inline static std::vector<std::string> CHARACTER_ANIMATION_FOLDER_NAMES = {"Idle", "Shoot"};
-        inline static std::vector<int> CHARACTER_ANIMATION_NUMBER_FRAMES = {20, 9};
+        inline static std::vector<int> CHARACTER_ANIMATION_NUMBER_FRAMES = {20, 10};
         inline static std::vector<float> CHARACTER_ANIMATION_DURATION_PER_FRAMES = {0.04, 0.06};
         inline static std::vector<int> CHARACTER_MAX_LEVELS = {5, 5, 5};
         inline static std::vector<Const_Character_Information> CHARACTERS_INFO{{MEOW_FANCY, MEOW_SAD, MEO_CONFIDENT}};
