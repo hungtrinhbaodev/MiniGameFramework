@@ -1,10 +1,10 @@
 #pragma once
 #include <meow_meow/animation/character_animation.h>
 #include <meow_meow/const.h>
-#include <node.h>
+#include <meow_meow/object/game_object.h>
 
 namespace Meow_Meow {
-    class Character_Node : public Node {
+    class Character_Node : public Game_Object {
     public:
         Character_Node();
         ~Character_Node();
@@ -33,6 +33,7 @@ namespace Meow_Meow {
         int VELOCITY_MOVE_VALUE = 150;
         int ACCELARATE_MOVE_VALUE = 65;
 
+        int character_id = 0;
         Character_Animation* character_animtion = nullptr;
         Const::DIRECTION horizontal_direction = Const::DIRECTION::RIGHT;
         Const::DIRECTION vertical_direction = Const::DIRECTION::UP;

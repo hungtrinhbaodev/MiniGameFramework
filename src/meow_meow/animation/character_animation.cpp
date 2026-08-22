@@ -8,6 +8,7 @@ namespace Meow_Meow {
     Character_Animation::Character_Animation(int character_id, int character_level) {
         this->set_character_id(character_id);
         this->set_character_level(character_level);
+        this->add_key_press_listener(Custom::Key::V, )
     }
 
     Character_Animation::~Character_Animation() {}
@@ -28,7 +29,7 @@ namespace Meow_Meow {
             this->waiting_rate = speed;
             return;
         }
-        Animation_Node::play_animation(name, speed = 1.0f);
+        Animation_Node::play_animation(name, speed);
     }
 
     bool Character_Animation::intialize(void* global_data) {

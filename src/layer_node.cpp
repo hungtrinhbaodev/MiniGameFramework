@@ -105,7 +105,13 @@ bool Layer_Node::is_my_child(Base_Node* node) {
 void Layer_Node::handle_camera_focus_on_target(const Custom::Transform& world_transform) {
     if (this->focus_target == nullptr)
         return;
+    /**
+     * Note: if the focus target is not the children of layer we ignore it
+     * to descrease compute in next frame!
+     */
     if (!this->is_my_child(this->focus_target)) {
+        this->focus_target = nullptr;
+        this->unschedule(Defined::KEY_LAYER_SCHEDULE_CAMERA_MOVE);
         return;
     }
     float screen_width = Libs_Wrapper::get_screen_width();

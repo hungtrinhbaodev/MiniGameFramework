@@ -1,4 +1,7 @@
 #include <defined.h>
+#include <meow_meow/global_data.h>
+#include <meow_meow/layer/layer_battle.h>
+#include <meow_meow/object/bullet_node.h>
 #include <meow_meow/object/character_node.h>
 #include <state_machine_component.h>
 #include <utils.h>
@@ -143,8 +146,16 @@ namespace Meow_Meow {
         this->accelarate = {0.f, 0.f};
 
         /**
-         * TODO: Request generate bullet here!
+         * Add bullet to map when character fire!
          */
+        Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
+        Battle_Layer* battle_layer = data->get_battle_layer();
+        if (!battle_layer)
+            return;
+        Bullet_Node* bullet = new Bullet_Node(this->character_id, this->horizontal_direction);
+        std::cout << "What is object number in layer: " << battle_layer->get_children().size() << std::endl;
+        bullet->set_position(this->get_position());
+        battle_layer->add_child(bullet);
     }
 
     void Character_Node::handle_key_board(float delta_time, void* global_data) {

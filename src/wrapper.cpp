@@ -435,7 +435,7 @@ namespace Libs_Wrapper {
                     type = Key_Input_Type::PRESSED;
                 }
             } else if (IsKeyReleased(key) || IsKeyUp(key)) {
-                if (type == Key_Input_Type::HOLDING) {
+                if (Key_Input_Type::PRESSED || type == Key_Input_Type::HOLDING) {
                     type = Key_Input_Type::RELEASE;
                 }
             } else {

@@ -46,5 +46,10 @@ namespace Meow_Meow {
         inline static std::string STATE_ATTACK = "ATTACK";
         inline static std::string TRACK_EFFECTED = "EFFECTED";
         inline static std::string STATE_ATTACKED = "ATTACKED";
+
+        /**
+         * Bullet
+         */
+        inline static std::string PATH_BULLET_IMAGE = "res/meow_meow/Bullets/bullet";
     };
 }  // namespace Meow_Meow
