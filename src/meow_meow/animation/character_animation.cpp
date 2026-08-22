@@ -8,7 +8,7 @@ namespace Meow_Meow {
     Character_Animation::Character_Animation(int character_id, int character_level) {
         this->set_character_id(character_id);
         this->set_character_level(character_level);
-        this->add_key_press_listener(Custom::Key::V, )
+        this->add_key_press_listener(Custom::Key::V);
     }
 
     Character_Animation::~Character_Animation() {}
