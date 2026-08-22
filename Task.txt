@@ -32,8 +32,15 @@
 [Done]: Add director is entry of entire scene. manage change scene to render.
 [Done]: Add param global data into all function virtual of component to specify and clearly the flow of global data.
 [Done]: Add custom key press component.
-[]: Add camera move with our character focus on layer game.
-[]: Add component state machine.
+[Done]: Add camera move with our character focus on layer game.
+[Done]: Add component state machine.
+
+[]: Add the state infinity this will be manualy end by object using that component (using to implement two action IDLE and MOVE of character).
+[]: Add manualy check boundary battle layer to object (upgrade it with static collision later).
+[]: Add logic collision to border layer to player.
+[]: Add enemy object node.
+[]: Add logic collision to bullet and enemy.
+[]: Update logic handle verlosity.
 
 []: Refactor variable name in key press system to read easier.
 [][Very difficult]: Add quad tree to collision system.

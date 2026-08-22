@@ -1,8 +1,6 @@
 #include <state_machine_component.h>
 
-bool State_Machine_Component::Track_Information::is_finished_state() {
-    return this->current_processing_duration >= this->max_state_duration;
-}
+float State_Machine_Component::INFITY_STATE = -1.0f;
 
 State_Machine_Component::State_Machine_Component() {}
 
@@ -12,7 +10,7 @@ bool State_Machine_Component::is_finish_state_at(const std::string& track) {
     if (this->tracks.find(track) == this->tracks.end()) {
         return false;
     }
-    return this->tracks[track].is_finished_state();
+    return this->tracks[track].is_finish;
 }
 
 std::string State_Machine_Component::get_current_state_at(std::string track) {
@@ -46,6 +44,13 @@ void State_Machine_Component::change_state_at(std::string track_name, std::strin
     track.current_processing_duration = 0.f;
     track.max_state_duration = state_duration;
     track.is_callback = false;
+    track.is_finish = false;
+}
+
+void State_Machine_Component::log(std::string track) {
+    if (this->tracks.find(track) == this->tracks.end())
+        return;
+    std::cout << "Track name: " << track << ", " << this->tracks[track];
 }
 
 void State_Machine_Component::attach(Base_Node* target, void* global_data) {
@@ -63,10 +68,16 @@ void State_Machine_Component::update_information(Base_Node* target, float delta_
 void State_Machine_Component::handle_task(Base_Node* target, float delta_time, void* global_data) {
     for (auto& [track_name, track] : tracks) {
         std::string& current_state_name = track.current_state;
-        if (track.is_finished_state()) {
+        /**
+         * @Note: If state is infinity the target NEED TO change it manualy!
+         */
+        if (track.max_state_duration == INFITY_STATE)
+            continue;
+        if (track.current_processing_duration >= track.max_state_duration) {
             if (!track.is_callback && track.finish_callback != nullptr) {
                 track.finish_callback({target, this, global_data, current_state_name});
             }
+            track.is_finish = true;
             track.is_callback = true;
         }
     }

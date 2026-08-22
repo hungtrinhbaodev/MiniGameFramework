@@ -2,11 +2,13 @@
 #include <base_component.h>
 
 #include <functional>
+#include <iostream>
 #include <map>
 #include <vector>
 
 class State_Machine_Component : public Base_Component {
 public:
+    static float INFITY_STATE;
     struct Callback_Finish_State {
         Base_Node* target = nullptr;
         State_Machine_Component* component = nullptr;
@@ -23,6 +25,7 @@ public:
 
     void add_track(std::string track_name, std::function<void(Callback_Finish_State)> finish_state_callback);
     void change_state_at(std::string track, std::string state, float state_duration);
+    void log(std::string track);
 
 protected:
     void attach(Base_Node* target, void* global_data) override;
@@ -38,7 +41,14 @@ private:
         bool is_callback = false;
         std::function<void(Callback_Finish_State)> finish_callback = nullptr;
         std::string last_state_processing = "";
-        bool is_finished_state();
+        bool is_finish = false;
+
+        friend std::ostream& operator<<(std::ostream& os, const Track_Information& track) {
+            std::cout << "current_state: " << track.current_state
+                      << ", current_processing_duration: " << track.current_processing_duration
+                      << ", max_state_duration: " << track.max_state_duration << std::endl;
+            return os;
+        }
     };
 
     Base_Node* target = nullptr;

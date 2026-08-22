@@ -1,0 +1,15 @@
+# Abstract all logic in update of node step by step:
+    [Components]:
+        - Collision use global transform to check.
+        - Touch use global transform to check.
+        - Key board use nothing to update (in future use delta_time to check hold).
+        - State machine use delta time to update.
+    [Actions]:
+        - Use and update local transform.
+# Components comunicate with each other:
+    - How key board plus data to state machine ?
+    - State machine can be the host of decision to action ?
+    - State machine example on internet work ?
+# Does dispatcher can be use here ?
+# State machine how to implement it sufficiently ?
+# Handle static mesh in collision ?

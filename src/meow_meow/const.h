@@ -11,6 +11,8 @@ namespace Meow_Meow {
 
     class Const {
     public:
+        enum DIRECTION { LEFT, RIGHT, UP, DOWN, NONE /** Don't update with NONE state */ };
+
         inline static std::string CHARACTER_STATE_MACHINE_NAME = "CHARACTER_STATE_MACHINE";
 
         inline static int BASE_CHARACTER_ID = 0;
@@ -34,5 +36,15 @@ namespace Meow_Meow {
         inline static std::vector<int> ENEMY_ANIMATION_NUMBER_FRAMES = {20, 25, 60, 35};
         inline static std::vector<float> ENEMY_ANIMATION_DURATION_PER_FRAMES = {0.04, 0.04, 0.03, 0.04};
         inline static std::vector<int> ENEMY_MAX_LEVELS = std::vector<int>(NUMBER_ENEMY, 1);
+
+        /**
+         * State machine config to character
+         */
+        inline static std::string TRACK_CONTROLL = "CONTROLL";
+        inline static std::string STATE_MOVE = "MOVE";
+        inline static std::string STATE_IDLE = "IDLE";
+        inline static std::string STATE_ATTACK = "ATTACK";
+        inline static std::string TRACK_EFFECTED = "EFFECTED";
+        inline static std::string STATE_ATTACKED = "ATTACKED";
     };
 }  // namespace Meow_Meow

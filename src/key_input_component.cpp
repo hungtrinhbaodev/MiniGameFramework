@@ -31,7 +31,8 @@ void Key_Input_Component::detach(Base_Node* target, void* global_data) {
 }
 
 std::map<Custom::Key, Key_Input_Type> Key_Input_Component::get_key_inputs() {
-    return Key_Input_System::get()->query_pressed_keys(listener_id);
+    std::map<Custom::Key, Key_Input_Type> keys = Key_Input_System::get()->query_pressed_keys(listener_id);
+    return keys;
 }
 
 bool Key_Input_Component::is_key_listener_enabled(Custom::Key key) {

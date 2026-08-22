@@ -1,5 +1,4 @@
 #include <defined.h>
-#include <meow_meow/const.h>
 #include <meow_meow/object/character_node.h>
 #include <state_machine_component.h>
 #include <utils.h>
@@ -7,12 +6,30 @@
 namespace Meow_Meow {
 
     bool is_character_attacking(State_Machine_Component* state_machine_component) {
-        return state_machine_component->get_current_state_at("CONTROLL") == "ATTACK" &&
-               !state_machine_component->is_finish_state_at("CONTROLL");
+        return state_machine_component->get_current_state_at(Const::TRACK_CONTROLL) == Const::STATE_ATTACK &&
+               !state_machine_component->is_finish_state_at(Const::TRACK_CONTROLL);
     }
 
     bool is_character_attacked(State_Machine_Component* State_Machine_Component) {
         return false;
+    }
+
+    bool can_process_move_input(State_Machine_Component* state_machine_component, Key_Input_Type type) {
+        if (type != Key_Input_Type::PRESSED && type != Key_Input_Type::HOLDING)
+            return false;
+        if (is_character_attacking(state_machine_component)) {
+            return false;
+        }
+        return true;
+    }
+
+    bool can_process_attack_input(State_Machine_Component* state_machine_component, Key_Input_Type type) {
+        if (type != Key_Input_Type::PRESSED)
+            return false;
+        if (is_character_attacked(state_machine_component) && !is_character_attacking(state_machine_component)) {
+            return false;
+        }
+        return true;
     }
 
     Character_Node::Character_Node() {
@@ -32,8 +49,8 @@ namespace Meow_Meow {
         /**
          * Add track controll to state machine
          */
-        state_machine->add_track("CONTROLL", nullptr);
-        state_machine->add_track("EFFECTED", nullptr);
+        state_machine->add_track(Const::TRACK_CONTROLL, nullptr);
+        state_machine->add_track(Const::TRACK_EFFECTED, nullptr);
         state_machine->set_name(Const::CHARACTER_STATE_MACHINE_NAME);
         this->add_component(state_machine);
 
@@ -47,92 +64,150 @@ namespace Meow_Meow {
     void Character_Node::attach(void* global_data) {
         State_Machine_Component* state_machine_component =
             Utils::get_component<State_Machine_Component>(this, Const::CHARACTER_STATE_MACHINE_NAME);
-        state_machine_component->change_state_at("CONTROLL", "IDLE", 0);
+        state_machine_component->change_state_at(
+            Const::TRACK_CONTROLL, Const::STATE_IDLE, State_Machine_Component::INFITY_STATE
+        );
         this->character_animtion->play_animation("IDLE");
     }
 
     void Character_Node::update_moverment(float delta_time) {
         this->velocity -= this->accelarate * delta_time;
         this->velocity = {std::max(0.f, this->velocity.x), std::max(0.f, this->velocity.y)};
-        this->set_position(this->get_position() + this->velocity * this->direction * delta_time);
+        this->set_position(this->get_position() + this->velocity * this->get_direction() * delta_time);
     }
 
-    bool Character_Node::finish_moving() {
-        return this->velocity.x <= 0 && this->velocity.y <= 0;
+    void Character_Node::update_character_direction() {
+        this->character_animtion->set_flipped_x(this->horizontal_direction == Const::DIRECTION::LEFT);
+    }
+
+    glm::vec2 Character_Node::get_direction() {
+        return {
+            this->horizontal_direction == Const::DIRECTION::LEFT ? -1 : 1,
+            this->vertical_direction == Const::DIRECTION::DOWN ? -1 : 1
+        };
+    }
+
+    bool Character_Node::is_moving_at_direction(Const::DIRECTION direction) {
+        return (this->horizontal_direction == direction && this->velocity.x > 0) ||
+               (this->vertical_direction == direction && this->velocity.y > 0);
+    }
+
+    void Character_Node::change_to_move(Const::DIRECTION horizontal, Const::DIRECTION vertical) {
+        State_Machine_Component* state_machine_component =
+            Utils::get_component<State_Machine_Component>(this, Const::CHARACTER_STATE_MACHINE_NAME);
+
+        std::string last_state = state_machine_component->get_last_state_processign_at(Const::TRACK_CONTROLL);
+        if (last_state == Const::STATE_ATTACK) {
+            this->character_animtion->play_animation("IDLE");
+        }
+
+        this->horizontal_direction = horizontal != Const::DIRECTION::NONE ? horizontal : this->horizontal_direction;
+        this->vertical_direction = vertical != Const::DIRECTION::NONE ? vertical : this->vertical_direction;
+
+        this->velocity.x = horizontal != Const::DIRECTION::NONE ? VELOCITY_MOVE_VALUE : 0;
+        this->accelarate.x = horizontal != Const::DIRECTION::NONE ? ACCELARATE_MOVE_VALUE : 0;
+
+        this->velocity.y = vertical != Const::DIRECTION::NONE ? VELOCITY_MOVE_VALUE : 0;
+        this->accelarate.y = vertical != Const::DIRECTION::NONE ? ACCELARATE_MOVE_VALUE : 0;
+
+        state_machine_component->change_state_at(
+            Const::TRACK_CONTROLL, Const::STATE_MOVE, State_Machine_Component::INFITY_STATE
+        );
+    }
+
+    void Character_Node::change_to_idle() {
+        State_Machine_Component* state_machine_component =
+            Utils::get_component<State_Machine_Component>(this, Const::CHARACTER_STATE_MACHINE_NAME);
+
+        std::string last_state = state_machine_component->get_last_state_processign_at(Const::TRACK_CONTROLL);
+        if (last_state == Const::STATE_ATTACK) {
+            this->character_animtion->play_animation("IDLE");
+        }
+
+        state_machine_component->change_state_at(
+            Const::TRACK_CONTROLL, Const::STATE_IDLE, State_Machine_Component::INFITY_STATE
+        );
+
+        this->velocity = {0.f, 0.f};
+        this->accelarate = {0.f, 0.f};
+    }
+
+    void Character_Node::change_to_attack(void* global_data) {
+        State_Machine_Component* state_machine_component =
+            Utils::get_component<State_Machine_Component>(this, Const::CHARACTER_STATE_MACHINE_NAME);
+
+        state_machine_component->change_state_at(Const::TRACK_CONTROLL, Const::STATE_ATTACK, 0.35);
+        this->character_animtion->play_animation("SHOOT");
+
+        this->velocity = {0.f, 0.f};
+        this->accelarate = {0.f, 0.f};
+
+        /**
+         * TODO: Request generate bullet here!
+         */
     }
 
     void Character_Node::handle_key_board(float delta_time, void* global_data) {
         Key_Input_Component* key_input =
             Utils::get_component<Key_Input_Component>(this, Defined::COMPONENT_KEY_INPUT_NAME);
+
         State_Machine_Component* state_machine_component =
             Utils::get_component<State_Machine_Component>(this, Const::CHARACTER_STATE_MACHINE_NAME);
+
         if (key_input == nullptr || state_machine_component == nullptr)
             return;
+
         std::map<Custom::Key, Key_Input_Type> keys_pressed = key_input->get_key_inputs();
         for (auto& [key, type] : keys_pressed) {
             switch (key) {
                 case Custom::Key::W: {
-                    if (type != Key_Input_Type::PRESSED && type != Key_Input_Type::HOLDING)
-                        break;
-                    if (is_character_attacking(state_machine_component)) {
+                    if (can_process_move_input(state_machine_component, type)) {
+                        this->change_to_move(Const::DIRECTION::NONE, Const::DIRECTION::UP);
                         break;
                     }
-                    this->direction.y = 1;
-                    this->velocity = {0, VELOCITY_MOVE_VALUE};
-                    this->accelarate = {0, ACCELARATE_MOVE_VALUE};
-                    state_machine_component->change_state_at("CONTROLL", "MOVE", 0);
+                    if (!is_character_attacking(state_machine_component) &&
+                        is_moving_at_direction(Const::DIRECTION::UP)) {
+                        this->change_to_idle();
+                    }
                     break;
                 }
                 case Custom::Key::S: {
-                    if (type != Key_Input_Type::PRESSED && type != Key_Input_Type::HOLDING)
-                        break;
-                    if (is_character_attacking(state_machine_component)) {
+                    if (can_process_move_input(state_machine_component, type)) {
+                        this->change_to_move(Const::DIRECTION::NONE, Const::DIRECTION::DOWN);
                         break;
                     }
-                    this->direction.y = -1;
-                    this->velocity = {0, VELOCITY_MOVE_VALUE};
-                    this->accelarate = {0, ACCELARATE_MOVE_VALUE};
-                    state_machine_component->change_state_at("CONTROLL", "MOVE", 0);
+                    if (!is_character_attacking(state_machine_component) &&
+                        is_moving_at_direction(Const::DIRECTION::DOWN)) {
+                        this->change_to_idle();
+                    }
                     break;
                 }
                 case Custom::Key::A: {
-                    if (type != Key_Input_Type::PRESSED && type != Key_Input_Type::HOLDING)
-                        break;
-                    if (is_character_attacking(state_machine_component)) {
+                    if (can_process_move_input(state_machine_component, type)) {
+                        this->change_to_move(Const::DIRECTION::LEFT, Const::DIRECTION::NONE);
                         break;
                     }
-                    this->direction.x = -1;
-                    this->velocity = {VELOCITY_MOVE_VALUE, 0};
-                    this->accelarate = {VELOCITY_MOVE_VALUE, 0};
-                    state_machine_component->change_state_at("CONTROLL", "MOVE", 0);
+                    if (!is_character_attacking(state_machine_component) &&
+                        is_moving_at_direction(Const::DIRECTION::LEFT)) {
+                        this->change_to_idle();
+                    }
                     break;
                 }
                 case Custom::Key::D: {
-                    if (type != Key_Input_Type::PRESSED && type != Key_Input_Type::HOLDING)
-                        break;
-                    if (is_character_attacking(state_machine_component)) {
+                    if (can_process_move_input(state_machine_component, type)) {
+                        this->change_to_move(Const::DIRECTION::RIGHT, Const::DIRECTION::NONE);
                         break;
                     }
-                    this->direction.x = 1;
-                    this->velocity = {VELOCITY_MOVE_VALUE, 0};
-                    this->accelarate = {VELOCITY_MOVE_VALUE, 0};
-                    state_machine_component->change_state_at("CONTROLL", "MOVE", 0);
+                    if (!is_character_attacking(state_machine_component) &&
+                        is_moving_at_direction(Const::DIRECTION::RIGHT)) {
+                        this->change_to_idle();
+                    }
                     break;
                 }
                 case Custom::Key::SPACE: {
-                    if (type != Key_Input_Type::PRESSED)
-                        break;
-                    if (is_character_attacked(state_machine_component) &&
-                        !is_character_attacked(state_machine_component)) {
-                        break;
+                    if (can_process_attack_input(state_machine_component, type)) {
+                        this->change_to_attack(global_data);
                     }
-                    /**
-                     * TODO: add attack speed rate here latter!
-                     */
-                    this->velocity = {0, 0};
-                    this->accelarate = {0, 0};
-                    state_machine_component->change_state_at("CONTROLL", "ATTACK", 0.35);
-                    this->character_animtion->play_animation("SHOOT");
                     break;
                 }
                 default: {
@@ -143,16 +218,15 @@ namespace Meow_Meow {
     }
 
     void Character_Node::handle_state_machine(float delta_time, void* global_data) {
+        /**
+         * @Note: Handle auto change state of state machine here!
+         */
         State_Machine_Component* state_machine_component =
             Utils::get_component<State_Machine_Component>(this, Const::CHARACTER_STATE_MACHINE_NAME);
-        if (state_machine_component->is_finish_state_at("CONTROLL")) {
-            std::string current_state = state_machine_component->get_current_state_at("CONTROLL");
-            std::string last_state = state_machine_component->get_last_state_processign_at("CONTROLL");
-            if (current_state == "ATTACK") {
-                state_machine_component->change_state_at("CONTROLL", "IDLE", 0);
-                this->character_animtion->play_animation("IDLE");
-            } else if (current_state == "MOVE" && this->finish_moving()) {
-                state_machine_component->change_state_at("CONTROLL", "IDLE", 0);
+        if (state_machine_component->is_finish_state_at(Const::TRACK_CONTROLL)) {
+            std::string current_state = state_machine_component->get_current_state_at(Const::TRACK_CONTROLL);
+            if (current_state == Const::STATE_ATTACK) {
+                this->change_to_idle();
             }
         }
     }
@@ -161,5 +235,6 @@ namespace Meow_Meow {
         this->handle_key_board(delta_time, global_data);
         this->handle_state_machine(delta_time, global_data);
         this->update_moverment(delta_time);
+        this->update_character_direction();
     }
 }  // namespace Meow_Meow
