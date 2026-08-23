@@ -18,6 +18,10 @@ namespace Meow_Meow {
         return this->enemy_animation_config;
     }
 
+    const Enemy_Behavior_Config& Config::get_enemy_behavior_config() const {
+        return this->enemy_behavior_config;
+    }
+
     std::string Config::get_character_name(int character_id) const {
         if (!this->is_character_id(character_id)) {
             return "";

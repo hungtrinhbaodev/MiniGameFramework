@@ -22,8 +22,16 @@ namespace Meow_Meow {
         return this->battle_layer;
     }
 
+    Character_Node* Global_Data::get_character() {
+        return this->character;
+    }
+
     void Global_Data::set_battle_layer(Battle_Layer* battle_layer) {
         this->battle_layer = battle_layer;
+    }
+
+    void Global_Data::set_character(Character_Node* character) {
+        this->character = character;
     }
 
     void Global_Data::clear() {

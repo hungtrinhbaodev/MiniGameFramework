@@ -1,4 +1,5 @@
 #include <math_custom.h>
+#include <meow_meow/global_data.h>
 #include <meow_meow/layer/layer_battle.h>
 
 namespace Meow_Meow {
@@ -28,5 +29,10 @@ namespace Meow_Meow {
 
     Image_Node* Battle_Layer::get_bg() {
         return this->bg;
+    }
+
+    void Battle_Layer::attach(void* global_data) {
+        Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
+        data->set_character(this->character);
     }
 }  // namespace Meow_Meow

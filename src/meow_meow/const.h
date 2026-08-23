@@ -15,49 +15,78 @@ namespace Meow_Meow {
     public:
         enum DIRECTION { LEFT, RIGHT, UP, DOWN, NONE /** Don't update with NONE state */ };
 
-        inline static std::string CHARACTER_STATE_MACHINE_NAME = "CHARACTER_STATE_MACHINE";
+        const inline static int BASE_CHARACTER_ID = 0;
+        const inline static int NUMBER_CHARACTER = 3;
+        const inline static Const_Character_Information MEOW_FANCY{0, "FANCY MEOW"};
+        const inline static Const_Character_Information MEOW_SAD{1, "SAD MEOW"};
+        const inline static Const_Character_Information MEO_CONFIDENT{2, "OVERCONFIDENT MEOW"};
+        const inline static std::string CHARACTER_DEFAULT_PATH = "res/meow_meow/Characters/C";
+        const inline static std::vector<std::string> CHARACTER_ANIMATION_NAMES = {"IDLE", "SHOOT"};
+        const inline static std::vector<std::string> CHARACTER_ANIMATION_FOLDER_NAMES = {"Idle", "Shoot"};
+        const inline static std::vector<int> CHARACTER_ANIMATION_NUMBER_FRAMES = {20, 10};
+        const inline static std::vector<float> CHARACTER_ANIMATION_DURATION_PER_FRAMES = {0.04, 0.06};
+        const inline static std::vector<int> CHARACTER_MAX_LEVELS = {5, 5, 5};
+        const inline static std::vector<Const_Character_Information> CHARACTERS_INFO{
+            {MEOW_FANCY, MEOW_SAD, MEO_CONFIDENT}
+        };
+        const inline static Custom::Size CHARACTER_BOUNDING_BOX = {100, 120};
 
-        inline static int BASE_CHARACTER_ID = 0;
-        inline static int NUMBER_CHARACTER = 3;
-        inline static Const_Character_Information MEOW_FANCY{0, "FANCY MEOW"};
-        inline static Const_Character_Information MEOW_SAD{1, "SAD MEOW"};
-        inline static Const_Character_Information MEO_CONFIDENT{2, "OVERCONFIDENT MEOW"};
-        inline static std::string CHARACTER_DEFAULT_PATH = "res/meow_meow/Characters/C";
-        inline static std::vector<std::string> CHARACTER_ANIMATION_NAMES = {"IDLE", "SHOOT"};
-        inline static std::vector<std::string> CHARACTER_ANIMATION_FOLDER_NAMES = {"Idle", "Shoot"};
-        inline static std::vector<int> CHARACTER_ANIMATION_NUMBER_FRAMES = {20, 10};
-        inline static std::vector<float> CHARACTER_ANIMATION_DURATION_PER_FRAMES = {0.04, 0.06};
-        inline static std::vector<int> CHARACTER_MAX_LEVELS = {5, 5, 5};
-        inline static std::vector<Const_Character_Information> CHARACTERS_INFO{{MEOW_FANCY, MEOW_SAD, MEO_CONFIDENT}};
-        inline static Custom::Size CHARACTER_BOUNDING_BOX = {100, 120};
-
-        inline static int BASE_ENEMY_ID = 1000;
-        inline static int NUMBER_ENEMY = 8;
-        inline static std::string ENEMY_DEFAULT_PATH = "res/meow_meow/Enemies/Enemy Reg ";
-        inline static std::vector<std::string> ENEMY_ANIMATION_NAMES = {"IDLE", "ATTACK", "DEAD", "WALK"};
-        inline static std::vector<std::string> ENEMY_ANIMATION_FOLDER_NAMES = {"Idle", "Attack", "Dead", "Walk"};
-        inline static std::vector<int> ENEMY_ANIMATION_NUMBER_FRAMES = {20, 25, 60, 35};
-        inline static std::vector<float> ENEMY_ANIMATION_DURATION_PER_FRAMES = {0.04, 0.04, 0.03, 0.04};
-        inline static std::vector<int> ENEMY_MAX_LEVELS = std::vector<int>(NUMBER_ENEMY, 1);
+        const inline static int BASE_ENEMY_ID = 1000;
+        const inline static int NUMBER_ENEMY = 8;
+        const inline static std::string ENEMY_DEFAULT_PATH = "res/meow_meow/Enemies/Enemy Reg ";
+        const inline static std::vector<std::string> ENEMY_ANIMATION_NAMES = {"IDLE", "ATTACK", "DEAD", "WALK"};
+        const inline static std::vector<std::string> ENEMY_ANIMATION_FOLDER_NAMES = {"Idle", "Attack", "Dead", "Walk"};
+        const inline static std::vector<int> ENEMY_ANIMATION_NUMBER_FRAMES = {20, 25, 60, 35};
+        const inline static std::vector<float> ENEMY_ANIMATION_DURATION_PER_FRAMES = {0.04, 0.04, 0.03, 0.04};
+        const inline static std::vector<int> ENEMY_MAX_LEVELS = std::vector<int>(NUMBER_ENEMY, 1);
 
         /**
          * State machine config to character
          */
-        inline static std::string TRACK_CONTROLL = "CONTROLL";
-        inline static std::string STATE_MOVE = "MOVE";
-        inline static std::string STATE_IDLE = "IDLE";
-        inline static std::string STATE_ATTACK = "ATTACK";
-        inline static std::string TRACK_EFFECTED = "EFFECTED";
-        inline static std::string STATE_ATTACKED = "ATTACKED";
+        const inline static std::string TRACK_CONTROLL = "CONTROLL";
+        const inline static std::string STATE_MOVE = "MOVE";
+        const inline static std::string STATE_IDLE = "IDLE";
+        const inline static std::string STATE_ATTACK = "ATTACK";
+        const inline static std::string TRACK_EFFECTED = "EFFECTED";
+        const inline static std::string STATE_ATTACKED = "ATTACKED";
+        const inline static std::string STATE_WALK = "WALK";
+        const inline static std::string STATE_JUMP = "JUMP";
 
         /**
          * Bullet
          */
-        inline static std::string PATH_BULLET_IMAGE = "res/meow_meow/Bullets/bullet";
+        const inline static std::string PATH_BULLET_IMAGE = "res/meow_meow/Bullets/bullet";
 
         /**
          * Shoot animation
          */
-        inline static int SHOOT_ANIMATION_NODE_TAG = 1;
+        const inline static int SHOOT_ANIMATION_NODE_TAG = 0;
+
+        /**
+         * Collision
+         */
+        const inline static int CHARACTER_COLLISION_TAG = 0;
+        const inline static int BULLET_COLLISION_TAG = 1;
+        const inline static int ENEMY_COLLISION_TAG = 2;
+        const inline static int CHARACTER_LAYER_COLLISION = 0;
+        const inline static int ENEMY_LAYER_COLLISION = 1;
+
+        /**
+         * Enemy Behavior
+         */
+        const inline static float ENEMY_JUMP_DISTANCE = 100.f;
+        const inline static float ENEMY_VELOSITY = 100.f;
+        const inline static float ENEMY_ATTACK_DAMGE = 30.f;
+        const inline static float ENEMY_ATTACK_RANGE = 20.f;
+        const inline static float ENEMY_DURATION_WALK = 0.5f;
+        const inline static float ENEMY_DURATION_JUMP = 0.5f;
+        const inline static float ENEMY_DURATION_ATTACK = 0.35;
+        const inline static float ENEMY_ATTACK_COUNTDOWN = 1.25;
+        const inline static float ENEMY_JUMP_COUNTDOWN = 10;
+
+        /**
+         * Custom component name
+         */
+        const inline static std::string ENEMY_BEHAVIOR_COMPONENT_NAME = "ENEMY_BEHAVIOR_COMPONENT";
     };
 }  // namespace Meow_Meow

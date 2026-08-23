@@ -44,6 +44,10 @@ namespace Meow_Meow {
 
     Character_Node::~Character_Node() {}
 
+    void Character_Node::set_character_animation_id(int character_animation_id) {
+        this->character_animation_id = character_animation_id;
+    }
+
     void Character_Node::init_character_animation() {
         this->character_animtion = new Character_Animation(0, 2);
         this->add_child(this->character_animtion);
@@ -56,7 +60,7 @@ namespace Meow_Meow {
          */
         state_machine->add_track(Const::TRACK_CONTROLL, nullptr);
         state_machine->add_track(Const::TRACK_EFFECTED, nullptr);
-        state_machine->set_name(Const::CHARACTER_STATE_MACHINE_NAME);
+        state_machine->set_name(Defined::COMPONENT_STATE_MACHINE_NAME);
         this->add_component(state_machine);
 
         this->add_key_press_listener(Custom::Key::W);
@@ -68,7 +72,7 @@ namespace Meow_Meow {
 
     void Character_Node::attach(void* global_data) {
         State_Machine_Component* state_machine_component =
-            Utils::get_component<State_Machine_Component>(this, Const::CHARACTER_STATE_MACHINE_NAME);
+            Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
         state_machine_component->change_state_at(
             Const::TRACK_CONTROLL, Const::STATE_IDLE, State_Machine_Component::INFITY_STATE
         );
@@ -125,7 +129,7 @@ namespace Meow_Meow {
 
     void Character_Node::change_to_move(Const::DIRECTION horizontal, Const::DIRECTION vertical, float duration_hold) {
         State_Machine_Component* state_machine_component =
-            Utils::get_component<State_Machine_Component>(this, Const::CHARACTER_STATE_MACHINE_NAME);
+            Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
 
         std::string last_state = state_machine_component->get_last_state_processign_at(Const::TRACK_CONTROLL);
         if (last_state == Const::STATE_ATTACK) {
@@ -151,7 +155,7 @@ namespace Meow_Meow {
 
     void Character_Node::change_to_idle() {
         State_Machine_Component* state_machine_component =
-            Utils::get_component<State_Machine_Component>(this, Const::CHARACTER_STATE_MACHINE_NAME);
+            Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
 
         std::string last_state = state_machine_component->get_last_state_processign_at(Const::TRACK_CONTROLL);
         if (last_state == Const::STATE_ATTACK) {
@@ -168,7 +172,7 @@ namespace Meow_Meow {
 
     void Character_Node::change_to_attack(void* global_data) {
         State_Machine_Component* state_machine_component =
-            Utils::get_component<State_Machine_Component>(this, Const::CHARACTER_STATE_MACHINE_NAME);
+            Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
 
         state_machine_component->change_state_at(Const::TRACK_CONTROLL, Const::STATE_ATTACK, DURATION_ATTACK);
         float animation_duration = this->character_animtion->get_amimation_duration("SHOOT");
@@ -185,7 +189,7 @@ namespace Meow_Meow {
         if (!battle_layer)
             return;
 
-        Bullet_Node* bullet = new Bullet_Node(this->character_id, this->horizontal_direction);
+        Bullet_Node* bullet = new Bullet_Node(this->character_animation_id, this->horizontal_direction);
         float sign_x = horizontal_direction == Const::DIRECTION::LEFT ? -1 : 1;
         glm::vec2 fire_position = this->get_position() + glm::vec2{sign_x, 1} * DELTA_POSITION_BULLET;
         bullet->set_position(fire_position);
@@ -201,7 +205,7 @@ namespace Meow_Meow {
             Utils::get_component<Key_Input_Component>(this, Defined::COMPONENT_KEY_INPUT_NAME);
 
         State_Machine_Component* state_machine_component =
-            Utils::get_component<State_Machine_Component>(this, Const::CHARACTER_STATE_MACHINE_NAME);
+            Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
 
         if (key_input == nullptr || state_machine_component == nullptr)
             return;
@@ -271,7 +275,7 @@ namespace Meow_Meow {
          * @Note: Handle auto change state of state machine here!
          */
         State_Machine_Component* state_machine_component =
-            Utils::get_component<State_Machine_Component>(this, Const::CHARACTER_STATE_MACHINE_NAME);
+            Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
         if (state_machine_component->is_finish_state_at(Const::TRACK_CONTROLL)) {
             std::string current_state = state_machine_component->get_current_state_at(Const::TRACK_CONTROLL);
             if (current_state == Const::STATE_ATTACK) {

@@ -11,6 +11,9 @@ namespace Meow_Meow {
 
         Image_Node* get_bg();
 
+    protected:
+        void attach(void* global_data) override;
+
     private:
         void init_bg();
         void init_character();

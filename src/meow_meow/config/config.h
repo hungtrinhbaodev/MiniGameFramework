@@ -1,5 +1,6 @@
 #pragma once
 #include <meow_meow/config/character_animation_config.h>
+#include <meow_meow/config/enemy_behavior_config.h>
 #include <meow_meow/const.h>
 
 #include <string>
@@ -14,6 +15,7 @@ namespace Meow_Meow {
         bool is_character_id(int character_id) const;
         const Character_Animation_Config& get_character_animation_config() const;
         const Character_Animation_Config& get_enemy_animation_config() const;
+        const Enemy_Behavior_Config& get_enemy_behavior_config() const;
         std::string get_character_name(int character_id) const;
         std::vector<int> get_character_ids() const;
 
@@ -37,6 +39,17 @@ namespace Meow_Meow {
             Const::ENEMY_ANIMATION_NUMBER_FRAMES,
             Const::ENEMY_MAX_LEVELS,
             Const::ENEMY_ANIMATION_DURATION_PER_FRAMES
+        };
+        Enemy_Behavior_Config enemy_behavior_config{
+            Const::ENEMY_JUMP_DISTANCE,
+            Const::ENEMY_VELOSITY,
+            Const::ENEMY_ATTACK_DAMGE,
+            Const::ENEMY_ATTACK_RANGE,
+            Const::ENEMY_DURATION_WALK,
+            Const::ENEMY_DURATION_JUMP,
+            Const::ENEMY_DURATION_ATTACK,
+            Const::ENEMY_ATTACK_COUNTDOWN,
+            Const::ENEMY_JUMP_COUNTDOWN
         };
     };
 
