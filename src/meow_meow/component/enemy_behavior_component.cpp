@@ -15,7 +15,7 @@ namespace Meow_Meow {
 
     void Enemy_Behavior_Component::start_jump_countdown() {
         this->is_jump_countdown = true;
-        this->attack_countdown = 0;
+        this->jump_countdown = 0;
     }
 
     bool Enemy_Behavior_Component::is_walking() {

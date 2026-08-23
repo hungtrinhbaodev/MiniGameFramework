@@ -27,7 +27,7 @@ namespace Meow_Meow {
 
         float effect_enemy_jump(float delay, float duration, glm::vec2 character_position);
 
-        int enemy_animation_id = -1;
+        int enemy_animation_id = 0;
         Character_Animation* enemy_animation = nullptr;
         glm::vec2 direction{0.f, 0.f};
         glm::vec2 velosity{0.f, 0.f};

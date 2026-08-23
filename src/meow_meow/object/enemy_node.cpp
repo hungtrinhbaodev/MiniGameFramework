@@ -78,7 +78,7 @@ namespace Meow_Meow {
         this->effect_enemy_jump(0.f, behavior_config.get_enemy_jump_duration(), behavior->get_jump_position());
 
         state_machine->change_state_at(
-            Const::TRACK_CONTROLL, Const::STATE_JUMP, behavior_config.get_enemy_attack_duration()
+            Const::TRACK_CONTROLL, Const::STATE_JUMP, behavior_config.get_enemy_jump_duration()
         );
     }
 
