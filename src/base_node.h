@@ -69,6 +69,7 @@ public:
     void add_child(Base_Node* child);
 
     void remove_from_parent(bool is_cleanup = true);
+    bool remove_child_by_tag(int tag, bool is_cleanup = false);
     bool remove_child(Base_Node* child, bool is_cleanup = false);
 
 protected:

@@ -11,6 +11,6 @@ namespace Meow_Meow {
     protected:
         void fix_update(float delta_time, void* global_data) override;
         virtual Custom::Transformed_Rectangle get_bounding_box();
-        virtual void handle_boundary();
+        virtual void handle_boundary(void* global_data);
     };
 }  // namespace Meow_Meow

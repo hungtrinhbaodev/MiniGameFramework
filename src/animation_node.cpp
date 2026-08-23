@@ -23,6 +23,14 @@ void Animation_Node::make_animation(
 void Animation_Node::set_speed(float speed) {
     speed_ratio = std::min(std::max(speed, 0.f), 1.f);
 }
+void Animation_Node::on_finish_animation_callback(
+    std::string name, std::function<void(Animation_Node* target, void* global_data)> finish_callback
+) {
+    if (!is_valid_animation(name)) {
+        return;
+    }
+    animations[name].finish_callback = finish_callback;
+}
 
 float Animation_Node::get_amimation_duration(std::string name) {
     if (!is_valid_animation(name)) {
@@ -48,7 +56,21 @@ void Animation_Node::play_animation(std::string name, float speed, bool is_reset
     current_animation = name;
     current_frame = 0;
     total_delta_time = 0.0f;
+    animations[name].is_finish_cycle = false;
     set_speed(speed);
+}
+
+void Animation_Node::fix_update(float delta_time, void* global_data) {
+    if (is_valid_animation(this->current_animation)) {
+        Animation_Data& animation = this->animations[this->current_animation];
+        if (animation.is_finish_cycle) {
+            if (animation.finish_callback != nullptr) {
+                animation.finish_callback(this, global_data);
+            }
+            animation.is_finish_cycle = false;
+        }
+    }
+    Image_Node::fix_update(delta_time, global_data);
 }
 
 void Animation_Node::flex_update(float delta_time) {
@@ -66,6 +88,9 @@ void Animation_Node::flex_update(float delta_time) {
 
         set_image(current_image);
         total_delta_time = 0;
+
+        animation.is_finish_cycle = current_frame + 1 >= animation.number_frame;
         current_frame = (current_frame + 1) % animation.number_frame;
     }
+    Image_Node::flex_update(delta_time);
 }

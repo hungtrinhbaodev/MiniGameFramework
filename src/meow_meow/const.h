@@ -1,4 +1,6 @@
 #pragma once
+#include <custom.h>
+
 #include <string>
 #include <vector>
 
@@ -27,6 +29,7 @@ namespace Meow_Meow {
         inline static std::vector<float> CHARACTER_ANIMATION_DURATION_PER_FRAMES = {0.04, 0.06};
         inline static std::vector<int> CHARACTER_MAX_LEVELS = {5, 5, 5};
         inline static std::vector<Const_Character_Information> CHARACTERS_INFO{{MEOW_FANCY, MEOW_SAD, MEO_CONFIDENT}};
+        inline static Custom::Size CHARACTER_BOUNDING_BOX = {100, 120};
 
         inline static int BASE_ENEMY_ID = 1000;
         inline static int NUMBER_ENEMY = 8;
@@ -51,5 +54,10 @@ namespace Meow_Meow {
          * Bullet
          */
         inline static std::string PATH_BULLET_IMAGE = "res/meow_meow/Bullets/bullet";
+
+        /**
+         * Shoot animation
+         */
+        inline static int SHOOT_ANIMATION_NODE_TAG = 1;
     };
 }  // namespace Meow_Meow

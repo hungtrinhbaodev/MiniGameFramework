@@ -14,7 +14,7 @@ public:
     void update_information(Base_Node* target, float delta_time, void* global_data) override;
     void handle_task(Base_Node* target, float delta_time, void* global_data) override;
 
-    std::map<Custom::Key, Key_Input_Type> get_key_inputs();
+    std::map<Custom::Key, Key_Press_Detail> get_key_inputs();
     bool is_key_listener_enabled(Custom::Key key);
     bool is_swallow_keys_enabled(Custom::Key key);
     void set_key_listener_enabled(Custom::Key key, bool enabled, bool swallow_keys = false);

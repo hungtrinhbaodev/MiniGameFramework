@@ -58,7 +58,7 @@ void Key_Input_System::request_update_listener(int id, Key_Pressed_Information u
     }
 }
 
-std::map<Custom::Key, Key_Input_Type> Key_Input_System::query_pressed_keys(int id) {
+std::map<Custom::Key, Key_Press_Detail> Key_Input_System::query_pressed_keys(int id) {
     if (!has_id(id))
         return {};
     if (handled_keys.find(id) == handled_keys.end())
@@ -79,25 +79,27 @@ void Key_Input_System::remove_key_press_listener(int id) {
     handled_keys.erase(id);
 }
 
-void Key_Input_System::handle_key_pressed(const std::map<Custom::Key, Key_Input_Type>& keys_detail) {
+void Key_Input_System::handle_key_pressed(const std::map<Custom::Key, Key_Press_Detail>& keys_detail) {
     std::sort(keys.begin(), keys.end());
     for (auto& key_info : keys) {
         int key_id = key_info.key_pressed_id;
         std::map<Custom::Key, Key_Listener_Information>& key_listeners = key_info.listened_keys;
         for (const auto& [key, key_listener] : key_listeners) {
             if (handled_keys.find(key_id) != handled_keys.end()) {
-                std::map<Custom::Key, Key_Input_Type>& listener_keys_detail = handled_keys[key_id];
+                std::map<Custom::Key, Key_Press_Detail>& listener_keys_detail = handled_keys[key_id];
                 if (listener_keys_detail.find(key) == listener_keys_detail.end()) {
                     continue;
                 }
-                Key_Input_Type& type = listener_keys_detail[key];
+                Key_Input_Type& type = listener_keys_detail[key].type;
+                float& duration_press = listener_keys_detail[key].duration_pressed;
                 if (type == Key_Input_Type::CANCEL || type == Key_Input_Type::RELEASE) {
                     type = Key_Input_Type::IDLE;
+                    duration_press = 0;
                 }
             }
         }
     }
-    for (auto& [key, type] : keys_detail) {
+    for (auto& [key, detail] : keys_detail) {
         for (int i = 0; i < keys.size(); i++) {
             Key_Pressed_Information& key_info = keys[i];
             int key_id = keys[i].key_pressed_id;
@@ -112,27 +114,29 @@ void Key_Input_System::handle_key_pressed(const std::map<Custom::Key, Key_Input_
             if (handled_keys.find(key_id) == handled_keys.end()) {
                 handled_keys[key_id] = {};
             }
-            std::map<Custom::Key, Key_Input_Type>& listener_keys_detail = handled_keys[key_id];
+            std::map<Custom::Key, Key_Press_Detail>& listener_keys_detail = handled_keys[key_id];
             if (listener_keys_detail.find(key) == listener_keys_detail.end()) {
-                if (type == Key_Input_Type::PRESSED) {
-                    listener_keys_detail[key] = type;
+                if (detail.type == Key_Input_Type::PRESSED) {
+                    listener_keys_detail[key].type = detail.type;
                 }
+                listener_keys_detail[key].duration_pressed = detail.duration_pressed;
             } else {
-                if (type == Key_Input_Type::PRESSED) {
-                    if (listener_keys_detail[key] == Key_Input_Type::IDLE) {
-                        listener_keys_detail[key] = type;
+                if (detail.type == Key_Input_Type::PRESSED) {
+                    if (listener_keys_detail[key].type == Key_Input_Type::IDLE) {
+                        listener_keys_detail[key].type = detail.type;
                     }
-                } else if (type == Key_Input_Type::HOLDING) {
-                    if (listener_keys_detail[key] == Key_Input_Type::PRESSED) {
-                        listener_keys_detail[key] = type;
+                } else if (detail.type == Key_Input_Type::HOLDING) {
+                    if (listener_keys_detail[key].type == Key_Input_Type::PRESSED) {
+                        listener_keys_detail[key].type = detail.type;
                     }
-                } else if (type == Key_Input_Type::RELEASE) {
-                    if (listener_keys_detail[key] == Key_Input_Type::HOLDING) {
-                        listener_keys_detail[key] = type;
+                } else if (detail.type == Key_Input_Type::RELEASE) {
+                    if (listener_keys_detail[key].type == Key_Input_Type::HOLDING) {
+                        listener_keys_detail[key].type = detail.type;
                     }
                 } else {
-                    listener_keys_detail[key] = type;
+                    listener_keys_detail[key].type = detail.type;
                 }
+                listener_keys_detail[key].duration_pressed = detail.duration_pressed;
             }
             if (listener_info.swallow_keys) {
                 for (int j = i + 1; j < keys.size(); j++) {
@@ -146,12 +150,15 @@ void Key_Input_System::handle_key_pressed(const std::map<Custom::Key, Key_Input_
                         continue;
                     }
                     int swallowed_id = key_swallowed_info.key_pressed_id;
-                    std::map<Custom::Key, Key_Input_Type>& listener_swallowed_keys_detail = handled_keys[swallowed_id];
+                    std::map<Custom::Key, Key_Press_Detail>& listener_swallowed_keys_detail =
+                        handled_keys[swallowed_id];
+                    float& listener_swallowed_duration_press = listener_keys_detail[key].duration_pressed;
                     if (listener_swallowed_keys_detail.find(key) != listener_swallowed_keys_detail.end()) {
-                        Key_Input_Type& swallowed_key_type = listener_swallowed_keys_detail[key];
+                        Key_Input_Type& swallowed_key_type = listener_swallowed_keys_detail[key].type;
                         if (swallowed_key_type == Key_Input_Type::PRESSED ||
                             swallowed_key_type == Key_Input_Type::HOLDING) {
                             swallowed_key_type = Key_Input_Type::CANCEL;
+                            listener_swallowed_duration_press = 0;
                         }
                     }
                 }

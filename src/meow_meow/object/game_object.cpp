@@ -1,6 +1,7 @@
 #include <meow_meow/global_data.h>
 #include <meow_meow/layer/layer_battle.h>
 #include <meow_meow/object/game_object.h>
+#include <utils.h>
 
 namespace Meow_Meow {
 
@@ -21,7 +22,7 @@ namespace Meow_Meow {
         Custom::Transformed_Rectangle rect = this->get_bounding_box();
         for (glm::vec2& point : rect.points) {
             if (is_out_layer(point, layer_size)) {
-                this->handle_boundary();
+                this->handle_boundary(global_data);
                 break;
             }
         }
@@ -32,6 +33,6 @@ namespace Meow_Meow {
         return Custom::Transformed_Rectangle{rect.apply(this->get_transform(), this->get_anchor())};
     }
 
-    void Game_Object::handle_boundary() {}
+    void Game_Object::handle_boundary(void* global_data) {}
 
 }  // namespace Meow_Meow

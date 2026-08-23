@@ -30,7 +30,7 @@ namespace Meow_Meow {
         Game_Object::fix_update(delta_time, global_data);
     }
 
-    void Bullet_Node::handle_boundary() {
+    void Bullet_Node::handle_boundary(void* global_data) {
         this->remove_from_parent();
         if (this->velosity <= 0) {
             this->remove_from_parent();

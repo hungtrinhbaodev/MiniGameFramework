@@ -24,8 +24,8 @@ Test_Scene::Test_Scene() {
     animation->add_component(collison_1);
     animation->add_key_press_listener(
         Custom::Key::A,
-        [](Key_Input_Type type_press, Base_Node*, void*) {
-            switch (type_press) {
+        [](Key_Press_Detail detail, Base_Node*, void*) {
+            switch (detail.type) {
                 case Key_Input_Type::PRESSED: {
                     std::cout << "Hi animation pressed A: pressed!" << std::endl;
                     break;
@@ -68,8 +68,8 @@ Test_Scene::Test_Scene() {
         }
     );
     animation_2->add_component(collison_2);
-    animation_2->add_key_press_listener(Custom::Key::A, [](Key_Input_Type type_press, Base_Node*, void*) {
-        switch (type_press) {
+    animation_2->add_key_press_listener(Custom::Key::A, [](Key_Press_Detail detail, Base_Node*, void*) {
+        switch (detail.type) {
             case Key_Input_Type::PRESSED: {
                 std::cout << "Hi animation 2 pressed A: pressed!" << std::endl;
                 break;

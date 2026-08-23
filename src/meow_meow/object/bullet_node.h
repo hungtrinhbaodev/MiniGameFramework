@@ -12,7 +12,7 @@ namespace Meow_Meow {
 
     protected:
         Custom::Transformed_Rectangle get_bounding_box() override;
-        void handle_boundary() override;
+        void handle_boundary(void* global_data) override;
         void fix_update(float delta_time, void* global_data) override;
 
     private:

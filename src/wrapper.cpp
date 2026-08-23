@@ -221,7 +221,7 @@ namespace Libs_Wrapper {
     Vector2 current_touched_position;
 
     /**Event key press handler information */
-    std::map<Custom::Key, Key_Input_Type> keys_detail;
+    std::map<Custom::Key, Key_Press_Detail> keys_detail;
 
     RayLib_Texture_Info load_raylib_texture(std::string path) {
         path = Utils::get_root_path() + path;
@@ -311,7 +311,7 @@ namespace Libs_Wrapper {
     void init_keys_pressed_information() {
         for (int i = 0; i < static_cast<int>(Custom::Key::COUNT); i++) {
             Custom::Key current = static_cast<Custom::Key>(i);
-            keys_detail[current] = Key_Input_Type::IDLE;
+            keys_detail[current] = {Key_Input_Type::IDLE, 0};
         }
     }
 
@@ -419,10 +419,11 @@ namespace Libs_Wrapper {
         );
     }
 
-    void handle_key_inputs() {
-        for (auto& [key, type] : keys_detail) {
-            if (type == Key_Input_Type::RELEASE) {
-                type = Key_Input_Type::IDLE;
+    void handle_key_inputs(float delta_time) {
+        for (auto& [key, detail] : keys_detail) {
+            if (detail.type == Key_Input_Type::RELEASE) {
+                detail.type = Key_Input_Type::IDLE;
+                detail.duration_pressed = 0;
             }
         }
         for (int i = 0; i < static_cast<int>(Custom::Key::COUNT); i++) {
@@ -432,18 +433,23 @@ namespace Libs_Wrapper {
                 std::cout << "Key inputs warning: Unsported key, please check {from_key} function again!" << std::endl;
                 continue;
             }
-            Key_Input_Type& type = keys_detail[current];
+            Key_Press_Detail& detail = keys_detail[current];
             if (IsKeyPressed(key)) {
-                if (type == Key_Input_Type::IDLE) {
-                    type = Key_Input_Type::PRESSED;
+                if (detail.type == Key_Input_Type::IDLE) {
+                    detail.duration_pressed = 0;
+                    detail.type = Key_Input_Type::PRESSED;
                 }
             } else if (IsKeyReleased(key) || IsKeyUp(key)) {
-                if (type == Key_Input_Type::PRESSED || type == Key_Input_Type::HOLDING) {
-                    type = Key_Input_Type::RELEASE;
+                if (detail.type == Key_Input_Type::PRESSED || detail.type == Key_Input_Type::HOLDING) {
+                    detail.duration_pressed = 0;
+                    detail.type = Key_Input_Type::RELEASE;
                 }
             } else {
-                if (type == Key_Input_Type::PRESSED) {
-                    type = Key_Input_Type::HOLDING;
+                if (detail.type == Key_Input_Type::PRESSED) {
+                    detail.type = Key_Input_Type::HOLDING;
+                    detail.duration_pressed += delta_time;
+                } else if (detail.type == Key_Input_Type::HOLDING) {
+                    detail.duration_pressed += delta_time;
                 }
             }
         }
@@ -548,9 +554,9 @@ namespace Libs_Wrapper {
         rl_queue_commands.push(command);
     }
 
-    void handle_frame() {
+    void handle_frame(float delta_time) {
         handle_touch_inputs();
-        handle_key_inputs();
+        handle_key_inputs(delta_time);
         Collision_System::get()->handle_collisions();
     }
 

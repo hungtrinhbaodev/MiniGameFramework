@@ -68,7 +68,7 @@ void Base_Node::visit_draw(
         }
     }
 
-    if (visible) {
+    if (visible && this->visible) {
         draw(world_transform, draw_index);
     }
 
@@ -359,6 +359,11 @@ void Base_Node::remove_from_parent(bool is_cleanup) {
         return;
     }
     this->parent->remove_child(this, is_cleanup);
+}
+
+bool Base_Node::remove_child_by_tag(int tag, bool is_cleanup) {
+    Base_Node* child = this->get_child_by_tag(tag);
+    return this->remove_child(child, is_cleanup);
 }
 
 bool Base_Node::remove_child(Base_Node* child, bool is_cleanup) {

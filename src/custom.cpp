@@ -5,6 +5,14 @@
 
 namespace Custom {
 
+    glm::vec2 Size::to_vec2() {
+        return glm::vec2{width, height};
+    }
+
+    glm::vec2 Anchor_Point::to_vec2() {
+        return glm::vec2{x, y};
+    }
+
     std::string Color::to_string() {
         std::string color;
         color += std::string("red: ") + std::to_string(this->r);

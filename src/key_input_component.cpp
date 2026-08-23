@@ -30,8 +30,8 @@ void Key_Input_Component::detach(Base_Node* target, void* global_data) {
     Key_Input_System::get()->remove_key_press_listener(this->listener_id);
 }
 
-std::map<Custom::Key, Key_Input_Type> Key_Input_Component::get_key_inputs() {
-    std::map<Custom::Key, Key_Input_Type> keys = Key_Input_System::get()->query_pressed_keys(listener_id);
+std::map<Custom::Key, Key_Press_Detail> Key_Input_Component::get_key_inputs() {
+    std::map<Custom::Key, Key_Press_Detail> keys = Key_Input_System::get()->query_pressed_keys(listener_id);
     return keys;
 }
 
@@ -73,16 +73,16 @@ void Key_Input_Component::handle_task(Base_Node* target, float delta_time, void*
     Node* node = convert_target_to_node(target);
     if (node == nullptr)
         return;
-    std::map<Custom::Key, Key_Input_Type> handled_keys = Key_Input_System::get()->query_pressed_keys(listener_id);
-    for (auto& [key, type] : handled_keys) {
-        if (type == Key_Input_Type::IDLE) {
+    std::map<Custom::Key, Key_Press_Detail> handled_keys = Key_Input_System::get()->query_pressed_keys(listener_id);
+    for (auto& [key, detail] : handled_keys) {
+        if (detail.type == Key_Input_Type::IDLE) {
             continue;
         }
         auto caller = node->get_key_press_caller(key);
         if (caller != nullptr) {
-            caller(type, target, global_data);
+            caller(detail, target, global_data);
         } else {
-            node->on_key_pressed(key, type, global_data);
+            node->on_key_pressed(key, detail, global_data);
         }
     }
 }

@@ -34,7 +34,7 @@ int main(void) {
         float delta_time = (float)(current - start) / 1000;
         start = current;
         Director::get()->start_frame();
-        Libs_Wrapper::handle_frame();
+        Libs_Wrapper::handle_frame(delta_time);
         Director::get()->process_frame(delta_time);
         Libs_Wrapper::draw_frame();
         Director::get()->end_frame();

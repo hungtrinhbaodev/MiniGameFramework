@@ -38,6 +38,7 @@
 [Done]: Check bug infinity key pressed ?.
 [Done]: Add the state infinity this will be manualy end by object using that component (using to implement two action IDLE and MOVE of character).
 [Done]: Add manualy check boundary battle layer to object (upgrade it with static collision later).
+[]: Add animation smoke when fire and smoke when hit enemy.
 []: Add logic collision to border layer to player.
 []: Add enemy object node.
 []: Add logic collision to bullet and enemy.

@@ -117,7 +117,7 @@ bool Node::is_swallow_keys_enabled(Custom::Key key) {
     return key_input_component->is_swallow_keys_enabled(key);
 }
 
-std::function<void(Key_Input_Type, Base_Node*, void*)> Node::get_key_press_caller(Custom::Key key) {
+std::function<void(Key_Press_Detail, Base_Node*, void*)> Node::get_key_press_caller(Custom::Key key) {
     if (this->key_input_callers.find(key) == this->key_input_callers.end()) {
         return nullptr;
     }
@@ -125,7 +125,7 @@ std::function<void(Key_Input_Type, Base_Node*, void*)> Node::get_key_press_calle
 }
 
 void Node::add_key_press_listener(
-    Custom::Key key, std::function<void(Key_Input_Type, Base_Node*, void*)> caller, bool swallow_keys
+    Custom::Key key, std::function<void(Key_Press_Detail, Base_Node*, void*)> caller, bool swallow_keys
 ) {
     this->key_input_callers[key] = caller;
     this->set_key_press_enabled(key, true);
@@ -145,7 +145,7 @@ void Node::set_key_press_swallow_enabled(Custom::Key key, bool swallow_keys) {
     key_input_component->set_swallow_keys_enabled(key, swallow_keys);
 }
 
-void Node::on_key_pressed(Custom::Key key, Key_Input_Type pressed_type, void* global_data) {}
+void Node::on_key_pressed(Custom::Key key, Key_Press_Detail pressed_detail, void* global_data) {}
 
 Node_Type Node::get_type() {
     return Node_Type::NODE;

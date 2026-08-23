@@ -10,6 +10,7 @@ namespace Custom {
     struct Size {
         float width = 0.f;
         float height = 0.f;
+        glm::vec2 to_vec2();
         friend std::ostream& operator<<(std::ostream& os, const Size& size) {
             os << "Size: " << "width: " << size.width << ", height: " << size.height << std::endl;
             return os;
@@ -19,6 +20,7 @@ namespace Custom {
     struct Anchor_Point {
         float x = 0.f;
         float y = 0.f;
+        glm::vec2 to_vec2();
         friend std::ostream& operator<<(std::ostream& os, const Anchor_Point& anchor) {
             os << "Anchor: " << "x: " << anchor.x << ", y: " << anchor.y << std::endl;
             return os;
