@@ -27,7 +27,7 @@ namespace Meow_Meow {
         Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
         Battle_Layer* battle_layer = data->get_battle_layer();
         Custom::Size layer_size = battle_layer->get_content_size();
-        Custom::Rectangle_Area layer_rect{0, 0, layer_size.width, layer_size.width};
+        Custom::Rectangle_Area layer_rect{0, 0, layer_size.width, layer_size.height};
         Custom::Size enemy_bounding_size = Const::ENEMY_BOUNDING_BOX;
         glm::vec2 enemy_start_box_position =
             this->get_position() - glm::vec2{0.5f, 0.5f} * enemy_bounding_size.to_vec2();
