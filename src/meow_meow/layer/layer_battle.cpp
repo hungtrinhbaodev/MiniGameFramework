@@ -6,6 +6,7 @@ namespace Meow_Meow {
     Battle_Layer::Battle_Layer() {
         this->init_bg();
         this->init_character();
+        this->init_enemies();
     }
 
     Battle_Layer::~Battle_Layer() {}
@@ -25,6 +26,13 @@ namespace Meow_Meow {
 
         Custom::Size layer_size = this->get_content_size();
         this->character->set_position({300, 100});
+    }
+
+    void Battle_Layer::init_enemies() {
+        Enemy_Node* enemy = new Enemy_Node();
+        enemy->set_position({400, 300});
+        this->add_child(enemy);
+        this->enemies.push_back(enemy);
     }
 
     Image_Node* Battle_Layer::get_bg() {

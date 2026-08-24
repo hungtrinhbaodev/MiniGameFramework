@@ -31,6 +31,7 @@ namespace Meow_Meow {
 
         bool is_moving_at_direction(Const::DIRECTION direction);
         glm::vec2 get_direction();
+
         void change_to_move(Const::DIRECTION horizontal, Const::DIRECTION vertical, float duration_hold = 0);
         void change_to_idle();
         void change_to_attack(void* global_data);

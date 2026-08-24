@@ -39,7 +39,6 @@ namespace Meow_Meow {
     Character_Node::Character_Node() {
         this->init_character_animation();
         this->init_components();
-        this->set_name("debug");
     }
 
     Character_Node::~Character_Node() {}

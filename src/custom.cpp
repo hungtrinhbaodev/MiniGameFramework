@@ -9,7 +9,7 @@ namespace Custom {
         return glm::vec2{width, height};
     }
 
-    glm::vec2 Anchor_Point::to_vec2() {
+    glm::vec2 Anchor_Point::to_vec2() const {
         return glm::vec2{x, y};
     }
 
@@ -133,6 +133,10 @@ namespace Custom {
         copied_transform.opacity = opacity;
         Libs_Wrapper::draw_rectangle(size.width, size.height, {copied_transform, anchor, base_draw_index, color});
         return 1;
+    }
+
+    glm::vec2 Rectangle_Area::get_position() {
+        return glm::vec2{this->x, this->y};
     }
 
     void Rectangle_Area::fix_with(const Rectangle_Area& other) {

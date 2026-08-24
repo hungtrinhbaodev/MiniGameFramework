@@ -20,7 +20,7 @@ namespace Custom {
     struct Anchor_Point {
         float x = 0.f;
         float y = 0.f;
-        glm::vec2 to_vec2();
+        glm::vec2 to_vec2() const;
         friend std::ostream& operator<<(std::ostream& os, const Anchor_Point& anchor) {
             os << "Anchor: " << "x: " << anchor.x << ", y: " << anchor.y << std::endl;
             return os;
@@ -83,6 +83,7 @@ namespace Custom {
         float y = 0.f;
         float width = 0.f;
         float height = 0.f;
+        glm::vec2 get_position();
         void fix_with(const Rectangle_Area& other);
         friend std::ostream& operator<<(std::ostream& os, const Rectangle_Area& area) {
             os << "Rectangle_Area: " << "x: " << area.x << ", y: " << area.y << ", width: " << area.width

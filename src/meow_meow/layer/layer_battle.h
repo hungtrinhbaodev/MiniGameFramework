@@ -2,6 +2,7 @@
 #include <image_node.h>
 #include <layer_node.h>
 #include <meow_meow/object/character_node.h>
+#include <meow_meow/object/enemy_node.h>
 
 namespace Meow_Meow {
     class Battle_Layer : public Layer_Node {
@@ -17,8 +18,10 @@ namespace Meow_Meow {
     private:
         void init_bg();
         void init_character();
+        void init_enemies();
 
         Character_Node* character = nullptr;
+        std::vector<Enemy_Node*> enemies;
         Image_Node* bg = nullptr;
     };
 }  // namespace Meow_Meow

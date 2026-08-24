@@ -39,6 +39,7 @@ namespace Meow_Meow {
         const inline static std::vector<int> ENEMY_ANIMATION_NUMBER_FRAMES = {20, 25, 60, 35};
         const inline static std::vector<float> ENEMY_ANIMATION_DURATION_PER_FRAMES = {0.04, 0.04, 0.03, 0.04};
         const inline static std::vector<int> ENEMY_MAX_LEVELS = std::vector<int>(NUMBER_ENEMY, 1);
+        const inline static Custom::Size ENEMY_BOUNDING_BOX = {120, 140};
 
         /**
          * State machine config to character
@@ -74,15 +75,15 @@ namespace Meow_Meow {
         /**
          * Enemy Behavior
          */
-        const inline static float ENEMY_JUMP_DISTANCE = 100.f;
-        const inline static float ENEMY_VELOSITY = 100.f;
+        const inline static float ENEMY_JUMP_DISTANCE = 150.f;
+        const inline static float ENEMY_VELOSITY = 80.f;
         const inline static float ENEMY_ATTACK_DAMGE = 30.f;
-        const inline static float ENEMY_ATTACK_RANGE = 20.f;
-        const inline static float ENEMY_DURATION_WALK = 0.5f;
+        const inline static float ENEMY_ATTACK_RANGE = 50.f;
+        const inline static float ENEMY_DURATION_WALK = 1.f;
         const inline static float ENEMY_DURATION_JUMP = 0.5f;
-        const inline static float ENEMY_DURATION_ATTACK = 0.35;
-        const inline static float ENEMY_ATTACK_COUNTDOWN = 1.25;
-        const inline static float ENEMY_JUMP_COUNTDOWN = 10;
+        const inline static float ENEMY_DURATION_ATTACK = 0.35f;
+        const inline static float ENEMY_ATTACK_COUNTDOWN = 1.25f;
+        const inline static float ENEMY_JUMP_COUNTDOWN = 5.0f;
 
         /**
          * Custom component name
