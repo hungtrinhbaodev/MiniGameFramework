@@ -1,7 +1,7 @@
 #include <math_custom.h>
 #include <meow_meow/component/enemy_behavior_component.h>
 #include <meow_meow/config/enemy_behavior_config.h>
-#include <meow_meow/global_data.h>
+#include <meow_meow/data/global_data.h>
 
 namespace Meow_Meow {
     Enemy_Behavior_Component::Enemy_Behavior_Component() {}

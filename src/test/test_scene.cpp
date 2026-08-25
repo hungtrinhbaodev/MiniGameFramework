@@ -15,7 +15,7 @@ Test_Scene::Test_Scene() {
         COLISION_ANIMATION_TAG,
         {100, 135},
         0,
-        {0, 0},
+        {0.5, 0.5},
         nullptr,
         [](Base_Node* animation_1, void* global_data, std::vector<Collision_Information> collisioned) {
             std::cout << "Some one hit me animation_1: " << collisioned.size() << std::endl;
@@ -59,7 +59,7 @@ Test_Scene::Test_Scene() {
         COLISION_ANIMATION_TAG,
         {100, 135},
         0,
-        {0, 0},
+        {0.5, 0.5},
         nullptr,
         [](Base_Node* animation_2, void* global_data, std::vector<Collision_Information> collisioned) {
             std::cout << "Some one hit me animation_2: " << collisioned.size() << std::endl;

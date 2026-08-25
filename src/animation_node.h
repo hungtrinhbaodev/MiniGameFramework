@@ -25,7 +25,7 @@ public:
     float get_amimation_duration(std::string name);
 
 protected:
-    void fix_update(float delta_time, void* global_data);
+    void fix_update(float delta_time, void* global_data) override;
     void flex_update(float delta_time) override;
 
 private:

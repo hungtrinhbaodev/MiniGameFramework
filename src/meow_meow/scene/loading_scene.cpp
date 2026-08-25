@@ -2,7 +2,7 @@
 #include <director.h>
 #include <math_custom.h>
 #include <meow_meow/animation/character_animation.h>
-#include <meow_meow/global_data.h>
+#include <meow_meow/data/global_data.h>
 #include <meow_meow/scene/chosen_character_scene.h>
 #include <meow_meow/scene/loading_scene.h>
 #include <meow_meow/utils.h>

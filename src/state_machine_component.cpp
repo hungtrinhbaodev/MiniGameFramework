@@ -27,6 +27,13 @@ std::string State_Machine_Component::get_last_state_processign_at(std::string tr
     return this->tracks[track].last_state_processing;
 }
 
+float State_Machine_Component::get_duration_state_at(std::string track) {
+    if (this->tracks.find(track) == this->tracks.end()) {
+        return 0.f;
+    }
+    return this->tracks[track].current_processing_duration;
+}
+
 void State_Machine_Component::add_track(
     std::string track_name, std::function<void(Callback_Finish_State)> finish_state_callback
 ) {

@@ -1,4 +1,4 @@
-#include <meow_meow/global_data.h>
+#include <meow_meow/data/global_data.h>
 #include <meow_meow/layer/layer_battle.h>
 #include <meow_meow/object/game_object.h>
 #include <utils.h>

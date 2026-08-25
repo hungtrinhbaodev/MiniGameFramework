@@ -52,6 +52,8 @@ namespace Meow_Meow {
         const inline static std::string STATE_ATTACKED = "ATTACKED";
         const inline static std::string STATE_WALK = "WALK";
         const inline static std::string STATE_JUMP = "JUMP";
+        const inline static std::string STATE_INVINCIBLE = "INVINCIBLE";
+        const inline static std::string STATE_UNEFFECTED = "UNEFFECTED";
 
         /**
          * Bullet
@@ -69,11 +71,16 @@ namespace Meow_Meow {
         const inline static int CHARACTER_COLLISION_TAG = 0;
         const inline static int BULLET_COLLISION_TAG = 1;
         const inline static int ENEMY_COLLISION_TAG = 2;
-        const inline static int CHARACTER_LAYER_COLLISION = 0;
-        const inline static int ENEMY_LAYER_COLLISION = 1;
+        const inline static int BATTLE_LAYER_COLLISION = 0;
 
         /**
-         * Enemy Behavior
+         * Character behavior
+         */
+        const inline static float CHARACTER_ATTACKED_DURATION = 0.35f;
+        const inline static float CHARACTER_INVINCIBLE_DURATION = 1.0f;
+
+        /**
+         * Enemy behavior
          */
         const inline static float ENEMY_JUMP_DISTANCE = 150.f;
         const inline static float ENEMY_VELOSITY = 80.f;

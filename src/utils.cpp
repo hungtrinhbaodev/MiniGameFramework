@@ -66,6 +66,13 @@ namespace Utils {
         return *origin;
     }
 
+    void reset_to_origin(Base_Node* node) {
+        if (node == nullptr)
+            return;
+        Custom::Transform transform = Utils::get_transform_origin(node);
+        node->modify_transform() = transform;
+    }
+
     void clean_transform_origin(Base_Node* node) {
         void* data = node->get_user_data(Defined::KEY_SAVE_NODE_ORIGIN);
         if (data == nullptr)

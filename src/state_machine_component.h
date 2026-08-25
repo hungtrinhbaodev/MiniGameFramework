@@ -22,6 +22,7 @@ public:
     bool is_finish_state_at(const std::string& track);
     std::string get_current_state_at(std::string track);
     std::string get_last_state_processign_at(std::string track);
+    float get_duration_state_at(std::string track);
 
     void add_track(std::string track_name, std::function<void(Callback_Finish_State)> finish_state_callback);
     void change_state_at(std::string track, std::string state, float state_duration);

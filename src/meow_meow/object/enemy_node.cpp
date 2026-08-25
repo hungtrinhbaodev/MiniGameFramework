@@ -1,9 +1,11 @@
 #include <actions.h>
+#include <collision_component.h>
 #include <defined.h>
 #include <math_custom.h>
 #include <meow_meow/component/enemy_behavior_component.h>
 #include <meow_meow/const.h>
-#include <meow_meow/global_data.h>
+#include <meow_meow/data/enemy_collision_data.h>
+#include <meow_meow/data/global_data.h>
 #include <meow_meow/object/enemy_node.h>
 #include <state_machine_component.h>
 #include <utils.h>
@@ -61,6 +63,14 @@ namespace Meow_Meow {
         state_machine->set_name(Defined::COMPONENT_STATE_MACHINE_NAME);
         this->add_component(state_machine);
 
+        Collision_Component* collision = new Collision_Component();
+        collision->set_name(Defined::COMPONENT_COLLISION_NAME);
+        collision->set_tag(Const::ENEMY_COLLISION_TAG);
+        collision->set_box_size(Const::ENEMY_BOUNDING_BOX);
+        collision->set_track_layer(Const::BATTLE_LAYER_COLLISION);
+        collision->set_owner_data(new Enemy_Collision_Data());
+        this->add_component(collision);
+
         this->add_key_press_listener(Custom::Key::V);
     }
 
@@ -78,6 +88,9 @@ namespace Meow_Meow {
         Enemy_Behavior_Component* behavior =
             Utils::get_component<Enemy_Behavior_Component>(this, Const::ENEMY_BEHAVIOR_COMPONENT_NAME);
 
+        Collision_Component* collision =
+            Utils::get_component<Collision_Component>(this, Defined::COMPONENT_COLLISION_NAME);
+
         behavior->start_attack_countdown();
         float animation_duration = this->enemy_animation->get_amimation_duration("ATTACK");
         this->enemy_animation->play_animation(
@@ -87,6 +100,12 @@ namespace Meow_Meow {
         state_machine->change_state_at(
             Const::TRACK_CONTROLL, Const::STATE_ATTACK, behavior_config.get_enemy_attack_duration()
         );
+
+        /**
+         * Attach the damage into collision data
+         */
+        Enemy_Collision_Data* collision_data = Utils::get_collision_owner_data<Enemy_Collision_Data>(collision);
+        collision_data->set_damage_deal(behavior_config.get_emeny_attack_damage());
     }
 
     void Enemy_Node::change_to_jump(void* global_data) {
@@ -168,12 +187,25 @@ namespace Meow_Meow {
         Enemy_Behavior_Component* behavior =
             Utils::get_component<Enemy_Behavior_Component>(this, Const::ENEMY_BEHAVIOR_COMPONENT_NAME);
 
+        Collision_Component* collision =
+            Utils::get_component<Collision_Component>(this, Defined::COMPONENT_COLLISION_NAME);
+
         if (state_machine->get_current_state_at(Const::TRACK_CONTROLL) == "") {
             this->change_to_walk(global_data);
             return;
         }
 
         if (state_machine->is_finish_state_at(Const::TRACK_CONTROLL)) {
+            std::string current_state = state_machine->get_current_state_at(Const::TRACK_CONTROLL);
+            /**
+             * If duration attack finish and player is not take it
+             * we remove the damage deal in collision!
+             */
+            if (current_state == Const::STATE_ATTACK) {
+                Enemy_Collision_Data* collision_data = Utils::get_collision_owner_data<Enemy_Collision_Data>(collision);
+                collision_data->set_damage_deal(0.f);
+            }
+
             if (behavior->can_attack()) {
                 this->change_to_attack(global_data);
             } else if (behavior->can_jump()) {
@@ -197,6 +229,14 @@ namespace Meow_Meow {
                                ? ORIGIN_ANIMATION_ANCHOR_POINT.to_vec2()
                                : glm::vec2{1.0f - ORIGIN_ANIMATION_ANCHOR_POINT.x, ORIGIN_ANIMATION_ANCHOR_POINT.y};
         this->enemy_animation->set_anchor(anchor);
+
+        /**
+         * @Note: update direction to collision data to player do effect hitted right away!
+         */
+        Collision_Component* collision =
+            Utils::get_component<Collision_Component>(this, Defined::COMPONENT_COLLISION_NAME);
+        Enemy_Collision_Data* collision_data = Utils::get_collision_owner_data<Enemy_Collision_Data>(collision);
+        collision_data->set_enemy_direction(behavior->get_enemy_walking_direction());
     }
 
     void Enemy_Node::on_key_pressed(Custom::Key key, Key_Press_Detail pressed_detail, void* global_data) {
@@ -213,6 +253,9 @@ namespace Meow_Meow {
                     glm::vec2 jump_position = direction * behavior_config.get_enemy_jump_distane();
                     this->action_enemy_jump(0, behavior_config.get_enemy_jump_duration(), jump_position);
                 }
+                break;
+            }
+            default: {
                 break;
             }
         }

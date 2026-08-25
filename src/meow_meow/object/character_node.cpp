@@ -1,6 +1,10 @@
+#include <actions.h>
+#include <collision_component.h>
 #include <defined.h>
+#include <math_custom.h>
 #include <meow_meow/animation/shoot_animation.h>
-#include <meow_meow/global_data.h>
+#include <meow_meow/data/enemy_collision_data.h>
+#include <meow_meow/data/global_data.h>
 #include <meow_meow/layer/layer_battle.h>
 #include <meow_meow/object/bullet_node.h>
 #include <meow_meow/object/character_node.h>
@@ -14,8 +18,9 @@ namespace Meow_Meow {
                !state_machine_component->is_finish_state_at(Const::TRACK_CONTROLL);
     }
 
-    bool is_character_attacked(State_Machine_Component* State_Machine_Component) {
-        return false;
+    bool is_character_attacked(State_Machine_Component* state_machine_component) {
+        return state_machine_component->get_current_state_at(Const::TRACK_EFFECTED) == Const::STATE_ATTACKED &&
+               state_machine_component->is_finish_state_at(Const::TRACK_EFFECTED);
     }
 
     bool can_process_move_input(State_Machine_Component* state_machine_component, Key_Input_Type type) {
@@ -37,8 +42,10 @@ namespace Meow_Meow {
     }
 
     Character_Node::Character_Node() {
+        this->init_container();
         this->init_character_animation();
         this->init_components();
+        this->init_attacked_image();
     }
 
     Character_Node::~Character_Node() {}
@@ -48,8 +55,25 @@ namespace Meow_Meow {
     }
 
     void Character_Node::init_character_animation() {
-        this->character_animtion = new Character_Animation(0, 2);
-        this->add_child(this->character_animtion);
+        this->character_animation = new Character_Animation(0, 2);
+        this->container->add_child(this->character_animation);
+    }
+
+    void Character_Node::init_attacked_image() {
+        this->attacked_image = new Image_UI_Node();
+        this->attacked_image->set_force_renderer_color(Custom::Color{255, 0, 0});
+        this->attacked_image->set_enable_force_renderer_color(true);
+        this->attacked_image->set_visible(false);
+        this->attacked_image->set_opacity(ORIGIN_ATTACKED_IMAGE_OPACITY);
+        Utils::save_transform_origin(this->attacked_image);
+        this->container->add_child(this->attacked_image);
+    }
+
+    void Character_Node::init_container() {
+        this->container = new Node();
+        Utils::save_transform_origin(this->container);
+        this->container->set_cascade_opacity(true);
+        this->add_child(this->container);
     }
 
     void Character_Node::init_components() {
@@ -62,20 +86,29 @@ namespace Meow_Meow {
         state_machine->set_name(Defined::COMPONENT_STATE_MACHINE_NAME);
         this->add_component(state_machine);
 
+        Collision_Component* collision = new Collision_Component();
+        collision->set_name(Defined::COMPONENT_COLLISION_NAME);
+        collision->set_box_size(Const::CHARACTER_BOUNDING_BOX);
+        collision->set_track_layer(Const::BATTLE_LAYER_COLLISION);
+        this->add_component(collision);
+
         this->add_key_press_listener(Custom::Key::W);
         this->add_key_press_listener(Custom::Key::A);
         this->add_key_press_listener(Custom::Key::S);
         this->add_key_press_listener(Custom::Key::D);
         this->add_key_press_listener(Custom::Key::SPACE);
+        this->add_key_press_listener(Custom::Key::V);
     }
 
     void Character_Node::attach(void* global_data) {
         State_Machine_Component* state_machine_component =
             Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
+
         state_machine_component->change_state_at(
-            Const::TRACK_CONTROLL, Const::STATE_IDLE, State_Machine_Component::INFITY_STATE
+            Const::TRACK_EFFECTED, Const::STATE_UNEFFECTED, State_Machine_Component::INFITY_STATE
         );
-        this->character_animtion->play_animation("IDLE");
+
+        this->change_to_idle();
     }
 
     Custom::Transformed_Rectangle Character_Node::get_bounding_box() {
@@ -111,7 +144,15 @@ namespace Meow_Meow {
     }
 
     void Character_Node::update_character_direction() {
-        this->character_animtion->set_flipped_x(this->horizontal_direction == Const::DIRECTION::LEFT);
+        this->character_animation->set_flipped_x(this->horizontal_direction == Const::DIRECTION::LEFT);
+    }
+
+    void Character_Node::sync_attacked_image() {
+        if (!this->attacked_image->is_visible())
+            return;
+        this->attacked_image->set_image(this->character_animation->get_image());
+        this->attacked_image->set_anchor(this->character_animation->get_anchor().to_vec2());
+        this->attacked_image->set_flipped_x(this->character_animation->is_flipped_x());
     }
 
     glm::vec2 Character_Node::get_direction() {
@@ -132,7 +173,7 @@ namespace Meow_Meow {
 
         std::string last_state = state_machine_component->get_last_state_processign_at(Const::TRACK_CONTROLL);
         if (last_state == Const::STATE_ATTACK) {
-            this->character_animtion->play_animation("IDLE");
+            this->character_animation->play_animation("IDLE");
         }
 
         float bonus_velosity_rate = duration_hold / BONUS_VELOSITY_RATE;
@@ -157,8 +198,9 @@ namespace Meow_Meow {
             Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
 
         std::string last_state = state_machine_component->get_last_state_processign_at(Const::TRACK_CONTROLL);
-        if (last_state == Const::STATE_ATTACK) {
-            this->character_animtion->play_animation("IDLE");
+        std::string current_state = state_machine_component->get_current_state_at(Const::TRACK_CONTROLL);
+        if (last_state == Const::STATE_ATTACK || current_state != Const::STATE_IDLE) {
+            this->character_animation->play_animation("IDLE");
         }
 
         state_machine_component->change_state_at(
@@ -174,8 +216,8 @@ namespace Meow_Meow {
             Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
 
         state_machine_component->change_state_at(Const::TRACK_CONTROLL, Const::STATE_ATTACK, DURATION_ATTACK);
-        float animation_duration = this->character_animtion->get_amimation_duration("SHOOT");
-        this->character_animtion->play_animation("SHOOT", DURATION_ATTACK / animation_duration, true);
+        float animation_duration = this->character_animation->get_amimation_duration("SHOOT");
+        this->character_animation->play_animation("SHOOT", DURATION_ATTACK / animation_duration, true);
 
         this->velocity = {0.f, 0.f};
         this->accelarate = {0.f, 0.f};
@@ -197,6 +239,89 @@ namespace Meow_Meow {
         Shoot_Animation* shoot_animation = new Shoot_Animation(fire_position, this->horizontal_direction);
         battle_layer->remove_child_by_tag(Const::SHOOT_ANIMATION_NODE_TAG);
         battle_layer->add_child(shoot_animation);
+    }
+
+    void Character_Node::action_character_hitted(float delay, float duration_hitted, glm::vec2 enemy_direction) {
+        this->container->stop_action(ACTION_HITTED_TAG);
+        Utils::reset_to_origin(this->container);
+        float sign = enemy_direction.x > 0 ? -1 : 1;
+        glm::vec2 delta_position = glm::vec2{50 * enemy_direction.x, 50};
+        this->container->do_action(
+            Action::sequence(
+                Action::delay(delay),
+                Action::spawn(
+                    Action::sequence(
+                        Action::rotate_to(
+                            duration_hitted / 2, -sign * Math::random_float(20, 30), Action_Ease::SINE_OUT
+                        ),
+                        Action::rotate_to(duration_hitted / 2, 0, Action_Ease::SINE_IN)
+                    ),
+                    Action::sequence(
+                        Action::move_to(duration_hitted / 2, delta_position, Action_Ease::SINE_OUT),
+                        Action::move_to(duration_hitted / 2, {0.f, 0.f}, Action_Ease::SINE_IN)
+                    ),
+                    Action::sequence(
+                        Action::scale_to(duration_hitted / 2, {0.85f, 0.85f}, Action_Ease::SINE_OUT),
+                        Action::scale_to(duration_hitted / 2, {1.f, 1.f}, Action_Ease::SINE_IN)
+                    )
+                )
+            ),
+            ACTION_HITTED_TAG
+        );
+
+        this->attacked_image->stop_action(ACTION_HITTED_TAG);
+        Utils::reset_to_origin(this->attacked_image);
+        this->attacked_image->do_action(
+            Action::sequence(Action::delay(delay), Action::show(), Action::fade_out(duration_hitted), Action::hide()),
+            ACTION_HITTED_TAG
+        );
+    }
+
+    void Character_Node::change_to_hitted(float damage, glm::vec2 enemy_direction, void* global_data) {
+        Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
+        const Character_Behavior_Config& behavior_config = data->get_config().get_character_behavior_config();
+
+        State_Machine_Component* state_machine =
+            Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
+
+        this->action_character_hitted(0, behavior_config.get_attacked_duration(), enemy_direction);
+
+        std::string last_state = state_machine->get_last_state_processign_at(Const::TRACK_CONTROLL);
+        if (last_state != Const::STATE_IDLE) {
+            this->character_animation->play_animation("IDLE");
+        }
+
+        state_machine->change_state_at(
+            Const::TRACK_EFFECTED, Const::STATE_ATTACKED, behavior_config.get_attacked_duration()
+        );
+    }
+
+    void Character_Node::action_character_invincible(float delay, float duration) {
+        float duration_fade = duration / NUMBER_FADE_IN_INVINCIBLE_STATE;
+        this->container->stop_action(ACTION_INVINCIBLE_TAG);
+        Base_Action* action = Action::spawn(
+            Action::sequence(
+                Action::fade_to(duration_fade / 2, INVISIBLE_OPACITY, Action_Ease::SINE_OUT),
+                Action::fade_in(duration_fade / 2, Action_Ease::SINE_IN)
+            )
+        );
+        this->container->do_action(
+            Action::sequence(Action::delay(delay), action->repeat(NUMBER_FADE_IN_INVINCIBLE_STATE))
+        );
+    }
+
+    void Character_Node::change_to_invincible(void* global_data) {
+        Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
+        const Character_Behavior_Config& behavior_config = data->get_config().get_character_behavior_config();
+
+        State_Machine_Component* state_machine =
+            Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
+
+        state_machine->change_state_at(
+            Const::TRACK_EFFECTED, Const::STATE_INVINCIBLE, behavior_config.get_invincible_duration()
+        );
+
+        this->action_character_invincible(0, behavior_config.get_invincible_duration());
     }
 
     void Character_Node::handle_key_board(float delta_time, void* global_data) {
@@ -262,6 +387,12 @@ namespace Meow_Meow {
                     }
                     break;
                 }
+                case Custom::Key::V: {
+                    if (detail.type == Key_Input_Type::PRESSED) {
+                        this->action_character_invincible(0, 1.0f);
+                    }
+                    break;
+                }
                 default: {
                     break;
                 }
@@ -281,13 +412,68 @@ namespace Meow_Meow {
                 this->change_to_idle();
             }
         }
+        if (state_machine_component->is_finish_state_at(Const::TRACK_EFFECTED)) {
+            std::string current_state = state_machine_component->get_current_state_at(Const::TRACK_EFFECTED);
+            if (current_state == Const::STATE_ATTACKED) {
+                this->container->stop_action(ACTION_HITTED_TAG);
+                Utils::reset_to_origin(this->container);
+                this->change_to_invincible(global_data);
+                std::string current_controll_state =
+                    state_machine_component->get_current_state_at(Const::TRACK_CONTROLL);
+                if (current_controll_state == Const::STATE_MOVE) {
+                    this->character_animation->play_animation("MOVE");
+                }
+            } else if (current_state == Const::STATE_INVINCIBLE) {
+                this->container->stop_action(ACTION_INVINCIBLE_TAG);
+                Utils::reset_to_origin(this->container);
+                state_machine_component->change_state_at(
+                    Const::TRACK_EFFECTED, Const::STATE_UNEFFECTED, State_Machine_Component::INFITY_STATE
+                );
+            }
+        }
+    }
+
+    void Character_Node::handle_collision(float delta_time, void* global_data) {
+        Collision_Component* collision_component =
+            Utils::get_component<Collision_Component>(this, Defined::COMPONENT_COLLISION_NAME);
+
+        State_Machine_Component* state_machine =
+            Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
+
+        /**
+         * @Note: if player already hitted or invisible we ignore phase attack damge of enemy!
+         */
+        if (!state_machine->is_finish_state_at(Const::TRACK_EFFECTED)) {
+            std::string current_state = state_machine->get_current_state_at(Const::TRACK_EFFECTED);
+            if (current_state == Const::STATE_INVINCIBLE || current_state == Const::STATE_ATTACKED) {
+                return;
+            }
+        }
+
+        std::vector<Collision_Information> collisions = collision_component->get_collisioneds();
+        for (Collision_Information& collision : collisions) {
+            if (collision.tag != Const::ENEMY_COLLISION_TAG) {
+                continue;
+            }
+            Enemy_Collision_Data* enemy_collision = reinterpret_cast<Enemy_Collision_Data*>(collision.owner_data);
+            if (enemy_collision->get_damage_deal() <= 0) {
+                continue;
+            }
+            this->change_to_hitted(
+                enemy_collision->get_damage_deal(), enemy_collision->get_enemy_direction(), global_data
+            );
+            enemy_collision->set_damage_deal(0.f);
+            break;
+        }
     }
 
     void Character_Node::fix_update(float delta_time, void* global_data) {
+        this->handle_collision(delta_time, global_data);
         this->handle_key_board(delta_time, global_data);
         this->handle_state_machine(delta_time, global_data);
         this->update_moverment(delta_time);
         this->update_character_direction();
+        this->sync_attacked_image();
         Game_Object::fix_update(delta_time, global_data);
     }
 }  // namespace Meow_Meow

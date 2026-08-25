@@ -22,6 +22,10 @@ namespace Meow_Meow {
         return this->enemy_behavior_config;
     }
 
+    const Character_Behavior_Config& Config::get_character_behavior_config() const {
+        return this->character_behavior_config;
+    }
+
     std::string Config::get_character_name(int character_id) const {
         if (!this->is_character_id(character_id)) {
             return "";

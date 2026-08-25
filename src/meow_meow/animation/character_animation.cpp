@@ -1,5 +1,5 @@
 #include <meow_meow/animation/character_animation.h>
-#include <meow_meow/global_data.h>
+#include <meow_meow/data/global_data.h>
 
 namespace Meow_Meow {
 

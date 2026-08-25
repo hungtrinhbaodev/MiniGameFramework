@@ -1,4 +1,4 @@
-#include <meow_meow/global_data.h>
+#include <meow_meow/data/global_data.h>
 #include <meow_meow/ui/chosen_character_ui.h>
 
 namespace Meow_Meow {

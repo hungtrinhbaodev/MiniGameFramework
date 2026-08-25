@@ -1,5 +1,5 @@
 #include <math_custom.h>
-#include <meow_meow/global_data.h>
+#include <meow_meow/data/global_data.h>
 #include <meow_meow/layer/layer_battle.h>
 
 namespace Meow_Meow {
@@ -15,6 +15,7 @@ namespace Meow_Meow {
         this->bg = new Image_Node("res/meow_meow/Area/Area1.png");
         this->set_content_size(this->bg->get_content_size());
         this->add_child(this->bg);
+
         Custom::Size layer_size = this->get_content_size();
         this->bg->set_position({layer_size.width / 2, layer_size.height / 2});
     }

@@ -59,15 +59,6 @@ bool Base_Action::travel_action_2(Base_Node* target, float delta_time, void* glo
     long start_action_time = -1;
     bool finish_all =
         this->update_action(target, delta_time, global_data, processing_informations, start_action_time, debug);
-    if (finish_all) {
-        if (this->is_repeat_forever || this->repeat_time > 0) {
-            this->recycle();
-            finish_all = false;
-            if (!this->is_repeat_forever) {
-                this->repeat_time--;
-            }
-        }
-    }
     return finish_all;
 }
 
@@ -127,6 +118,15 @@ bool Base_Action::spawn(
         );
         return finish_action && finish_next_spawn;
     }
+    if (finish_action) {
+        if (this->is_repeat_forever || this->repeat_time > 0) {
+            this->recycle();
+            finish_action = false;
+            if (!this->is_repeat_forever) {
+                this->repeat_time--;
+            }
+        }
+    }
     return finish_action;
 }
 
@@ -144,6 +144,15 @@ bool Base_Action::sequence(
         finish_action &= this->next_sequence_chain->sequence(
             target, delta_time, global_data, processing_informations, start_time_chain, debug
         );
+    }
+    if (finish_action) {
+        if (this->is_repeat_forever || this->repeat_time > 0) {
+            this->recycle();
+            finish_action = false;
+            if (!this->is_repeat_forever) {
+                this->repeat_time--;
+            }
+        }
     }
     return finish_action;
 }

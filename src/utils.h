@@ -1,4 +1,5 @@
 #pragma once
+#include <collision_component.h>
 #include <node.h>
 
 #include <glm/glm.hpp>
@@ -11,9 +12,11 @@ namespace Utils {
 
     void save_transform_origin(Base_Node* node);
 
+    void clean_transform_origin(Base_Node* node);
+
     Custom::Transform get_transform_origin(Base_Node* node);
 
-    void clean_transform_origin(Base_Node* node);
+    void reset_to_origin(Base_Node* node);
 
     std::string get_root_path();
 
@@ -23,5 +26,13 @@ namespace Utils {
         if (component == nullptr)
             return nullptr;
         return reinterpret_cast<T*>(component);
+    }
+
+    template <typename T>
+    inline T* get_collision_owner_data(Collision_Component* collision) {
+        void* data = collision->get_owner_data();
+        if (data == nullptr)
+            return nullptr;
+        return reinterpret_cast<T*>(data);
     }
 }  // namespace Utils
