@@ -26,6 +26,10 @@ namespace Meow_Meow {
         return this->character_behavior_config;
     }
 
+    const Bullet_Behavior_Config& Config::get_bullet_behavior_config() const {
+        return this->bullet_behavior_config;
+    }
+
     std::string Config::get_character_name(int character_id) const {
         if (!this->is_character_id(character_id)) {
             return "";

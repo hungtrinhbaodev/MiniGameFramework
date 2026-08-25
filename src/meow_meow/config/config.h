@@ -1,4 +1,5 @@
 #pragma once
+#include <meow_meow/config/bullet_behavior_config.h>
 #include <meow_meow/config/character_animation_config.h>
 #include <meow_meow/config/character_behavior_config.h>
 #include <meow_meow/config/enemy_behavior_config.h>
@@ -18,6 +19,7 @@ namespace Meow_Meow {
         const Character_Animation_Config& get_enemy_animation_config() const;
         const Enemy_Behavior_Config& get_enemy_behavior_config() const;
         const Character_Behavior_Config& get_character_behavior_config() const;
+        const Bullet_Behavior_Config& get_bullet_behavior_config() const;
         std::string get_character_name(int character_id) const;
         std::vector<int> get_character_ids() const;
 
@@ -54,7 +56,12 @@ namespace Meow_Meow {
             Const::ENEMY_DURATION_JUMP,
             Const::ENEMY_DURATION_ATTACK,
             Const::ENEMY_ATTACK_COUNTDOWN,
-            Const::ENEMY_JUMP_COUNTDOWN
+            Const::ENEMY_JUMP_COUNTDOWN,
+            Const::ENEMY_ATTACKED_DURATION,
+            Const::ENEMY_ATTACKED_VELOSITY
+        };
+        Bullet_Behavior_Config bullet_behavior_config{
+            Const::BULLET_DAMAGE, Const::BULLET_VELOSITY, Const::BULLET_ACCELARATE, Const::BULLET_BOUNDING_BOX
         };
     };
 

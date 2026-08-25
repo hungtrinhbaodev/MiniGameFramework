@@ -42,8 +42,6 @@ public:
     std::vector<Base_Node*>& get_children();
     Base_Node* get_child_by_tag(int tag);
     Base_Node* get_child_by_name(std::string name);
-    glm::vec2 get_world_position();
-    glm::vec2 local_position_from(glm::vec2 world_position);
 
     void set_x(float x);
     void set_y(float y);
@@ -114,7 +112,7 @@ protected:
     virtual void exit(void* global_data);
 
 private:
-    static int current_child_order;
+    int current_child_order = 0;
     int tag = -1;
     std::string name = "";
     bool visible = true;

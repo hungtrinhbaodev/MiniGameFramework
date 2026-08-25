@@ -16,7 +16,7 @@ namespace Meow_Meow {
         void fix_update(float delta_time, void* global_data) override;
         void attach(void* global_data) override;
 
-        Custom::Transformed_Rectangle get_bounding_box() override;
+        Custom::Transformed_Rectangle get_bounding_box(void* global_data) override;
         void handle_boundary(void* global_data) override;
 
     private:
@@ -54,7 +54,7 @@ namespace Meow_Meow {
         const float BONUS_VELOSITY_RATE = 0.25;
         const float BONUS_VELOSITY = 10;
         const float MAX_BONUS_VELOSITY = 60;
-        const unsigned char ORIGIN_ATTACKED_IMAGE_OPACITY = 80;
+        const unsigned char ORIGIN_ATTACKED_IMAGE_OPACITY = 100;
         const int NUMBER_FADE_IN_INVINCIBLE_STATE = 3;
         const unsigned char INVISIBLE_OPACITY = 120;
 

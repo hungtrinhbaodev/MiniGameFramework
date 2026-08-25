@@ -59,6 +59,10 @@ namespace Meow_Meow {
          * Bullet
          */
         const inline static std::string PATH_BULLET_IMAGE = "res/meow_meow/Bullets/bullet";
+        const inline static Custom::Size BULLET_BOUNDING_BOX = {50, 30};
+        const inline static float BULLET_DAMAGE = 20;
+        const inline static float BULLET_VELOSITY = 700;
+        const inline static float BULLET_ACCELARATE = 5;
 
         /**
          * Shoot animation
@@ -76,8 +80,8 @@ namespace Meow_Meow {
         /**
          * Character behavior
          */
-        const inline static float CHARACTER_ATTACKED_DURATION = 0.35f;
-        const inline static float CHARACTER_INVINCIBLE_DURATION = 1.0f;
+        const inline static float CHARACTER_ATTACKED_DURATION = 0.5f;
+        const inline static float CHARACTER_INVINCIBLE_DURATION = 1.5f;
 
         /**
          * Enemy behavior
@@ -91,6 +95,8 @@ namespace Meow_Meow {
         const inline static float ENEMY_DURATION_ATTACK = 0.35f;
         const inline static float ENEMY_ATTACK_COUNTDOWN = 1.25f;
         const inline static float ENEMY_JUMP_COUNTDOWN = 5.0f;
+        const inline static float ENEMY_ATTACKED_DURATION = 0.5f;
+        const inline static float ENEMY_ATTACKED_VELOSITY = 20.f;
 
         /**
          * Custom component name

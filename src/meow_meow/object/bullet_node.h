@@ -11,19 +11,23 @@ namespace Meow_Meow {
         ~Bullet_Node();
 
     protected:
-        Custom::Transformed_Rectangle get_bounding_box() override;
+        Custom::Transformed_Rectangle get_bounding_box(void* global_data) override;
         void handle_boundary(void* global_data) override;
         void fix_update(float delta_time, void* global_data) override;
+        void attach(void* global_data) override;
 
     private:
         void init_image_bullet();
-        void init_bullet_component();
+        void init_components();
 
-        const float VELOSITY = 700;
-        const float ACCELARATE = 5;
+        void change_to_explore(void* global_data);
+        void handle_collision(float delta_time, void* global_data);
+        void update_movemenet(float delta_time);
+        void update_collision_data();
 
         int character_id = -1;
-        float velosity = VELOSITY;
+        float velosity = 0.f;
+        float accelarate = 0.f;
         Const::DIRECTION horizontal_direction = Const::DIRECTION::LEFT;
         Image_UI_Node* image_bullet = nullptr;
     };

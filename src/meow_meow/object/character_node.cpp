@@ -26,7 +26,7 @@ namespace Meow_Meow {
     bool can_process_move_input(State_Machine_Component* state_machine_component, Key_Input_Type type) {
         if (type != Key_Input_Type::PRESSED && type != Key_Input_Type::HOLDING)
             return false;
-        if (is_character_attacking(state_machine_component)) {
+        if (is_character_attacking(state_machine_component) || is_character_attacked(state_machine_component)) {
             return false;
         }
         return true;
@@ -111,7 +111,7 @@ namespace Meow_Meow {
         this->change_to_idle();
     }
 
-    Custom::Transformed_Rectangle Character_Node::get_bounding_box() {
+    Custom::Transformed_Rectangle Character_Node::get_bounding_box(void* global_data) {
         Custom::Size bounding_size = Const::CHARACTER_BOUNDING_BOX;
         Custom::Rectangle rect{bounding_size.width, bounding_size.height};
         return Custom::Transformed_Rectangle{rect.apply(this->get_transform(), {0.5, 0.5})};
@@ -245,7 +245,7 @@ namespace Meow_Meow {
         this->container->stop_action(ACTION_HITTED_TAG);
         Utils::reset_to_origin(this->container);
         float sign = enemy_direction.x > 0 ? -1 : 1;
-        glm::vec2 delta_position = glm::vec2{50 * enemy_direction.x, 50};
+        glm::vec2 delta_position = glm::vec2{80 * enemy_direction.x, 50};
         this->container->do_action(
             Action::sequence(
                 Action::delay(delay),
@@ -291,6 +291,8 @@ namespace Meow_Meow {
             this->character_animation->play_animation("IDLE");
         }
 
+        this->horizontal_direction = enemy_direction.x >= 0 ? Const::DIRECTION::LEFT : Const::DIRECTION::RIGHT;
+
         state_machine->change_state_at(
             Const::TRACK_EFFECTED, Const::STATE_ATTACKED, behavior_config.get_attacked_duration()
         );
@@ -306,7 +308,8 @@ namespace Meow_Meow {
             )
         );
         this->container->do_action(
-            Action::sequence(Action::delay(delay), action->repeat(NUMBER_FADE_IN_INVINCIBLE_STATE))
+            Action::sequence(Action::delay(delay), action->repeat(NUMBER_FADE_IN_INVINCIBLE_STATE)),
+            ACTION_INVINCIBLE_TAG
         );
     }
 
@@ -420,9 +423,6 @@ namespace Meow_Meow {
                 this->change_to_invincible(global_data);
                 std::string current_controll_state =
                     state_machine_component->get_current_state_at(Const::TRACK_CONTROLL);
-                if (current_controll_state == Const::STATE_MOVE) {
-                    this->character_animation->play_animation("MOVE");
-                }
             } else if (current_state == Const::STATE_INVINCIBLE) {
                 this->container->stop_action(ACTION_INVINCIBLE_TAG);
                 Utils::reset_to_origin(this->container);

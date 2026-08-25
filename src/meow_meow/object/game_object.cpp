@@ -19,7 +19,7 @@ namespace Meow_Meow {
         Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
         Battle_Layer* layer = data->get_battle_layer();
         Custom::Size layer_size = layer->get_content_size();
-        Custom::Transformed_Rectangle rect = this->get_bounding_box();
+        Custom::Transformed_Rectangle rect = this->get_bounding_box(global_data);
         for (glm::vec2& point : rect.points) {
             if (is_out_layer(point, layer_size)) {
                 this->handle_boundary(global_data);
@@ -28,7 +28,7 @@ namespace Meow_Meow {
         }
     }
 
-    Custom::Transformed_Rectangle Game_Object::get_bounding_box() {
+    Custom::Transformed_Rectangle Game_Object::get_bounding_box(void* global_data) {
         Custom::Rectangle rect{0, 0};
         return Custom::Transformed_Rectangle{rect.apply(this->get_transform(), this->get_anchor())};
     }

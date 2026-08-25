@@ -5,8 +5,6 @@
 #include <algorithm>
 #include <iostream>
 
-int Base_Node::current_child_order = 0;
-
 Base_Node::Base_Node() {}
 
 Base_Node::~Base_Node() {

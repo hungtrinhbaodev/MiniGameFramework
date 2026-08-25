@@ -10,6 +10,6 @@ namespace Meow_Meow {
         ~Shoot_Animation();
 
     private:
-        glm::vec2 ORIGIN_ANCHOR_POINT = {0.1, 0.5};
+        const glm::vec2 ORIGIN_ANCHOR_POINT = {0.1, 0.5};
     };
 }  // namespace Meow_Meow

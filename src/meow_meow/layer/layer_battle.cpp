@@ -29,6 +29,8 @@ namespace Meow_Meow {
         this->character->set_position({300, 100});
     }
 
+    void Battle_Layer::show_label_attacked(float delay, float damage, glm::vec2 position) {}
+
     void Battle_Layer::init_enemies() {
         Enemy_Node* enemy = new Enemy_Node();
         enemy->set_position({400, 300});

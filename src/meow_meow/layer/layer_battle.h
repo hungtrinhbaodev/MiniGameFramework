@@ -20,6 +20,8 @@ namespace Meow_Meow {
         void init_character();
         void init_enemies();
 
+        void show_label_attacked(float delay, float damage, glm::vec2 position);
+
         Character_Node* character = nullptr;
         std::vector<Enemy_Node*> enemies;
         Image_Node* bg = nullptr;
