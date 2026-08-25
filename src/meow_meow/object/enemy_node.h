@@ -17,7 +17,7 @@ namespace Meow_Meow {
 
     private:
         const int JUMP_ACTION_TAG = 0;
-        const int HITTED_ACTION_TAG = 0;
+        const int HITTED_ACTION_TAG = 1;
         const Custom::Anchor_Point ORIGIN_ANIMATION_ANCHOR_POINT = {0.35, 0.5};
         const unsigned char ORIGIN_ATTACKED_IMAGE_OPACITY = 80;
 
