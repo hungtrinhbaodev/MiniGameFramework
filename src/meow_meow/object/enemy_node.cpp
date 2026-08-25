@@ -391,7 +391,7 @@ namespace Meow_Meow {
             if (collision.tag != Const::BULLET_COLLISION_TAG)
                 continue;
             Bullet_Collision_Data* collision_data = reinterpret_cast<Bullet_Collision_Data*>(collision.owner_data);
-            if (collision_data->get_damage_deal() <= 0 && !collision_data->is_hitted())
+            if (collision_data->get_damage_deal() <= 0 || collision_data->is_hitted())
                 continue;
             this->change_to_hitted(
                 global_data, collision_data->get_damage_deal(), collision_data->get_bullet_direction()
