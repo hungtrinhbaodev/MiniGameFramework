@@ -3,6 +3,7 @@
 #include <meow_meow/animation/explosion_animation.h>
 #include <meow_meow/config/bullet_behavior_config.h>
 #include <meow_meow/data/bullet_collision_data.h>
+#include <meow_meow/data/enemy_collision_data.h>
 #include <meow_meow/data/global_data.h>
 #include <meow_meow/layer/layer_battle.h>
 #include <meow_meow/object/bullet_node.h>
@@ -107,12 +108,12 @@ namespace Meow_Meow {
     void Bullet_Node::handle_collision(float delta_time, void* global_data) {
         Collision_Component* collision_component =
             Utils::get_component<Collision_Component>(this, Defined::COMPONENT_COLLISION_NAME);
-        std::vector<Collision_Information> collisions = collision_component->get_collisioneds();
-        for (Collision_Information& collision : collisions) {
-            if (collision.tag != Const::ENEMY_COLLISION_TAG) {
-                continue;
-            }
+
+        Bullet_Collision_Data* bullet_collision_data =
+            Utils::get_collision_owner_data<Bullet_Collision_Data>(collision_component);
+        if (bullet_collision_data->is_hitted()) {
             this->change_to_explore(global_data);
+            return;
         }
     }
 

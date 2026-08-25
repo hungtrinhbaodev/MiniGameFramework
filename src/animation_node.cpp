@@ -60,7 +60,8 @@ void Animation_Node::play_animation(std::string name, float speed, bool is_reset
     set_speed(speed);
 }
 
-void Animation_Node::fix_update(float delta_time, void* global_data) {
+void Animation_Node::handle_personal_task(float delta_time, void* global_data) {
+    Image_Node::handle_personal_task(delta_time, global_data);
     if (is_valid_animation(this->current_animation)) {
         Animation_Data& animation = this->animations[this->current_animation];
         if (animation.is_finish_cycle) {
@@ -70,7 +71,6 @@ void Animation_Node::fix_update(float delta_time, void* global_data) {
             animation.is_finish_cycle = false;
         }
     }
-    Image_Node::fix_update(delta_time, global_data);
 }
 
 void Animation_Node::flex_update(float delta_time) {

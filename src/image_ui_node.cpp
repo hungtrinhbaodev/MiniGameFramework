@@ -92,6 +92,10 @@ Node_Type Image_UI_Node::get_type() {
     return Node_Type::IMAGE_UI;
 }
 
+Custom::Rectangle_Area Image_UI_Node::get_cap_insets() {
+    return this->cap_inset_area;
+}
+
 void Image_UI_Node::set_enable_nine_scale(bool enable_nine_scale) {
     this->enable_nine_scale = enable_nine_scale;
     this->set_renderer_size(this->get_content_size());
@@ -119,6 +123,10 @@ void Image_UI_Node::set_force_renderer_color(Custom::Color color) {
 
 void Image_UI_Node::set_enable_force_renderer_color(bool enable_force_renderer_color) {
     this->enable_force_renderer_color = enable_force_renderer_color;
+}
+
+void Image_UI_Node::set_cap_insets(Custom::Rectangle_Area cap_insets) {
+    this->cap_inset_area = cap_insets;
 }
 
 void Image_UI_Node::draw_without_nine_scale(Custom::Transform& world_transform, int& draw_index) {

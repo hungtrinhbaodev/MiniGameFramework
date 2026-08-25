@@ -13,11 +13,19 @@ namespace Meow_Meow {
         this->bullet_direction = bullet_direction;
     }
 
+    void Bullet_Collision_Data::set_hitted(bool hitted) {
+        this->hitted = hitted;
+    }
+
     float Bullet_Collision_Data::get_damage_deal() {
         return this->damage_deal;
     }
 
     Const::DIRECTION Bullet_Collision_Data::get_bullet_direction() {
         return this->bullet_direction;
+    }
+
+    bool Bullet_Collision_Data::is_hitted() {
+        return this->hitted;
     }
 }  // namespace Meow_Meow

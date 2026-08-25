@@ -17,6 +17,7 @@ namespace Meow_Meow {
         this->init_enemy_animation();
         this->init_components();
         this->init_attacked_image();
+        this->init_progression_health();
     }
 
     Enemy_Node::~Enemy_Node() {
@@ -64,6 +65,7 @@ namespace Meow_Meow {
     void Enemy_Node::init_enemy_animation() {
         this->enemy_animation = new Character_Animation(this->enemy_animation_id, 1);
         this->enemy_animation->set_character_id(this->enemy_animation_id);
+        this->enemy_animation->set_name("debug");
         this->container->add_child(this->enemy_animation);
     }
 
@@ -99,8 +101,28 @@ namespace Meow_Meow {
         this->add_key_press_listener(Custom::Key::V);
     }
 
+    void Enemy_Node::init_progression_health() {
+        this->progression_health = Progression_Node::make(
+            Const::PATH_HEALTH_BAR,
+            Const::HEALTH_BAR_CAP_INSETS,
+            Const::HEALTH_BAR_SIZE,
+            Const::HEALTH_BAR_COLOR,
+            Const::HEALTH_BAR_PADDING,
+            Const::HEALTH_BAR_DELTA_POSITION
+        );
+        this->progression_health->set_position(ORIGIN_HEALTH_BAR_POSITION);
+        this->progression_health->set_percent(50);
+        this->progression_health->set_visible(false);
+        this->add_child(this->progression_health);
+        Utils::save_transform_origin(this->progression_health);
+    }
+
     void Enemy_Node::attach(void* global_data) {
         this->enemy_animation->play_animation("IDLE");
+        Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
+        const Enemy_Behavior_Config& behavior_config = data->get_config().get_enemy_behavior_config();
+        this->current_health = behavior_config.get_enemy_health();
+        this->progression_health->set_percent(100);
     }
 
     void Enemy_Node::change_to_attack(void* global_data) {
@@ -133,7 +155,17 @@ namespace Meow_Meow {
         collision_data->set_damage_deal(behavior_config.get_emeny_attack_damage());
     }
 
-    void Enemy_Node::change_to_hitted(void* global_data, Const::DIRECTION bullet_direction) {
+    void Enemy_Node::change_to_death(void* global_data) {
+        this->enemy_animation->play_animation("DEAD");
+        Utils::reset_to_origin(this->progression_health);
+        this->progression_health->stop_action(HITTED_ACTION_TAG);
+        this->progression_health->do_action(Action::sequence(Action::delay(0), Action::fade_out(0.2), Action::hide()));
+        this->enemy_animation->on_finish_animation_callback("DEAD", [this](Animation_Node*, void*) {
+            this->remove_from_parent();
+        });
+    }
+
+    void Enemy_Node::change_to_hitted(void* global_data, float damage_take, Const::DIRECTION bullet_direction) {
         Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
         const Enemy_Behavior_Config& behavior_config = data->get_config().get_enemy_behavior_config();
 
@@ -149,12 +181,24 @@ namespace Meow_Meow {
             Utils::reset_to_origin(this->container);
         }
 
-        this->action_enemy_hitted(0, behavior_config.get_enemy_attacked_duration(), bullet_direction);
+        float max_health = behavior_config.get_enemy_health();
+        this->current_health = std::max(this->current_health - damage_take, 0.f);
+        float percent = (this->current_health / max_health) * 100;
+
+        this->action_enemy_hitted(0, behavior_config.get_enemy_attacked_duration(), bullet_direction, percent);
+
+        if (current_health <= 0) {
+            state_machine->change_state_at(
+                Const::TRACK_CONTROLL, Const::STATE_DEATH, State_Machine_Component::INFITY_STATE
+            );
+            this->velosity = {0, 0};
+        } else {
+            this->velosity = -behavior_config.get_enemy_attacked_velosity() * behavior->get_enemy_walking_direction();
+        }
 
         state_machine->change_state_at(
             Const::TRACK_EFFECTED, Const::STATE_ATTACKED, behavior_config.get_enemy_attacked_duration()
         );
-        this->velosity = -behavior_config.get_enemy_attacked_velosity() * behavior->get_enemy_walking_direction();
 
         float duration = this->enemy_animation->get_amimation_duration("IDLE");
         this->enemy_animation->play_animation("IDLE", behavior_config.get_enemy_attacked_duration() / duration);
@@ -236,7 +280,9 @@ namespace Meow_Meow {
         );
     }
 
-    void Enemy_Node::action_enemy_hitted(float delay, float duration, Const::DIRECTION bullet_direction) {
+    void Enemy_Node::action_enemy_hitted(
+        float delay, float duration, Const::DIRECTION bullet_direction, float percent_health
+    ) {
         this->container->stop_action(HITTED_ACTION_TAG);
         float sign = bullet_direction == Const::DIRECTION::LEFT ? -1 : 1;
         this->container->do_action(
@@ -271,6 +317,59 @@ namespace Meow_Meow {
             ),
             HITTED_ACTION_TAG
         );
+
+        Custom::Transform origin = Utils::get_transform_origin(this->progression_health);
+        this->progression_health->stop_action(HITTED_ACTION_TAG);
+        if (this->progression_health->is_visible()) {
+            Utils::reset_to_origin(this->progression_health);
+            this->progression_health->set_visible(true);
+            this->progression_health->do_action(
+                Action::sequence(
+                    Action::spawn(
+                        Action::delay(DURATION_SHOW_PROGRESSION_HEALTH),
+                        Action::progress_to(duration, percent_health, Action_Ease::SINE_IN)
+                    ),
+                    Action::spawn(
+                        Action::sequence(
+                            Action::move_to(duration / 2, origin.position + glm::vec2(0, 20), Action_Ease::SINE_OUT),
+                            Action::move_to(duration / 2, origin.position - glm::vec2(0, 50), Action_Ease::SINE_IN)
+                        ),
+                        Action::fade_out(duration / 2)
+                    ),
+                    Action::hide()
+                ),
+                HITTED_ACTION_TAG
+            );
+        } else {
+            Utils::reset_to_origin(this->progression_health);
+            glm::vec2 start_position = origin.position - glm::vec2{0, -50};
+            this->progression_health->set_position(start_position);
+            this->progression_health->set_opacity(0);
+            this->progression_health->do_action(
+                Action::sequence(
+                    Action::delay(delay),
+                    Action::show(),
+                    Action::spawn(
+                        Action::sequence(
+                            Action::move_to(duration / 2, origin.position + glm::vec2(0, 20), Action_Ease::SINE_OUT),
+                            Action::move_to(duration / 2, origin.position, Action_Ease::SINE_IN)
+                        ),
+                        Action::fade_in(duration * 0.35, Action_Ease::SINE_OUT),
+                        Action::progress_to(duration, percent_health, Action_Ease::SINE_IN),
+                        Action::delay(DURATION_SHOW_PROGRESSION_HEALTH)
+                    ),
+                    Action::spawn(
+                        Action::sequence(
+                            Action::move_to(duration / 2, origin.position + glm::vec2(0, 20), Action_Ease::SINE_OUT),
+                            Action::move_to(duration / 2, origin.position - glm::vec2(0, 50), Action_Ease::SINE_IN)
+                        ),
+                        Action::fade_out(duration / 2)
+                    ),
+                    Action::hide()
+                ),
+                HITTED_ACTION_TAG
+            );
+        }
     }
 
     void Enemy_Node::handle_collision(float delta_time, void* global_data) {
@@ -292,10 +391,13 @@ namespace Meow_Meow {
             if (collision.tag != Const::BULLET_COLLISION_TAG)
                 continue;
             Bullet_Collision_Data* collision_data = reinterpret_cast<Bullet_Collision_Data*>(collision.owner_data);
-            if (collision_data->get_damage_deal() <= 0)
+            if (collision_data->get_damage_deal() <= 0 && !collision_data->is_hitted())
                 continue;
-            this->change_to_hitted(global_data, collision_data->get_bullet_direction());
+            this->change_to_hitted(
+                global_data, collision_data->get_damage_deal(), collision_data->get_bullet_direction()
+            );
             collision_data->set_damage_deal(0.f);
+            collision_data->set_hitted(true);
             break;
         }
     }
@@ -325,27 +427,28 @@ namespace Meow_Meow {
             /**
              * @Note: if enemy is attacked we don't update anything!
              */
-            if (state_machine->get_current_state_at(Const::TRACK_EFFECTED) == Const::STATE_ATTACKED &&
-                !state_machine->is_finish_state_at(Const::TRACK_CONTROLL)) {
-                return;
-            }
+            if (!(state_machine->get_current_state_at(Const::TRACK_EFFECTED) == Const::STATE_ATTACKED &&
+                  !state_machine->is_finish_state_at(Const::TRACK_CONTROLL))) {
+                std::string current_state = state_machine->get_current_state_at(Const::TRACK_CONTROLL);
+                if (current_state != Const::STATE_DEATH) {
+                    /**
+                     * If duration attack finish and player is not take it
+                     * we remove the damage deal in collision!
+                     */
+                    if (current_state == Const::STATE_ATTACK) {
+                        Enemy_Collision_Data* collision_data =
+                            Utils::get_collision_owner_data<Enemy_Collision_Data>(collision);
+                        collision_data->set_damage_deal(0.f);
+                    }
 
-            std::string current_state = state_machine->get_current_state_at(Const::TRACK_CONTROLL);
-            /**
-             * If duration attack finish and player is not take it
-             * we remove the damage deal in collision!
-             */
-            if (current_state == Const::STATE_ATTACK) {
-                Enemy_Collision_Data* collision_data = Utils::get_collision_owner_data<Enemy_Collision_Data>(collision);
-                collision_data->set_damage_deal(0.f);
-            }
-
-            if (behavior->can_attack()) {
-                this->change_to_attack(global_data);
-            } else if (behavior->can_jump()) {
-                this->change_to_jump(global_data);
-            } else {
-                this->change_to_walk(global_data);
+                    if (behavior->can_attack()) {
+                        this->change_to_attack(global_data);
+                    } else if (behavior->can_jump()) {
+                        this->change_to_jump(global_data);
+                    } else {
+                        this->change_to_walk(global_data);
+                    }
+                }
             }
         }
 
@@ -357,9 +460,12 @@ namespace Meow_Meow {
                 );
                 this->container->stop_action(HITTED_ACTION_TAG);
                 Utils::reset_to_origin(this->container);
-                if (state_machine->get_current_state_at(Const::TRACK_CONTROLL) == Const::STATE_WALK) {
+                std::string current_controll_state = state_machine->get_current_state_at(Const::TRACK_CONTROLL);
+                if (current_controll_state == Const::STATE_WALK) {
                     float duration = this->enemy_animation->get_amimation_duration("WALK");
                     this->enemy_animation->play_animation("WALK", behavior_config.get_enemy_walk_duration() / duration);
+                } else if (current_controll_state == Const::STATE_DEATH) {
+                    this->change_to_death(global_data);
                 }
             }
         }
@@ -419,6 +525,7 @@ namespace Meow_Meow {
          */
         Collision_Component* collision =
             Utils::get_component<Collision_Component>(this, Defined::COMPONENT_COLLISION_NAME);
+
         Enemy_Collision_Data* collision_data = Utils::get_collision_owner_data<Enemy_Collision_Data>(collision);
         collision_data->set_enemy_direction(behavior->get_enemy_walking_direction());
     }

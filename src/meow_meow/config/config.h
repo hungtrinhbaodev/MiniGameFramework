@@ -58,7 +58,8 @@ namespace Meow_Meow {
             Const::ENEMY_ATTACK_COUNTDOWN,
             Const::ENEMY_JUMP_COUNTDOWN,
             Const::ENEMY_ATTACKED_DURATION,
-            Const::ENEMY_ATTACKED_VELOSITY
+            Const::ENEMY_ATTACKED_VELOSITY,
+            Const::ENEMY_HEALTH
         };
         Bullet_Behavior_Config bullet_behavior_config{
             Const::BULLET_DAMAGE, Const::BULLET_VELOSITY, Const::BULLET_ACCELARATE, Const::BULLET_BOUNDING_BOX

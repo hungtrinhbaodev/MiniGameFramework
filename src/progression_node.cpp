@@ -20,12 +20,15 @@ Progression_Node* Progression_Node::make(
 
 Progression_Node::Progression_Node() {
     this->set_enable_nine_scale(true);
+    this->set_cascade_opacity(true);
     this->clipping_node = new Layer_Node();
     this->inner_progression = new Image_UI_Node();
     this->inner_progression->set_enable_force_renderer_color(true);
     this->inner_progression->set_enable_nine_scale(true);
+    this->inner_progression->set_name("debug");
     this->clipping_node->set_clipping(true);
     this->clipping_node->add_child(this->inner_progression);
+    this->clipping_node->set_cascade_opacity(true);
     this->add_child(this->clipping_node);
 }
 
@@ -81,6 +84,7 @@ void Progression_Node::sync_inner_progression() {
     this->clipping_node->set_content_size({size.width, size.height});
     this->clipping_node->set_position({-size.width * anchor.x, -size.height * anchor.y});
     glm::vec2 inner_position = {size.width / 2, size.height / 2};
+    this->inner_progression->set_cap_insets(this->get_cap_insets());
     this->inner_progression->set_renderer_size({size.width - inner_padding.x, size.height - inner_padding.y});
     inner_position += this->inner_delta_positon;
     this->inner_progression->set_position(inner_position);

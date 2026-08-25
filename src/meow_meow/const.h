@@ -54,6 +54,7 @@ namespace Meow_Meow {
         const inline static std::string STATE_JUMP = "JUMP";
         const inline static std::string STATE_INVINCIBLE = "INVINCIBLE";
         const inline static std::string STATE_UNEFFECTED = "UNEFFECTED";
+        const inline static std::string STATE_DEATH = "DEATH";
 
         /**
          * Bullet
@@ -95,8 +96,19 @@ namespace Meow_Meow {
         const inline static float ENEMY_DURATION_ATTACK = 0.35f;
         const inline static float ENEMY_ATTACK_COUNTDOWN = 1.25f;
         const inline static float ENEMY_JUMP_COUNTDOWN = 5.0f;
-        const inline static float ENEMY_ATTACKED_DURATION = 0.5f;
+        const inline static float ENEMY_ATTACKED_DURATION = 0.35f;
         const inline static float ENEMY_ATTACKED_VELOSITY = 20.f;
+        const inline static float ENEMY_HEALTH = 250.f;
+
+        /**
+         * Progression health bar
+         */
+        const inline static std::string PATH_HEALTH_BAR = "res/meow_meow/GemsBarBg.png";
+        const inline static Custom::Rectangle_Area HEALTH_BAR_CAP_INSETS = {30, 15, 169, 32};
+        const inline static Custom::Size HEALTH_BAR_SIZE = {160, 36};
+        const inline static Custom::Color HEALTH_BAR_COLOR = {10, 128, 10};
+        const inline static glm::vec2 HEALTH_BAR_PADDING = {1.f, 4.f};
+        const inline static glm::vec2 HEALTH_BAR_DELTA_POSITION = {1.f, 0.f};
 
         /**
          * Custom component name

@@ -8,6 +8,8 @@ public:
     bool is_enable_nine_scale();
     Node_Type get_type() override;
 
+    Custom::Rectangle_Area get_cap_insets();
+
     void set_enable_nine_scale(bool enable_nine_scale);
     void set_cap_insets(float x, float y, float width, float height);
     void set_renderer_size(float width, float height);
@@ -16,6 +18,7 @@ public:
     void set_force_renderer_color(Custom::Color color);
     /** When in this mode the image will replace all pixel renderer by this force color */
     void set_enable_force_renderer_color(bool enable_force_renderer_color);
+    void set_cap_insets(Custom::Rectangle_Area cap_insets);
 
 protected:
     void draw(Custom::Transform& world_transform, int& draw_index) override;

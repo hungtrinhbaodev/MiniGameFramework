@@ -1,4 +1,6 @@
 #pragma once
+#include <meow_meow/const.h>
+
 #include <glm/glm.hpp>
 
 namespace Meow_Meow {
