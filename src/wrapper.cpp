@@ -246,7 +246,7 @@ namespace Libs_Wrapper {
     void load_async_texture(std::string path, RayLib_Texture_Info* info) {
         Image image = LoadImage(path.data());
         {
-            std::unique_lock<std::mutex>(resource_mutex);
+            std::unique_lock<std::mutex> lock(resource_mutex);
             info->loaded_state = Defined::RESOURCE_LOADED_STATE::LOADED;
             info->info.state = info->loaded_state;
             info->inner_image = image;
@@ -264,7 +264,7 @@ namespace Libs_Wrapper {
                 return texture_info;
             }
             {
-                std::unique_lock<std::mutex>(resource_mutex);
+                std::unique_lock<std::mutex> lock(resource_mutex);
                 if (texture_info.loaded_state == Defined::RESOURCE_LOADED_STATE::LOADED &&
                     !texture_info.is_loaded_texture && !is_load_texture_async_in_frame) {
                     texture_info.data = LoadTextureFromImage(texture_info.inner_image);
