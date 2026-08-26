@@ -285,7 +285,7 @@ namespace Meow_Meow {
         this->container->stop_action(ACTION_HITTED_TAG);
         Utils::reset_to_origin(this->container);
         float sign = enemy_direction.x > 0 ? -1 : 1;
-        glm::vec2 delta_position = glm::vec2{80 * enemy_direction.x, 50};
+        glm::vec2 delta_position = glm::vec2{50 * enemy_direction.x, 10};
         this->container->do_action(
             Action::sequence(
                 Action::delay(delay),
@@ -301,7 +301,7 @@ namespace Meow_Meow {
                         Action::move_to(duration_hitted / 2, {0.f, 0.f}, Action_Ease::SINE_IN)
                     ),
                     Action::sequence(
-                        Action::scale_to(duration_hitted / 2, {0.85f, 0.85f}, Action_Ease::SINE_OUT),
+                        Action::scale_to(duration_hitted / 2, {0.9f, 0.9f}, Action_Ease::SINE_OUT),
                         Action::scale_to(duration_hitted / 2, {1.f, 1.f}, Action_Ease::SINE_IN)
                     )
                 )
@@ -340,11 +340,6 @@ namespace Meow_Meow {
 
         float current_health = player_data.get_current_health() - damage;
         player_data.set_current_health(current_health);
-        if (current_health <= 0) {
-            state_machine->change_state_at(
-                Const::TRACK_CONTROLL, Const::STATE_DEATH, State_Machine_Component::INFITY_STATE
-            );
-        }
     }
 
     void Character_Node::action_character_invincible(float delay, float duration) {
@@ -389,7 +384,8 @@ namespace Meow_Meow {
                         Action::delay(dead_duration / 2), Action::fade_to(dead_duration / 2, 125, Action_Ease::SINE_OUT)
                     )
                 ),
-                Action::hide()
+                Action::hide(),
+                Action::call_func([this](Base_Node* target, void* global_data) { this->set_visible(false); })
             )
         );
     }
@@ -411,6 +407,18 @@ namespace Meow_Meow {
     void Character_Node::change_to_dead(void* global_data) {
         Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
         const Character_Behavior_Config& behavior_config = data->get_config().get_character_behavior_config();
+
+        State_Machine_Component* state_machine =
+            Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
+
+        state_machine->change_state_at(Const::TRACK_CONTROLL, Const::STATE_DEATH, behavior_config.get_dead_duration());
+
+        state_machine->change_state_at(
+            Const::TRACK_EFFECTED, Const::STATE_UNEFFECTED, State_Machine_Component::INFITY_STATE
+        );
+
+        this->remove_component(Defined::COMPONENT_COLLISION_NAME);
+
         Player_Data& player_data = data->get_player_data();
         this->action_character_dead(0, behavior_config.get_dead_duration());
         player_data.set_dead(true);
@@ -501,6 +509,8 @@ namespace Meow_Meow {
     }
 
     void Character_Node::handle_state_machine(float delta_time, void* global_data) {
+        Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
+        Player_Data& player_data = data->get_player_data();
         /**
          * @Note: Handle auto change state of state machine here!
          */
@@ -510,6 +520,8 @@ namespace Meow_Meow {
             std::string current_state = state_machine_component->get_current_state_at(Const::TRACK_CONTROLL);
             if (current_state == Const::STATE_ATTACK) {
                 this->change_to_idle();
+            } else if (current_state == Const::STATE_DEATH) {
+                return;
             }
         }
         if (state_machine_component->is_finish_state_at(Const::TRACK_EFFECTED)) {
@@ -517,14 +529,11 @@ namespace Meow_Meow {
             if (current_state == Const::STATE_ATTACKED) {
                 this->container->stop_action(ACTION_HITTED_TAG);
                 Utils::reset_to_origin(this->container);
-                std::string current_controll_state =
-                    state_machine_component->get_current_state_at(Const::TRACK_CONTROLL);
-                if (current_controll_state == Const::STATE_DEATH) {
+                if (player_data.get_current_health() <= 0) {
                     this->change_to_dead(global_data);
                 } else {
                     this->change_to_invincible(global_data);
                 }
-
             } else if (current_state == Const::STATE_INVINCIBLE) {
                 this->container->stop_action(ACTION_INVINCIBLE_TAG);
                 Utils::reset_to_origin(this->container);
@@ -539,8 +548,15 @@ namespace Meow_Meow {
         Collision_Component* collision_component =
             Utils::get_component<Collision_Component>(this, Defined::COMPONENT_COLLISION_NAME);
 
+        if (collision_component == nullptr)
+            return;
+
         State_Machine_Component* state_machine =
             Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
+
+        if (state_machine->get_current_state_at(Const::TRACK_CONTROLL) == Const::STATE_DEATH) {
+            return;
+        }
 
         /**
          * @Note: if player already hitted or invisible we ignore phase attack damge of enemy!

@@ -29,7 +29,7 @@ namespace Meow_Meow {
 
     Custom::Transformed_Rectangle Enemy_Node::get_bounding_box(void* global_data) {
         Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
-        const Character_Behavior_Config& behavior_config = data->get_config().get_character_behavior_config();
+        const Enemy_Behavior_Config& behavior_config = data->get_config().get_enemy_behavior_config();
 
         Custom::Size bounding_size = behavior_config.get_bounding_box();
         return Custom::Transformed_Rectangle{
@@ -39,7 +39,7 @@ namespace Meow_Meow {
 
     void Enemy_Node::handle_boundary(void* global_data) {
         Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
-        const Character_Behavior_Config& behavior_config = data->get_config().get_character_behavior_config();
+        const Enemy_Behavior_Config& behavior_config = data->get_config().get_enemy_behavior_config();
 
         Battle_Layer* battle_layer = data->get_battle_layer();
         Custom::Size layer_size = battle_layer->get_content_size();

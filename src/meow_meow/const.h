@@ -80,7 +80,7 @@ namespace Meow_Meow {
         /**
          * Character behavior
          */
-        const inline static float CHARACTER_ATTACKED_DURATION = 0.5f;
+        const inline static float CHARACTER_ATTACKED_DURATION = 0.55f;
         const inline static float CHARACTER_INVINCIBLE_DURATION = 1.5f;
         const inline static float CHARACTER_VELOSITY = 150.f;
         const inline static float CHARACTER_ACCELARATE = 35.f;
