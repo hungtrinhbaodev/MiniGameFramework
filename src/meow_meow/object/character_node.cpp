@@ -102,6 +102,7 @@ namespace Meow_Meow {
     void Character_Node::attach(void* global_data) {
         Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
         const Character_Behavior_Config& behavior_config = data->get_config().get_character_behavior_config();
+        Player_Data& player_data = data->get_player_data();
 
         State_Machine_Component* state_machine_component =
             Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
@@ -113,6 +114,10 @@ namespace Meow_Meow {
         state_machine_component->change_state_at(
             Const::TRACK_EFFECTED, Const::STATE_UNEFFECTED, State_Machine_Component::INFITY_STATE
         );
+
+        this->player_level = player_data.get_character_level();
+        this->character_animation->set_character_id(player_data.get_character_animation_id());
+        this->character_animation->set_character_level(this->player_level);
 
         this->change_to_idle();
     }
@@ -164,6 +169,15 @@ namespace Meow_Meow {
         this->attacked_image->set_image(this->character_animation->get_image());
         this->attacked_image->set_anchor(this->character_animation->get_anchor().to_vec2());
         this->attacked_image->set_flipped_x(this->character_animation->is_flipped_x());
+    }
+
+    void Character_Node::sync_player_data(void* global_data) {
+        Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
+        Player_Data& player_data = data->get_player_data();
+        if (this->player_level != player_data.get_character_level()) {
+            this->player_level = player_data.get_character_level();
+            this->character_animation->set_character_level(this->player_level);
+        }
     }
 
     glm::vec2 Character_Node::get_direction() {
@@ -561,6 +575,7 @@ namespace Meow_Meow {
         this->handle_state_machine(delta_time, global_data);
         this->update_moverment(delta_time);
         this->update_character_direction();
+        this->sync_player_data(global_data);
         this->sync_attacked_image();
         Game_Object::fix_update(delta_time, global_data);
     }

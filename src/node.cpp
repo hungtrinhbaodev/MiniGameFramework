@@ -232,12 +232,12 @@ void Node::visit_cleanup(float delta_time, void* global_data) {
     for (int i = 0; i < components.size(); i++) {
         if (components[i]->is_removed()) {
             components[i]->detach_from_node(this, global_data);
+            delete (components[i]);
             components[i] = components.back();
             components.pop_back();
             i--;
         }
     }
-
     /**Clear all scheduler is mark at removed */
     std::vector<std::string> removed_keys;
     for (auto& [key, scheduler] : schedulers) {
@@ -258,6 +258,7 @@ void Node::update(float delta_time) {
 void Node::enter(void* global_data) {
     /**Add list waitting component into list commponent again when node enter again!*/
     for (Base_Component* component : detached_components) {
+        component->attach_from_node(this, global_data);
         components.push_back(component);
     }
     detached_components.clear();

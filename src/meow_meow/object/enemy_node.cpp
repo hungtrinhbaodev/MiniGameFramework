@@ -202,6 +202,8 @@ namespace Meow_Meow {
                 Const::TRACK_CONTROLL, Const::STATE_DEATH, State_Machine_Component::INFITY_STATE
             );
             this->velosity = {0, 0};
+            this->remove_component(Defined::COMPONENT_COLLISION_NAME);
+
         } else {
             this->velosity = -behavior_config.get_enemy_attacked_velosity() * behavior->get_enemy_walking_direction();
         }
@@ -386,6 +388,10 @@ namespace Meow_Meow {
         Collision_Component* collision_component =
             Utils::get_component<Collision_Component>(this, Defined::COMPONENT_COLLISION_NAME);
 
+        if (collision_component == nullptr) {
+            return;
+        }
+
         State_Machine_Component* state_machine =
             Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
 
@@ -543,6 +549,9 @@ namespace Meow_Meow {
          */
         Collision_Component* collision =
             Utils::get_component<Collision_Component>(this, Defined::COMPONENT_COLLISION_NAME);
+
+        if (collision == nullptr)
+            return;
 
         Enemy_Collision_Data* collision_data = Utils::get_collision_owner_data<Enemy_Collision_Data>(collision);
         collision_data->set_enemy_direction(behavior->get_enemy_walking_direction());

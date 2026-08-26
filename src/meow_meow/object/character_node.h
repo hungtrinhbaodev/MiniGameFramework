@@ -39,6 +39,7 @@ namespace Meow_Meow {
         void update_moverment(float delta_time);
         void update_character_direction();
         void sync_attacked_image();
+        void sync_player_data(void* global_data);
 
         bool is_moving_at_direction(Const::DIRECTION direction);
         glm::vec2 get_direction();
@@ -69,5 +70,6 @@ namespace Meow_Meow {
         Const::DIRECTION vertical_direction = Const::DIRECTION::UP;
         glm::vec2 velocity{0, 0};
         glm::vec2 accelarate{0, 0};
+        int player_level = 0;
     };
 }  // namespace Meow_Meow
