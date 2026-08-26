@@ -13,9 +13,10 @@ namespace Meow_Meow {
 
     Bullet_Node::Bullet_Node() {}
 
-    Bullet_Node::Bullet_Node(int character_id, Const::DIRECTION direction) {
+    Bullet_Node::Bullet_Node(int character_id, Const::DIRECTION direction, float damage) {
         this->character_id = character_id;
         this->horizontal_direction = direction;
+        this->damage = damage;
         this->init_image_bullet();
         this->init_components();
     }
@@ -65,8 +66,6 @@ namespace Meow_Meow {
         Collision_Component* collision =
             Utils::get_component<Collision_Component>(this, Defined::COMPONENT_COLLISION_NAME);
         collision->set_box_size(behavior_config.get_bullet_bounding_box());
-        Bullet_Collision_Data* collision_data = Utils::get_collision_owner_data<Bullet_Collision_Data>(collision);
-        collision_data->set_damage_deal(behavior_config.get_bullet_damage());
         this->velosity = behavior_config.get_bullet_velosity();
         this->accelarate = behavior_config.get_bullet_accelarate();
     }
@@ -89,7 +88,9 @@ namespace Meow_Meow {
         Collision_Component* collision = new Collision_Component();
         collision->set_name(Defined::COMPONENT_COLLISION_NAME);
         collision->set_anchor({0.5, 0.5});
-        collision->set_owner_data(new Bullet_Collision_Data());
+        Bullet_Collision_Data* collision_data = new Bullet_Collision_Data();
+        collision_data->set_damage_deal(this->damage);
+        collision->set_owner_data(collision_data);
         collision->set_track_layer(Const::BATTLE_LAYER_COLLISION);
         collision->set_tag(Const::BULLET_COLLISION_TAG);
         this->add_component(collision);

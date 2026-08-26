@@ -9,7 +9,6 @@ namespace Meow_Meow {
     Character_Animation::Character_Animation(int character_id, int character_level) {
         this->set_character_id(character_id);
         this->set_character_level(character_level);
-        this->set_name("Character_Animation");
     }
 
     Character_Animation::~Character_Animation() {}

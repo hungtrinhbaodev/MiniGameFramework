@@ -44,8 +44,8 @@ namespace Meow_Meow {
     Character_Node::Character_Node() {
         this->init_container();
         this->init_character_animation();
-        this->init_components();
         this->init_attacked_image();
+        this->init_components();
     }
 
     Character_Node::~Character_Node() {}
@@ -65,15 +65,15 @@ namespace Meow_Meow {
         this->attacked_image->set_enable_force_renderer_color(true);
         this->attacked_image->set_visible(false);
         this->attacked_image->set_opacity(ORIGIN_ATTACKED_IMAGE_OPACITY);
-        Utils::save_transform_origin(this->attacked_image);
         this->container->add_child(this->attacked_image);
+        Utils::save_transform_origin(this->attacked_image);
     }
 
     void Character_Node::init_container() {
         this->container = new Node();
-        Utils::save_transform_origin(this->container);
         this->container->set_cascade_opacity(true);
         this->add_child(this->container);
+        Utils::save_transform_origin(this->container);
     }
 
     void Character_Node::init_components() {
@@ -88,7 +88,6 @@ namespace Meow_Meow {
 
         Collision_Component* collision = new Collision_Component();
         collision->set_name(Defined::COMPONENT_COLLISION_NAME);
-        collision->set_box_size(Const::CHARACTER_BOUNDING_BOX);
         collision->set_track_layer(Const::BATTLE_LAYER_COLLISION);
         this->add_component(collision);
 
@@ -101,8 +100,15 @@ namespace Meow_Meow {
     }
 
     void Character_Node::attach(void* global_data) {
+        Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
+        const Character_Behavior_Config& behavior_config = data->get_config().get_character_behavior_config();
+
         State_Machine_Component* state_machine_component =
             Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
+
+        Collision_Component* collision =
+            Utils::get_component<Collision_Component>(this, Defined::COMPONENT_COLLISION_NAME);
+        collision->set_box_size(behavior_config.get_bounding_box());
 
         state_machine_component->change_state_at(
             Const::TRACK_EFFECTED, Const::STATE_UNEFFECTED, State_Machine_Component::INFITY_STATE
@@ -112,18 +118,23 @@ namespace Meow_Meow {
     }
 
     Custom::Transformed_Rectangle Character_Node::get_bounding_box(void* global_data) {
-        Custom::Size bounding_size = Const::CHARACTER_BOUNDING_BOX;
+        Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
+        const Character_Behavior_Config& behavior_config = data->get_config().get_character_behavior_config();
+
+        Custom::Size bounding_size = behavior_config.get_bounding_box();
         Custom::Rectangle rect{bounding_size.width, bounding_size.height};
         return Custom::Transformed_Rectangle{rect.apply(this->get_transform(), {0.5, 0.5})};
     }
 
     void Character_Node::handle_boundary(void* global_data) {
         Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
+        const Character_Behavior_Config& behavior_config = data->get_config().get_character_behavior_config();
+
         Battle_Layer* layer = data->get_battle_layer();
         if (layer == nullptr)
             return;
         Custom::Size layer_size = layer->get_content_size();
-        Custom::Size bounding_size = Const::CHARACTER_BOUNDING_BOX;
+        Custom::Size bounding_size = behavior_config.get_bounding_box();
         glm::vec2 start_bounding_position = this->get_position() - glm::vec2{0.5, 0.5} * bounding_size.to_vec2();
         Custom::Rectangle_Area bounding_rect = {
             start_bounding_position.x, start_bounding_position.y, bounding_size.width, bounding_size.height
@@ -167,7 +178,12 @@ namespace Meow_Meow {
                (this->vertical_direction == direction && this->velocity.y > 0);
     }
 
-    void Character_Node::change_to_move(Const::DIRECTION horizontal, Const::DIRECTION vertical, float duration_hold) {
+    void Character_Node::change_to_move(
+        Const::DIRECTION horizontal, Const::DIRECTION vertical, float duration_hold, void* global_data
+    ) {
+        Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
+        const Character_Behavior_Config& behavior_config = data->get_config().get_character_behavior_config();
+
         State_Machine_Component* state_machine_component =
             Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
 
@@ -176,17 +192,19 @@ namespace Meow_Meow {
             this->character_animation->play_animation("IDLE");
         }
 
-        float bonus_velosity_rate = duration_hold / BONUS_VELOSITY_RATE;
-        float bonus_velosity = std::min(MAX_BONUS_VELOSITY, BONUS_VELOSITY * bonus_velosity_rate);
+        float bonus_velosity_rate = duration_hold / behavior_config.get_bonus_velosity_rate();
+        float bonus_velosity = std::min(
+            behavior_config.get_max_bonus_velosity(), behavior_config.get_bonus_velosity() * bonus_velosity_rate
+        );
 
         this->horizontal_direction = horizontal != Const::DIRECTION::NONE ? horizontal : this->horizontal_direction;
         this->vertical_direction = vertical != Const::DIRECTION::NONE ? vertical : this->vertical_direction;
 
-        this->velocity.x = horizontal != Const::DIRECTION::NONE ? VELOCITY_MOVE_VALUE + bonus_velosity : 0;
-        this->accelarate.x = horizontal != Const::DIRECTION::NONE ? ACCELARATE_MOVE_VALUE : 0;
+        this->velocity.x = horizontal != Const::DIRECTION::NONE ? behavior_config.get_velosity() + bonus_velosity : 0;
+        this->accelarate.x = horizontal != Const::DIRECTION::NONE ? behavior_config.get_accelarate() : 0;
 
-        this->velocity.y = vertical != Const::DIRECTION::NONE ? VELOCITY_MOVE_VALUE + bonus_velosity : 0;
-        this->accelarate.y = vertical != Const::DIRECTION::NONE ? ACCELARATE_MOVE_VALUE : 0;
+        this->velocity.y = vertical != Const::DIRECTION::NONE ? behavior_config.get_velosity() + bonus_velosity : 0;
+        this->accelarate.y = vertical != Const::DIRECTION::NONE ? behavior_config.get_accelarate() : 0;
 
         state_machine_component->change_state_at(
             Const::TRACK_CONTROLL, Const::STATE_MOVE, State_Machine_Component::INFITY_STATE
@@ -212,12 +230,20 @@ namespace Meow_Meow {
     }
 
     void Character_Node::change_to_attack(void* global_data) {
+        Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
+        const Character_Behavior_Config& behavior_config = data->get_config().get_character_behavior_config();
+        Player_Data& player_data = data->get_player_data();
+
         State_Machine_Component* state_machine_component =
             Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
 
-        state_machine_component->change_state_at(Const::TRACK_CONTROLL, Const::STATE_ATTACK, DURATION_ATTACK);
+        state_machine_component->change_state_at(
+            Const::TRACK_CONTROLL, Const::STATE_ATTACK, behavior_config.get_attack_duration()
+        );
         float animation_duration = this->character_animation->get_amimation_duration("SHOOT");
-        this->character_animation->play_animation("SHOOT", DURATION_ATTACK / animation_duration, true);
+        this->character_animation->play_animation(
+            "SHOOT", behavior_config.get_attack_duration() / animation_duration, true
+        );
 
         this->velocity = {0.f, 0.f};
         this->accelarate = {0.f, 0.f};
@@ -225,12 +251,12 @@ namespace Meow_Meow {
         /**
          * Add bullet to map when character fire!
          */
-        Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
         Battle_Layer* battle_layer = data->get_battle_layer();
         if (!battle_layer)
             return;
 
-        Bullet_Node* bullet = new Bullet_Node(this->character_animation_id, this->horizontal_direction);
+        Bullet_Node* bullet =
+            new Bullet_Node(this->character_animation_id, this->horizontal_direction, player_data.get_player_damage());
         float sign_x = horizontal_direction == Const::DIRECTION::LEFT ? -1 : 1;
         glm::vec2 fire_position = this->get_position() + glm::vec2{sign_x, 1} * DELTA_POSITION_BULLET;
         bullet->set_position(fire_position);
@@ -280,6 +306,7 @@ namespace Meow_Meow {
     void Character_Node::change_to_hitted(float damage, glm::vec2 enemy_direction, void* global_data) {
         Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
         const Character_Behavior_Config& behavior_config = data->get_config().get_character_behavior_config();
+        Player_Data& player_data = data->get_player_data();
 
         State_Machine_Component* state_machine =
             Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
@@ -296,6 +323,14 @@ namespace Meow_Meow {
         state_machine->change_state_at(
             Const::TRACK_EFFECTED, Const::STATE_ATTACKED, behavior_config.get_attacked_duration()
         );
+
+        float current_health = player_data.get_current_health() - damage;
+        player_data.set_current_health(current_health);
+        if (current_health <= 0) {
+            state_machine->change_state_at(
+                Const::TRACK_CONTROLL, Const::STATE_DEATH, State_Machine_Component::INFITY_STATE
+            );
+        }
     }
 
     void Character_Node::action_character_invincible(float delay, float duration) {
@@ -313,6 +348,38 @@ namespace Meow_Meow {
         );
     }
 
+    void Character_Node::action_character_dead(float delay, float dead_duration) {
+        this->container->stop_action(ACTION_HITTED_TAG);
+        this->container->stop_action(ACTION_INVINCIBLE_TAG);
+        Utils::reset_to_origin(this->container);
+        Custom::Transform origin = Utils::get_transform_origin(this->container);
+        glm::vec2 start_position = origin.position;
+        glm::vec2 end_position = glm::vec2{Math::random_float(-80, 80), 200 + Math::random_float(0, 30)};
+        glm::vec2 middle_position = glm::vec2{start_position.x, end_position.y};
+        this->set_z_order(1);
+        float sign_rotation = Math::random_float() >= 0.5 ? -1 : 1;
+        this->container->do_action(
+            Action::sequence(
+                Action::delay(delay),
+                Action::show(),
+                Action::spawn(
+                    Action::bezier_to(dead_duration, middle_position, end_position, Action_Ease::SINE_IN),
+                    Action::sequence(
+                        Action::scale_to(dead_duration / 2, {1.2f, 1.2f}, Action_Ease::SINE_OUT),
+                        Action::scale_to(dead_duration / 2, {1.f, 1.f}, Action_Ease::SINE_IN)
+                    ),
+                    Action::rotate_to(
+                        dead_duration, sign_rotation * (100.f + Math::random_float(0, 30)), Action_Ease::SINE_IN
+                    ),
+                    Action::sequence(
+                        Action::delay(dead_duration / 2), Action::fade_to(dead_duration / 2, 125, Action_Ease::SINE_OUT)
+                    )
+                ),
+                Action::hide()
+            )
+        );
+    }
+
     void Character_Node::change_to_invincible(void* global_data) {
         Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
         const Character_Behavior_Config& behavior_config = data->get_config().get_character_behavior_config();
@@ -325,6 +392,14 @@ namespace Meow_Meow {
         );
 
         this->action_character_invincible(0, behavior_config.get_invincible_duration());
+    }
+
+    void Character_Node::change_to_dead(void* global_data) {
+        Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
+        const Character_Behavior_Config& behavior_config = data->get_config().get_character_behavior_config();
+        Player_Data& player_data = data->get_player_data();
+        this->action_character_dead(0, behavior_config.get_dead_duration());
+        player_data.set_dead(true);
     }
 
     void Character_Node::handle_key_board(float delta_time, void* global_data) {
@@ -342,7 +417,9 @@ namespace Meow_Meow {
             switch (key) {
                 case Custom::Key::W: {
                     if (can_process_move_input(state_machine_component, detail.type)) {
-                        this->change_to_move(Const::DIRECTION::NONE, Const::DIRECTION::UP, detail.duration_pressed);
+                        this->change_to_move(
+                            Const::DIRECTION::NONE, Const::DIRECTION::UP, detail.duration_pressed, global_data
+                        );
                         break;
                     }
                     if (!is_character_attacking(state_machine_component) &&
@@ -353,7 +430,9 @@ namespace Meow_Meow {
                 }
                 case Custom::Key::S: {
                     if (can_process_move_input(state_machine_component, detail.type)) {
-                        this->change_to_move(Const::DIRECTION::NONE, Const::DIRECTION::DOWN, detail.duration_pressed);
+                        this->change_to_move(
+                            Const::DIRECTION::NONE, Const::DIRECTION::DOWN, detail.duration_pressed, global_data
+                        );
                         break;
                     }
                     if (!is_character_attacking(state_machine_component) &&
@@ -364,7 +443,9 @@ namespace Meow_Meow {
                 }
                 case Custom::Key::A: {
                     if (can_process_move_input(state_machine_component, detail.type)) {
-                        this->change_to_move(Const::DIRECTION::LEFT, Const::DIRECTION::NONE, detail.duration_pressed);
+                        this->change_to_move(
+                            Const::DIRECTION::LEFT, Const::DIRECTION::NONE, detail.duration_pressed, global_data
+                        );
                         break;
                     }
                     if (!is_character_attacking(state_machine_component) &&
@@ -375,7 +456,9 @@ namespace Meow_Meow {
                 }
                 case Custom::Key::D: {
                     if (can_process_move_input(state_machine_component, detail.type)) {
-                        this->change_to_move(Const::DIRECTION::RIGHT, Const::DIRECTION::NONE, detail.duration_pressed);
+                        this->change_to_move(
+                            Const::DIRECTION::RIGHT, Const::DIRECTION::NONE, detail.duration_pressed, global_data
+                        );
                         break;
                     }
                     if (!is_character_attacking(state_machine_component) &&
@@ -392,7 +475,7 @@ namespace Meow_Meow {
                 }
                 case Custom::Key::V: {
                     if (detail.type == Key_Input_Type::PRESSED) {
-                        this->action_character_invincible(0, 1.0f);
+                        this->action_character_dead(0, 0.75f);
                     }
                     break;
                 }
@@ -420,9 +503,14 @@ namespace Meow_Meow {
             if (current_state == Const::STATE_ATTACKED) {
                 this->container->stop_action(ACTION_HITTED_TAG);
                 Utils::reset_to_origin(this->container);
-                this->change_to_invincible(global_data);
                 std::string current_controll_state =
                     state_machine_component->get_current_state_at(Const::TRACK_CONTROLL);
+                if (current_controll_state == Const::STATE_DEATH) {
+                    this->change_to_dead(global_data);
+                } else {
+                    this->change_to_invincible(global_data);
+                }
+
             } else if (current_state == Const::STATE_INVINCIBLE) {
                 this->container->stop_action(ACTION_INVINCIBLE_TAG);
                 Utils::reset_to_origin(this->container);

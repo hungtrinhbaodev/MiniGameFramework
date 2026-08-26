@@ -28,6 +28,9 @@ public:
     void set_cap_insets(float x, float y, float width, float height);
     void set_renderer_size(Custom::Size renderer_size);
 
+protected:
+    void fix_update(float delta_time, void* global_data) override;
+
 private:
     Layer_Node* clipping_node = nullptr;
     /**Use this color instead of inner node when don't have it*/

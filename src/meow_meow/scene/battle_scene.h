@@ -1,6 +1,7 @@
 #pragma once
 #include <layer_node.h>
 #include <meow_meow/layer/layer_battle.h>
+#include <meow_meow/layer/layer_stats.h>
 #include <scene_node.h>
 
 namespace Meow_Meow {
@@ -13,7 +14,7 @@ namespace Meow_Meow {
         void attach(void* global_data) override;
 
     private:
-        Layer_Node* layer_ui = nullptr;
         Battle_Layer* battle_layer = nullptr;
+        Layer_Stats* stats_layer = nullptr;
     };
 }  // namespace Meow_Meow

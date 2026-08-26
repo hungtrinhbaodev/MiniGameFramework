@@ -81,9 +81,6 @@ namespace Meow_Meow {
         Enemy_Behavior_Config behavior_config = data->get_config().get_enemy_behavior_config();
         Character_Node* character = data->get_character();
 
-        glm::vec2 enemy_position = target->get_position();
-        glm::vec2 character_position = character->get_position();
-
         if (this->is_attack_countdown) {
             this->attack_countdown += delta_time;
             if (this->attack_countdown >= behavior_config.get_enemy_attack_countdown()) {
@@ -98,6 +95,8 @@ namespace Meow_Meow {
             }
         }
 
+        glm::vec2 enemy_position = target->get_position();
+        glm::vec2 character_position = character->get_position();
         this->enemy_direction = glm::normalize(character_position - enemy_position);
     }
 

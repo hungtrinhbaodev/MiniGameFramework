@@ -28,7 +28,10 @@ namespace Meow_Meow {
     }
 
     Custom::Transformed_Rectangle Enemy_Node::get_bounding_box(void* global_data) {
-        Custom::Size bounding_size = Const::ENEMY_BOUNDING_BOX;
+        Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
+        const Character_Behavior_Config& behavior_config = data->get_config().get_character_behavior_config();
+
+        Custom::Size bounding_size = behavior_config.get_bounding_box();
         return Custom::Transformed_Rectangle{
             Custom::Rectangle{bounding_size.width, bounding_size.height}.apply(this->get_transform(), {0.5f, 0.5f})
         };
@@ -36,10 +39,12 @@ namespace Meow_Meow {
 
     void Enemy_Node::handle_boundary(void* global_data) {
         Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
+        const Character_Behavior_Config& behavior_config = data->get_config().get_character_behavior_config();
+
         Battle_Layer* battle_layer = data->get_battle_layer();
         Custom::Size layer_size = battle_layer->get_content_size();
         Custom::Rectangle_Area layer_rect{0, 0, layer_size.width, layer_size.height};
-        Custom::Size enemy_bounding_size = Const::ENEMY_BOUNDING_BOX;
+        Custom::Size enemy_bounding_size = behavior_config.get_bounding_box();
         glm::vec2 enemy_start_box_position =
             this->get_position() - glm::vec2{0.5f, 0.5f} * enemy_bounding_size.to_vec2();
         Custom::Rectangle_Area enemy_rect = {
@@ -120,9 +125,14 @@ namespace Meow_Meow {
     void Enemy_Node::attach(void* global_data) {
         this->enemy_animation->play_animation("IDLE");
         Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
+
         const Enemy_Behavior_Config& behavior_config = data->get_config().get_enemy_behavior_config();
         this->current_health = behavior_config.get_enemy_health();
         this->progression_health->set_percent(100);
+
+        Collision_Component* collision =
+            Utils::get_component<Collision_Component>(this, Defined::COMPONENT_COLLISION_NAME);
+        collision->set_box_size(behavior_config.get_bounding_box());
     }
 
     void Enemy_Node::change_to_attack(void* global_data) {
@@ -478,6 +488,14 @@ namespace Meow_Meow {
     void Enemy_Node::update_enemy_direction() {
         Enemy_Behavior_Component* behavior =
             Utils::get_component<Enemy_Behavior_Component>(this, Const::ENEMY_BEHAVIOR_COMPONENT_NAME);
+
+        State_Machine_Component* state_machine =
+            Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
+
+        if (state_machine->get_current_state_at(Const::TRACK_CONTROLL) == Const::STATE_DEATH) {
+            return;
+        }
+
         bool is_right = behavior->get_enemy_walking_direction().x > 0;
         this->enemy_animation->set_flipped_x(is_right);
         glm::vec2 anchor = !is_right

@@ -26,6 +26,10 @@ namespace Meow_Meow {
         return this->character;
     }
 
+    Player_Data& Global_Data::get_player_data() {
+        return this->player_data;
+    }
+
     void Global_Data::set_battle_layer(Battle_Layer* battle_layer) {
         this->battle_layer = battle_layer;
     }

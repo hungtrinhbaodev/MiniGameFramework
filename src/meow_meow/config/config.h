@@ -45,7 +45,18 @@ namespace Meow_Meow {
             Const::ENEMY_ANIMATION_DURATION_PER_FRAMES
         };
         Character_Behavior_Config character_behavior_config{
-            Const::CHARACTER_ATTACKED_DURATION, Const::CHARACTER_INVINCIBLE_DURATION
+            Const::CHARACTER_ATTACKED_DURATION,
+            Const::CHARACTER_INVINCIBLE_DURATION,
+            Const::CHARACTER_VELOSITY,
+            Const::CHARACTER_ACCELARATE,
+            Const::CHARACTER_ATTACK_DURATION,
+            Const::CHARACTER_BONUS_VELOSITY_RATE,
+            Const::CHARACTER_BONUS_VELOSITY,
+            Const::CHARACTER_MAX_BONUS_VELOSITY,
+            Const::CHARACTER_BOUNDING_BOX,
+            Const::CHARACTER_HEALTH,
+            Const::CHARACTER_DAMAGE,
+            Const::CHARACTER_DEAD_DURATION
         };
         Enemy_Behavior_Config enemy_behavior_config{
             Const::ENEMY_JUMP_DISTANCE,
@@ -59,10 +70,11 @@ namespace Meow_Meow {
             Const::ENEMY_JUMP_COUNTDOWN,
             Const::ENEMY_ATTACKED_DURATION,
             Const::ENEMY_ATTACKED_VELOSITY,
-            Const::ENEMY_HEALTH
+            Const::ENEMY_HEALTH,
+            Const::ENEMY_BOUNDING_BOX
         };
         Bullet_Behavior_Config bullet_behavior_config{
-            Const::BULLET_DAMAGE, Const::BULLET_VELOSITY, Const::BULLET_ACCELARATE, Const::BULLET_BOUNDING_BOX
+            Const::BULLET_VELOSITY, Const::BULLET_ACCELARATE, Const::BULLET_BOUNDING_BOX
         };
     };
 

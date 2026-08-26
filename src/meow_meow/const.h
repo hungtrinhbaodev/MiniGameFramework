@@ -61,7 +61,6 @@ namespace Meow_Meow {
          */
         const inline static std::string PATH_BULLET_IMAGE = "res/meow_meow/Bullets/bullet";
         const inline static Custom::Size BULLET_BOUNDING_BOX = {50, 30};
-        const inline static float BULLET_DAMAGE = 20;
         const inline static float BULLET_VELOSITY = 700;
         const inline static float BULLET_ACCELARATE = 5;
 
@@ -83,6 +82,15 @@ namespace Meow_Meow {
          */
         const inline static float CHARACTER_ATTACKED_DURATION = 0.5f;
         const inline static float CHARACTER_INVINCIBLE_DURATION = 1.5f;
+        const inline static float CHARACTER_VELOSITY = 150.f;
+        const inline static float CHARACTER_ACCELARATE = 35.f;
+        const inline static float CHARACTER_ATTACK_DURATION = 0.5f;
+        const inline static float CHARACTER_BONUS_VELOSITY_RATE = 0.25f;
+        const inline static float CHARACTER_BONUS_VELOSITY = 10.f;
+        const inline static float CHARACTER_MAX_BONUS_VELOSITY = 60.f;
+        const inline static float CHARACTER_HEALTH = 300.f;
+        const inline static float CHARACTER_DAMAGE = 20.f;
+        const inline static float CHARACTER_DEAD_DURATION = 1.f;
 
         /**
          * Enemy behavior

@@ -23,6 +23,11 @@ namespace Meow_Meow {
         const int ACTION_HITTED_TAG = 0;
         const int ACTION_INVINCIBLE_TAG = 1;
 
+        const unsigned char ORIGIN_ATTACKED_IMAGE_OPACITY = 100;
+        const int NUMBER_FADE_IN_INVINCIBLE_STATE = 3;
+        const unsigned char INVISIBLE_OPACITY = 120;
+        glm::vec2 DELTA_POSITION_BULLET = glm::vec2(18, -12);
+
         void init_container();
         void init_components();
         void init_character_animation();
@@ -38,27 +43,18 @@ namespace Meow_Meow {
         bool is_moving_at_direction(Const::DIRECTION direction);
         glm::vec2 get_direction();
 
-        void change_to_move(Const::DIRECTION horizontal, Const::DIRECTION vertical, float duration_hold = 0);
+        void change_to_move(
+            Const::DIRECTION horizontal, Const::DIRECTION vertical, float duration_hold, void* global_data
+        );
         void change_to_idle();
         void change_to_attack(void* global_data);
         void change_to_hitted(float damage, glm::vec2 enemy_direction, void* global_data);
         void change_to_invincible(void* global_data);
+        void change_to_dead(void* global_data);
 
         void action_character_hitted(float delay, float duration_hitted, glm::vec2 enemy_direction);
         void action_character_invincible(float delay, float duration);
-
-        const float VELOCITY_MOVE_VALUE = 150;
-        const float ACCELARATE_MOVE_VALUE = 65;
-        const float DURATION_ATTACK = 0.5;
-
-        const float BONUS_VELOSITY_RATE = 0.25;
-        const float BONUS_VELOSITY = 10;
-        const float MAX_BONUS_VELOSITY = 60;
-        const unsigned char ORIGIN_ATTACKED_IMAGE_OPACITY = 100;
-        const int NUMBER_FADE_IN_INVINCIBLE_STATE = 3;
-        const unsigned char INVISIBLE_OPACITY = 120;
-
-        glm::vec2 DELTA_POSITION_BULLET = glm::vec2(18, -12);
+        void action_character_dead(float delay, float dead_duration);
 
         int character_animation_id = 0;
         Character_Animation* character_animation = nullptr;

@@ -241,7 +241,8 @@ namespace Libs_Wrapper {
      * @Note: one frame we load one async texture
      * from image to make the game smooth!
      */
-    bool is_load_texture_async_in_frame = false;
+    bool is_loaded_texture_async_in_frame = false;
+    long frame_count;
 
     void load_async_texture(std::string path, RayLib_Texture_Info* info) {
         Image image = LoadImage(path.data());
@@ -254,7 +255,7 @@ namespace Libs_Wrapper {
     }
 
     RayLib_Texture_Info load_raylib_texture(
-        std::string path, Defined::LOAD_MODE load_mode = Defined::LOAD_MODE::IMMEDIATE
+        std::string path, Defined::LOAD_MODE load_mode = Defined::LOAD_MODE::IMMEDIATE, bool is_query = false
     ) {
         path = Utils::get_root_path() + path;
 
@@ -266,13 +267,13 @@ namespace Libs_Wrapper {
             {
                 std::unique_lock<std::mutex> lock(resource_mutex);
                 if (texture_info.loaded_state == Defined::RESOURCE_LOADED_STATE::LOADED &&
-                    !texture_info.is_loaded_texture && !is_load_texture_async_in_frame) {
+                    !texture_info.is_loaded_texture && !is_loaded_texture_async_in_frame && !is_query) {
                     texture_info.data = LoadTextureFromImage(texture_info.inner_image);
                     texture_info.info = {
                         (float)texture_info.data.width, (float)texture_info.data.height, texture_info.loaded_state
                     };
                     texture_info.is_loaded_texture = true;
-                    is_load_texture_async_in_frame = true;
+                    is_loaded_texture_async_in_frame = true;
                 }
             }
             return texture_info;
@@ -599,7 +600,7 @@ namespace Libs_Wrapper {
     }
 
     Image_Info image_info(std::string path, Defined::LOAD_MODE load_mode) {
-        RayLib_Texture_Info texture_info = load_raylib_texture(path, load_mode);
+        RayLib_Texture_Info texture_info = load_raylib_texture(path, load_mode, true);
         return texture_info.info;
     }
 
@@ -671,7 +672,7 @@ namespace Libs_Wrapper {
         ClearBackground({230, 230, 230, 255});
         reload_shader();
 
-        is_load_texture_async_in_frame = false;
+        is_loaded_texture_async_in_frame = false;
         while (!rl_queue_commands.empty()) {
             RayLib_Draw_Command command = rl_queue_commands.top();
             Custom::Draw_Attributes attributes = command.attributes;
@@ -845,6 +846,7 @@ namespace Libs_Wrapper {
                 std::cout << "Exit mode debug!" << std::endl;
             }
         }
+        frame_count++;
     }
 
     void clear_libs() {

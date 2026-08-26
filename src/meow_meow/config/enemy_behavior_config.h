@@ -1,4 +1,5 @@
 #pragma once
+#include <custom.h>
 
 namespace Meow_Meow {
     class Enemy_Behavior_Config {
@@ -16,7 +17,8 @@ namespace Meow_Meow {
             float enemy_jump_countdown,
             float enemy_attacked_duration,
             float enemy_attacked_velosity,
-            float enemy_health
+            float enemy_health,
+            Custom::Size bounding_box
         );
         ~Enemy_Behavior_Config();
 
@@ -32,6 +34,7 @@ namespace Meow_Meow {
         float get_enemy_attacked_duration() const;
         float get_enemy_attacked_velosity() const;
         float get_enemy_health() const;
+        Custom::Size get_bounding_box() const;
 
     private:
         float enemy_jump_distance = 0.f;
@@ -46,5 +49,6 @@ namespace Meow_Meow {
         float enemy_attacked_duration = 0.f;
         float enemy_attacked_velosity = 0.f;
         float enemy_health = 0.f;
+        Custom::Size bounding_box = {0.f, 0.f};
     };
 }  // namespace Meow_Meow

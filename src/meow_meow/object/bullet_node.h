@@ -7,7 +7,7 @@ namespace Meow_Meow {
     class Bullet_Node : public Game_Object {
     public:
         Bullet_Node();
-        Bullet_Node(int character_id, Const::DIRECTION direction);
+        Bullet_Node(int character_id, Const::DIRECTION direction, float damage);
         ~Bullet_Node();
 
     protected:
@@ -28,6 +28,7 @@ namespace Meow_Meow {
         int character_id = -1;
         float velosity = 0.f;
         float accelarate = 0.f;
+        float damage = 0.f;
         Const::DIRECTION horizontal_direction = Const::DIRECTION::LEFT;
         Image_UI_Node* image_bullet = nullptr;
     };

@@ -1,4 +1,5 @@
 #include <progression_node.h>
+#include <utils.h>
 
 Progression_Node* Progression_Node::make(
     std::string image_bg,
@@ -44,7 +45,6 @@ Node_Type Progression_Node::get_type() {
 
 void Progression_Node::set_inner_padding(glm::vec2 padding) {
     this->inner_padding = padding;
-    this->sync_inner_progression();
 }
 
 void Progression_Node::set_percent(float percent) {
@@ -55,7 +55,6 @@ void Progression_Node::set_percent(float percent) {
 
 void Progression_Node::set_progression_color(Custom::Color color) {
     this->inner_progression->set_force_renderer_color(color);
-    this->sync_inner_progression();
 }
 
 void Progression_Node::set_inner_delta_position(glm::vec2 delta_position) {
@@ -65,18 +64,20 @@ void Progression_Node::set_inner_delta_position(glm::vec2 delta_position) {
 void Progression_Node::set_image(std::string image) {
     Image_Node::set_image(image);
     this->inner_progression->set_image(image);
-    this->sync_inner_progression();
 }
 
 void Progression_Node::set_cap_insets(float x, float y, float width, float height) {
     Image_UI_Node::set_cap_insets(x, y, width, height);
     this->inner_progression->set_cap_insets(x, y, width, height);
-    this->sync_inner_progression();
 }
 
 void Progression_Node::set_renderer_size(Custom::Size renderer_size) {
     Image_UI_Node::set_renderer_size(renderer_size);
+}
+
+void Progression_Node::fix_update(float delta_time, void* global_data) {
     this->sync_inner_progression();
+    Image_UI_Node::fix_update(delta_time, global_data);
 }
 
 void Progression_Node::sync_inner_progression() {
