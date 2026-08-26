@@ -1,6 +1,11 @@
 #include <animation_node.h>
+#include <wrapper.h>
 
 #include <iostream>
+
+Animation_Node::Animation_Node() {}
+
+Animation_Node::~Animation_Node() {}
 
 bool Animation_Node::is_valid_animation(std::string name) {
     return animations.find(name) != animations.end();
@@ -11,12 +16,17 @@ Node_Type Animation_Node::get_type() {
 }
 
 void Animation_Node::make_animation(
-    std::string name, std::string folder_path, int number_frame, float duration_loop, std::string extend_format
+    std::string name,
+    std::string folder_path,
+    int number_frame,
+    float duration_loop,
+    ANIMATION_LOAD_MODE load_mode,
+    std::string extend_format
 ) {
     if (is_valid_animation(name)) {
         std::cout << "Animation_Node WARNING: animation " << name << " is exists!" << std::endl;
     }
-    Animation_Data animation{name, folder_path, number_frame, duration_loop, extend_format};
+    Animation_Data animation{name, folder_path, number_frame, duration_loop, extend_format, load_mode};
     animations[name] = animation;
 }
 
@@ -73,6 +83,14 @@ void Animation_Node::handle_personal_task(float delta_time, void* global_data) {
     }
 }
 
+std::string Animation_Node::get_image_path(int current_frame) {
+    Animation_Data& animation = animations[current_animation];
+    std::string frame_number_str =
+        current_frame < 10 ? ("0" + std::to_string(current_frame)) : std::to_string(current_frame);
+    std::string current_image = animation.folder_path + frame_number_str + animation.extend_format;
+    return current_image;
+}
+
 void Animation_Node::flex_update(float delta_time) {
     if (!is_valid_animation(current_animation)) {
         set_visible(false);
@@ -81,12 +99,30 @@ void Animation_Node::flex_update(float delta_time) {
     set_visible(true);
     total_delta_time += delta_time;
     Animation_Data& animation = animations[current_animation];
+    if (animation.number_frame <= 0)
+        return;
     if (total_delta_time >= animation.duration_loop * speed_ratio) {
-        std::string frame_number_str =
-            current_frame < 10 ? ("0" + std::to_string(current_frame)) : std::to_string(current_frame);
-        std::string current_image = animation.folder_path + frame_number_str + animation.extend_format;
-
-        set_image(current_image);
+        std::string current_image = this->get_image_path(this->current_frame);
+        switch (animation.animation_load_mode) {
+            case ANIMATION_LOAD_MODE::ASYNC: {
+                set_image(current_image, Defined::LOAD_MODE::ASYNC);
+                break;
+            }
+            case ANIMATION_LOAD_MODE::IMMEDIATE: {
+                set_image(current_image, Defined::LOAD_MODE::IMMEDIATE);
+                break;
+            }
+            default: {
+                Image_Info image_info = Libs_Wrapper::image_info(current_image, Defined::LOAD_MODE::ASYNC);
+                if (image_info.state != Defined::RESOURCE_LOADED_STATE::LOADED) {
+                    current_image = this->get_image_path(0);
+                    set_image(current_image, Defined::IMMEDIATE);
+                } else {
+                    set_image(current_image, Defined::ASYNC);
+                }
+                break;
+            }
+        }
         total_delta_time = 0;
 
         animation.is_finish_cycle = current_frame + 1 >= animation.number_frame;

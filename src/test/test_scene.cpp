@@ -5,8 +5,8 @@
 
 Test_Scene::Test_Scene() {
     animation = new Animation_Node();
-    animation->make_animation("IDLE", "res/meow_meow/Characters/C3/Idle/", 20, 0.06, ".png");
-    animation->make_animation("SHOOT", "res/meow_meow/Characters/C3/Shoot/", 9, 0.08, ".png");
+    animation->make_animation("IDLE", "res/meow_meow/Characters/C3/Idle/", 20, 0.06);
+    animation->make_animation("SHOOT", "res/meow_meow/Characters/C3/Shoot/", 9, 0.08);
     animation->play_animation("IDLE", 0.8f);
     animation->set_y(50.f);
     animation->set_cascade_opacity(false);
@@ -48,8 +48,8 @@ Test_Scene::Test_Scene() {
     );
 
     animation_2 = new Animation_Node();
-    animation_2->make_animation("IDLE", "res/meow_meow/Characters/C5/Idle/", 20, 0.06, ".png");
-    animation_2->make_animation("SHOOT", "res/meow_meow/Characters/C5/Shoot/", 10, 0.08, ".png");
+    animation_2->make_animation("IDLE", "res/meow_meow/Characters/C5/Idle/", 20, 0.06);
+    animation_2->make_animation("SHOOT", "res/meow_meow/Characters/C5/Shoot/", 10, 0.08);
     animation_2->play_animation("IDLE", 0.8f);
     animation_2->set_y(50.f);
     animation_2->set_cascade_opacity(false);

@@ -145,7 +145,8 @@ void Image_UI_Node::draw_without_nine_scale(Custom::Transform& world_transform, 
         this->get_image(),
         {world_transform, this->anchor, draw_index, this->get_color()},
         this->enable_force_renderer_color,
-        this->force_renderer_color
+        this->force_renderer_color,
+        this->load_mode
     );
     world_transform.scale /= scale_renderer;
     draw_index++;
@@ -267,7 +268,9 @@ void Image_UI_Node::draw(Custom::Transform& world_transform, int& draw_index) {
         attribute.transform = world_transform_duplicate;
         attribute.is_use_rect_texture = true;
         attribute.tint = this->get_color();
-        Libs_Wrapper::draw_image(this->get_image(), attribute, enable_force_renderer_color, force_renderer_color);
+        Libs_Wrapper::draw_image(
+            this->get_image(), attribute, enable_force_renderer_color, force_renderer_color, this->load_mode
+        );
         draw_index++;
         if (this->enable_boundary || Libs_Wrapper::is_debug_mode()) {
             draw_parts(i, attribute, draw_index);

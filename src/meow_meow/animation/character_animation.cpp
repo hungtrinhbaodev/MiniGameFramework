@@ -1,3 +1,4 @@
+#include <defined.h>
 #include <meow_meow/animation/character_animation.h>
 #include <meow_meow/data/global_data.h>
 
@@ -43,18 +44,21 @@ namespace Meow_Meow {
         Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
         auto config = data->get_config();
         auto character_config = config.get_enemy_animation_config();
+        Animation_Node::ANIMATION_LOAD_MODE load_mode = Animation_Node::ANIMATION_LOAD_MODE::SMOOTH;
         if (config.is_character_id(this->character_id)) {
             character_config = config.get_character_animation_config();
+            load_mode = Animation_Node::ANIMATION_LOAD_MODE::IMMEDIATE;
         }
         std::vector<Character_Animation_Information> animations =
             character_config.get_character_animations(this->character_id);
         for (const auto& animation : animations) {
+            bool is_dead = animation.animation_name == "DEAD";
             this->make_animation(
                 animation.animation_name,
                 animation.get_full_path(this->character_level),
                 animation.number_frame,
                 animation.duration_per_frame,
-                ".png"
+                !is_dead ? load_mode : Animation_Node::ANIMATION_LOAD_MODE::IMMEDIATE
             );
         }
         return true;

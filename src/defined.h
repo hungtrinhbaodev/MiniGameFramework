@@ -2,6 +2,8 @@
 #include <string>
 
 namespace Defined {
+    enum LOAD_MODE { IMMEDIATE, ASYNC };
+    enum RESOURCE_LOADED_STATE { UNLOAD, LOADED, LOADING };
     /**Component defined name */
     inline std::string COMPONENT_TOUCH_NAME = "COMPONENT_TOUCH";
     inline std::string COMPONENT_COLLISION_NAME = "COMPONENT_COLLISION";
@@ -11,4 +13,4 @@ namespace Defined {
     inline std::string KEY_SAVE_NODE_ORIGIN = "KEY_SAVE_NODE_ORIGIN";
     inline int ACTION_MOVE_CAMERA_TAG = -57;
     inline std::string KEY_LAYER_SCHEDULE_CAMERA_MOVE = "LAYER_SCHEDULE_CAMERA_MOVE";
-}
+}  // namespace Defined

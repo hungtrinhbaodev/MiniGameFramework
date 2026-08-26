@@ -14,7 +14,7 @@ target_compile_definitions(raylib PUBLIC SUPPORT_FILEFORMAT_JPG)
 file(GLOB_RECURSE SOURCES "main.cpp" "src/*.cpp")
 add_executable(MiniGameFramework ${SOURCES})
 
-target_include_directories(MiniGameFramework PRIVATE src)
+target_include_directories(MiniGameFramework PRIVATE src vendor)
 target_link_libraries(MiniGameFramework PRIVATE raylib glm::glm)
 
 find_program(PYTHON_EXEC

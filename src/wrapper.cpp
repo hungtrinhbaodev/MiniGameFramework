@@ -1,3 +1,4 @@
+#include <ThreadPool.h>
 #include <collision_system.h>
 #include <director.h>
 #include <key_input_system.h>
@@ -10,9 +11,11 @@
 #include <algorithm>
 #include <glm/glm.hpp>
 #include <iostream>
+#include <mutex>
 #include <queue>
 #include <stack>
 #include <stdexcept>
+#include <thread>
 
 #include "rlgl.h"
 
@@ -31,13 +34,18 @@ namespace Libs_Wrapper {
         std::string image_path = "";
         bool enable_force_color = false;
         Custom::Color force_color;
+        Defined::LOAD_MODE load_mode;
 
         RayLib_Draw_Image_Resource(
-            std::string image_path, bool enable_force_color = false, Custom::Color force_color = {}
+            std::string image_path,
+            bool enable_force_color = false,
+            Custom::Color force_color = {},
+            Defined::LOAD_MODE load_mode = Defined::LOAD_MODE::IMMEDIATE
         ) {
             this->image_path = image_path;
             this->enable_force_color = enable_force_color;
             this->force_color = force_color;
+            this->load_mode = load_mode;
         }
 
         std::map<std::string, std::string> get_trace() {
@@ -151,6 +159,10 @@ namespace Libs_Wrapper {
     struct RayLib_Texture_Info {
         Texture data;
         Image_Info info;
+        Defined::RESOURCE_LOADED_STATE loaded_state = Defined::RESOURCE_LOADED_STATE::UNLOAD;
+        Defined::LOAD_MODE load_mode = Defined::LOAD_MODE::IMMEDIATE;
+        Image inner_image = {};
+        bool is_loaded_texture = false;
     };
 
     struct RayLib_Trace_Draw_Command {
@@ -223,18 +235,71 @@ namespace Libs_Wrapper {
     /**Event key press handler information */
     std::map<Custom::Key, Key_Press_Detail> keys_detail;
 
-    RayLib_Texture_Info load_raylib_texture(std::string path) {
+    ThreadPool thread_pool{std::thread::hardware_concurrency()};
+    std::mutex resource_mutex;
+    /**
+     * @Note: one frame we load one async texture
+     * from image to make the game smooth!
+     */
+    bool is_load_texture_async_in_frame = false;
+
+    void load_async_texture(std::string path, RayLib_Texture_Info* info) {
+        Image image = LoadImage(path.data());
+        {
+            std::unique_lock<std::mutex>(resource_mutex);
+            info->loaded_state = Defined::RESOURCE_LOADED_STATE::LOADED;
+            info->info.state = info->loaded_state;
+            info->inner_image = image;
+        }
+    }
+
+    RayLib_Texture_Info load_raylib_texture(
+        std::string path, Defined::LOAD_MODE load_mode = Defined::LOAD_MODE::IMMEDIATE
+    ) {
         path = Utils::get_root_path() + path;
+
         if (rl_textures_storage.find(path) != rl_textures_storage.end()) {
-            RayLib_Texture_Info texture_info = rl_textures_storage[path];
+            RayLib_Texture_Info& texture_info = rl_textures_storage[path];
+            if (texture_info.load_mode != Defined::LOAD_MODE::ASYNC) {
+                return texture_info;
+            }
+            {
+                std::unique_lock<std::mutex>(resource_mutex);
+                if (texture_info.loaded_state == Defined::RESOURCE_LOADED_STATE::LOADED &&
+                    !texture_info.is_loaded_texture && !is_load_texture_async_in_frame) {
+                    texture_info.data = LoadTextureFromImage(texture_info.inner_image);
+                    texture_info.info = {
+                        (float)texture_info.data.width, (float)texture_info.data.height, texture_info.loaded_state
+                    };
+                    texture_info.is_loaded_texture = true;
+                    is_load_texture_async_in_frame = true;
+                }
+            }
             return texture_info;
         }
 
-        Texture2D texture = LoadTexture(path.data());
-        RayLib_Texture_Info texture_info{texture, {(float)texture.width, (float)texture.height}};
-        rl_textures_storage[path] = texture_info;
+        rl_textures_storage[path] = {};
+        rl_textures_storage[path].load_mode = load_mode;
+        if (load_mode == Defined::LOAD_MODE::IMMEDIATE) {
+            Texture2D texture = LoadTexture(path.data());
+            rl_textures_storage[path] = {
+                texture,
+                {(float)texture.width, (float)texture.height, Defined::RESOURCE_LOADED_STATE::LOADED},
+                Defined::RESOURCE_LOADED_STATE::LOADED
+            };
+            rl_textures_storage[path].is_loaded_texture = true;
+        } else {
+            rl_textures_storage[path].loaded_state = Defined::RESOURCE_LOADED_STATE::LOADING;
+            rl_textures_storage[path].info = {0.f, 0.f, rl_textures_storage[path].loaded_state};
+            thread_pool.enqueue(
+                [](std::string path, RayLib_Texture_Info* info) { load_async_texture(path, info); },
+                path,
+                &rl_textures_storage[path]
+            );
+            rl_textures_storage[path].is_loaded_texture = false;
+        }
 
-        return texture_info;
+        return rl_textures_storage[path];
     }
 
     Font load_raylib_font(std::string path) {
@@ -485,12 +550,16 @@ namespace Libs_Wrapper {
     }
 
     void draw_image(
-        std::string image_path, Custom::Draw_Attributes attributes, bool enable_force_color, Custom::Color force_color
+        std::string image_path,
+        Custom::Draw_Attributes attributes,
+        bool enable_force_color,
+        Custom::Color force_color,
+        Defined::LOAD_MODE load_mode
     ) {
         RayLib_Draw_Command command{
             RayLib_Draw_Type::IMAGE,
             attributes,
-            new RayLib_Draw_Image_Resource(image_path, enable_force_color, force_color)
+            new RayLib_Draw_Image_Resource(image_path, enable_force_color, force_color, load_mode)
         };
         rl_queue_commands.push(command);
     }
@@ -529,8 +598,8 @@ namespace Libs_Wrapper {
         rl_queue_commands.push(command);
     }
 
-    Image_Info image_info(std::string path) {
-        RayLib_Texture_Info texture_info = load_raylib_texture(path);
+    Image_Info image_info(std::string path, Defined::LOAD_MODE load_mode) {
+        RayLib_Texture_Info texture_info = load_raylib_texture(path, load_mode);
         return texture_info.info;
     }
 
@@ -602,6 +671,7 @@ namespace Libs_Wrapper {
         ClearBackground({230, 230, 230, 255});
         reload_shader();
 
+        is_load_texture_async_in_frame = false;
         while (!rl_queue_commands.empty()) {
             RayLib_Draw_Command command = rl_queue_commands.top();
             Custom::Draw_Attributes attributes = command.attributes;
@@ -629,7 +699,14 @@ namespace Libs_Wrapper {
                 case RayLib_Draw_Type::IMAGE: {
                     RayLib_Draw_Image_Resource* resource =
                         reinterpret_cast<RayLib_Draw_Image_Resource*>(command.resource);
-                    RayLib_Texture_Info texture_info = load_raylib_texture(resource->image_path);
+                    RayLib_Texture_Info texture_info = load_raylib_texture(resource->image_path, resource->load_mode);
+                    /**
+                     * If texture is not loaded success we ignore it to draw!
+                     */
+                    if (texture_info.loaded_state != Defined::RESOURCE_LOADED_STATE::LOADED) {
+                        command.clean();
+                        break;
+                    }
                     Texture2D texture = texture_info.data;
                     glm::vec2 rect_scale = attributes.rect_scale;
                     auto need_rounded_pixel = [&transform, &rect_scale]() {

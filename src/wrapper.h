@@ -1,5 +1,6 @@
 #pragma once
 #include <custom.h>
+#include <defined.h>
 
 #include <glm/glm.hpp>
 #include <iostream>
@@ -11,6 +12,7 @@
 
 struct Image_Info {
     Custom::Size size;
+    Defined::RESOURCE_LOADED_STATE state;
 };
 
 struct Text_Info {
@@ -36,7 +38,8 @@ namespace Libs_Wrapper {
         std::string image_path,
         Custom::Draw_Attributes attributes,
         bool enable_force_color = false,
-        Custom::Color force_color = {}
+        Custom::Color force_color = {},
+        Defined::LOAD_MODE load_mode = Defined::LOAD_MODE::IMMEDIATE
     );
 
     void draw_text(std::string font_path, std::string text, int font_size, Custom::Draw_Attributes attributes);
@@ -58,7 +61,7 @@ namespace Libs_Wrapper {
 
     void end_draw_clipping(int draw_index);
 
-    Image_Info image_info(std::string path);
+    Image_Info image_info(std::string path, Defined::LOAD_MODE load_mode = Defined::LOAD_MODE::IMMEDIATE);
 
     Text_Info text_info(std::string text, std::string font_path, int font_size);
 
