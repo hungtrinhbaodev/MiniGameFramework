@@ -133,7 +133,7 @@ namespace Meow_Meow {
          * Battle level config
          */
         const inline static int BATTLE_NUMBER_WAVE = 3;
-        const inline static std::vector<float> BATTLE_DURATION_GENERATE_ENEMY = {0, 120, 240};
+        const inline static std::vector<float> BATTLE_DURATION_GENERATE_ENEMY = {0, 30, 30};
         const inline static std::vector<int> BATTLE_NUMBER_ENEMY_GENEERATED = {3, 5, 5};
     };
 }  // namespace Meow_Meow

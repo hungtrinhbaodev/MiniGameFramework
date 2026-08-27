@@ -23,13 +23,13 @@ namespace Meow_Meow {
         Enemy_Data& get_enemy_data_by(int enemy_id);
         int get_current_battle_level();
         int get_current_battle_wave();
+        std::vector<int> get_new_enemies_id_generated();
 
         void set_current_battle_wave(int current_battle_wave);
         void set_battle_layer(Battle_Layer* battle_layer);
         void set_character(Character_Node* character);
-
+        void set_enemey_dead(int enemy_id);
         void generate_enemies_at(int wave);
-        std::vector<int> get_new_enemies_id_generated();
 
     private:
         static Global_Data* instance;

@@ -33,6 +33,7 @@ int main(void) {
         long current = Utils::now();
         float delta_time = (float)(current - start) / 1000;
         start = current;
+        Libs_Wrapper::start_frame();
         Director::get()->start_frame();
         Libs_Wrapper::handle_frame(delta_time);
         Director::get()->process_frame(delta_time);

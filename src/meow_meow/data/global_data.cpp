@@ -58,8 +58,15 @@ namespace Meow_Meow {
         this->character = character;
     }
 
+    void Global_Data::set_enemey_dead(int enemy_id) {
+        if (this->enemies.find(enemy_id) == this->enemies.end()) {
+            return;
+        }
+        this->enemies[enemy_id].set_dead(true);
+    }
+
     void Global_Data::generate_enemies_at(int wave) {
-        const Battle_Config& battle_config = this->get_config().get_battle_config_at(wave);
+        const Battle_Config& battle_config = this->get_config().get_battle_config_at(this->current_battle_level);
         const Enemy_Behavior_Config& enemy_behavior_config = this->get_config().get_enemy_behavior_config();
         const Character_Animation_Config& enemy_animation_config = this->get_config().get_enemy_animation_config();
         int number_generated_enemy_at_wave = battle_config.get_number_enemies_at(wave);
@@ -75,6 +82,7 @@ namespace Meow_Meow {
             };
             new_enemies_id_generated.push_back(enemy_id);
         }
+        std::cout << "WHAT is number_generated_enemy_at_wave 2 " << new_enemies_id_generated.size() << std::endl;
     }
 
     std::vector<int> Global_Data::get_new_enemies_id_generated() {

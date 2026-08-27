@@ -1,5 +1,7 @@
 #include <meow_meow/config/battle_config.h>
 
+#include <iostream>
+
 namespace Meow_Meow {
     Battle_Config::Battle_Config() {}
 
@@ -18,6 +20,7 @@ namespace Meow_Meow {
     }
 
     float Battle_Config::get_number_enemies_at(int wave) const {
+        std::cout << "What is my wave: " << wave << " " << this->number_enemies_generated.size() << std::endl;
         if (wave >= this->number_enemies_generated.size())
             return 0;
 

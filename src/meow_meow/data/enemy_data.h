@@ -20,10 +20,10 @@ namespace Meow_Meow {
         void set_dead(bool dead);
 
     private:
-        int enemy_id;
-        int enemy_animation_id;
-        float current_health;
-        float max_health;
-        bool dead;
+        int enemy_id = -1;
+        int enemy_animation_id = 0;
+        float current_health = 0.f;
+        float max_health = 0.f;
+        bool dead = false;
     };
 }  // namespace Meow_Meow

@@ -38,8 +38,10 @@ namespace Meow_Meow {
 
     void Battle_Layer::spawn_enemy(Enemy_Data emeny_data) {
         Enemy_Node* enemy = new Enemy_Node(emeny_data.get_enemy_id(), emeny_data.get_enemy_animation_id());
-        Custom::Size layer_size = this->get_content_size();
-        enemy->set_position({Math::random_float(0, layer_size.width), Math::random_float(0, layer_size.height)});
+        glm::vec2 charecter_position = this->character->get_position();
+        enemy->set_position(
+            charecter_position + glm::vec2{Math::random_float(-200, 200), Math::random_float(-150, 150)}
+        );
         this->add_child(enemy);
         this->enemies.push_back(enemy);
     }
