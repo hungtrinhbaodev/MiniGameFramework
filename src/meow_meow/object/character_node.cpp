@@ -381,7 +381,7 @@ namespace Meow_Meow {
                         dead_duration, sign_rotation * (100.f + Math::random_float(0, 30)), Action_Ease::SINE_IN
                     ),
                     Action::sequence(
-                        Action::delay(dead_duration / 2), Action::fade_to(dead_duration / 2, 125, Action_Ease::SINE_OUT)
+                        Action::delay(dead_duration / 2), Action::fade_to(dead_duration / 2, 200, Action_Ease::SINE_OUT)
                     )
                 ),
                 Action::hide(),

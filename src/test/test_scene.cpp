@@ -1,4 +1,6 @@
 #include <math_custom.h>
+#include <meow_meow/animation/character_animation.h>
+#include <meow_meow/data/global_data.h>
 #include <test/test_scene.h>
 
 #include "raylib.h"
@@ -177,6 +179,8 @@ Test_Scene::Test_Scene() {
     this->add_child(image);
     this->add_child(btn);
     sub_layer->add_child(progression);
+
+    this->add_key_press_listener(Custom::Key::V);
 }
 
 Test_Scene::~Test_Scene() {}
@@ -327,5 +331,28 @@ void Test_Scene::fix_update(float delta_time, void* global_data) {
         }
         animation_2->stop_action(5);
         animation_2->do_action(Action::move_by(0.2, {0, -50.f}, Action_Ease::LINEAR), 5);
+    }
+}
+
+void Test_Scene::on_key_pressed(Custom::Key key, Key_Press_Detail pressed_detail, void* global_data) {
+    Meow_Meow::Global_Data* data = reinterpret_cast<Meow_Meow::Global_Data*>(global_data);
+    auto& animation_config = data->get_config().get_enemy_animation_config();
+    switch (key) {
+        case Custom::Key::V: {
+            if (pressed_detail.type != Key_Input_Type::PRESSED)
+                break;
+            Meow_Meow::Character_Animation* animation =
+                new Meow_Meow::Character_Animation(animation_config.get_random_animation_id(), 1);
+            animation->set_position({Math::random_float(300, 800), Math::random_float(100, 300)});
+            animation->play_animation("WALK");
+            animation->do_action(
+                Action::sequence(
+                    Action::delay(Math::random_float(0, 0.35)),
+                    Action::call_func([animation](Base_Node*, void*) { animation->play_animation("IDLE"); })
+                )
+            );
+            this->add_child(animation);
+            break;
+        }
     }
 }

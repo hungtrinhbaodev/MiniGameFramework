@@ -113,6 +113,10 @@ void Animation_Node::flex_update(float delta_time) {
                 break;
             }
             default: {
+                if (current_frame <= 0) {
+                    set_image(current_image, Defined::IMMEDIATE);
+                    break;
+                }
                 Image_Info image_info = Libs_Wrapper::image_info(current_image, Defined::LOAD_MODE::ASYNC);
                 if (image_info.state != Defined::RESOURCE_LOADED_STATE::LOADED) {
                     current_image = this->get_image_path(0);

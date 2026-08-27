@@ -15,6 +15,7 @@ class Test_Scene : public Scene_Node {
 public:
     Test_Scene();
     ~Test_Scene();
+    void on_key_pressed(Custom::Key key, Key_Press_Detail pressed_detail, void* global_data) override;
 
 protected:
     void fix_update(float delta_time, void* global_data) override;

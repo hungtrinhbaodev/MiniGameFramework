@@ -26,7 +26,7 @@ namespace Meow_Meow {
         this->clipping_box = new Layer_Node();
         this->clipping_box->set_content_size(SIZE_BACKGROUND_BOX.width * 0.95, SIZE_BACKGROUND_BOX.height * 0.95);
         this->clipping_box->set_anchor({0.5, 0.5});
-        this->clipping_box->set_position({SIZE_BACKGROUND_BOX.width / 2, SIZE_BACKGROUND_BOX.height / 2 + 3});
+        this->clipping_box->set_position({SIZE_BACKGROUND_BOX.width / 2, SIZE_BACKGROUND_BOX.height / 2 + 5});
         this->clipping_box->set_clipping(true);
         this->background_character->add_child(this->clipping_box);
 
