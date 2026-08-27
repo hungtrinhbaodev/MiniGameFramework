@@ -20,11 +20,21 @@ namespace Meow_Meow {
         this->init_progression_health();
     }
 
+    Enemy_Node::Enemy_Node(int enemy_id, int enemy_character_id) : Enemy_Node() {
+        this->enemy_id = enemy_id;
+        this->enemy_animation->set_character_id(enemy_character_id);
+        this->enemy_animation->set_character_level(1);
+    }
+
     Enemy_Node::~Enemy_Node() {
         Collision_Component* collision =
             Utils::get_component<Collision_Component>(this, Defined::COMPONENT_COLLISION_NAME);
         Enemy_Collision_Data* data = Utils::get_collision_owner_data<Enemy_Collision_Data>(collision);
         delete (data);
+    }
+
+    int Enemy_Node::get_enemy_id() {
+        return this->enemy_id;
     }
 
     Custom::Transformed_Rectangle Enemy_Node::get_bounding_box(void* global_data) {
@@ -68,9 +78,7 @@ namespace Meow_Meow {
     }
 
     void Enemy_Node::init_enemy_animation() {
-        this->enemy_animation = new Character_Animation(this->enemy_animation_id, 1);
-        this->enemy_animation->set_character_id(this->enemy_animation_id);
-        this->enemy_animation->set_name("debug");
+        this->enemy_animation = new Character_Animation();
         this->container->add_child(this->enemy_animation);
     }
 
@@ -127,7 +135,6 @@ namespace Meow_Meow {
         Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
 
         const Enemy_Behavior_Config& behavior_config = data->get_config().get_enemy_behavior_config();
-        this->current_health = behavior_config.get_enemy_health();
         this->progression_health->set_percent(100);
 
         Collision_Component* collision =
@@ -170,14 +177,19 @@ namespace Meow_Meow {
         Utils::reset_to_origin(this->progression_health);
         this->progression_health->stop_action(HITTED_ACTION_TAG);
         this->progression_health->do_action(Action::sequence(Action::delay(0), Action::fade_out(0.2), Action::hide()));
-        this->enemy_animation->on_finish_animation_callback("DEAD", [this](Animation_Node*, void*) {
-            this->remove_from_parent();
+        this->enemy_animation->on_finish_animation_callback("DEAD", [this](Animation_Node*, void* global_data) {
+            Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
+            Battle_Layer* battle_layer = data->get_battle_layer();
+            if (battle_layer == nullptr)
+                return;
+            battle_layer->remove_enemy_by(this->get_enemy_id());
         });
     }
 
     void Enemy_Node::change_to_hitted(void* global_data, float damage_take, Const::DIRECTION bullet_direction) {
         Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
         const Enemy_Behavior_Config& behavior_config = data->get_config().get_enemy_behavior_config();
+        Enemy_Data& enemy_data = data->get_enemy_data_by(this->get_enemy_id());
 
         State_Machine_Component* state_machine =
             Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
@@ -191,9 +203,11 @@ namespace Meow_Meow {
             Utils::reset_to_origin(this->container);
         }
 
-        float max_health = behavior_config.get_enemy_health();
-        this->current_health = std::max(this->current_health - damage_take, 0.f);
-        float percent = (this->current_health / max_health) * 100;
+        float max_health = enemy_data.get_max_health();
+        float current_health = enemy_data.get_current_health();
+        current_health = std::max(current_health - damage_take, 0.f);
+        float percent = (current_health / max_health) * 100;
+        enemy_data.set_current_health(current_health);
 
         this->action_enemy_hitted(0, behavior_config.get_enemy_attacked_duration(), bullet_direction, percent);
 

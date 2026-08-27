@@ -1,4 +1,5 @@
 #pragma once
+#include <meow_meow/config/battle_config.h>
 #include <meow_meow/config/bullet_behavior_config.h>
 #include <meow_meow/config/character_animation_config.h>
 #include <meow_meow/config/character_behavior_config.h>
@@ -20,6 +21,7 @@ namespace Meow_Meow {
         const Enemy_Behavior_Config& get_enemy_behavior_config() const;
         const Character_Behavior_Config& get_character_behavior_config() const;
         const Bullet_Behavior_Config& get_bullet_behavior_config() const;
+        const Battle_Config& get_battle_config_at(int level) const;
         std::string get_character_name(int character_id) const;
         std::vector<int> get_character_ids() const;
 
@@ -36,7 +38,7 @@ namespace Meow_Meow {
         };
         Character_Animation_Config enemy_animation_config{
             Const::BASE_ENEMY_ID,
-            Const::NUMBER_ENEMY,
+            Const::NUMBER_ANIMATION_ENEMY,
             Const::ENEMY_DEFAULT_PATH,
             Const::ENEMY_ANIMATION_NAMES,
             Const::ENEMY_ANIMATION_FOLDER_NAMES,
@@ -76,6 +78,9 @@ namespace Meow_Meow {
         Bullet_Behavior_Config bullet_behavior_config{
             Const::BULLET_VELOSITY, Const::BULLET_ACCELARATE, Const::BULLET_BOUNDING_BOX
         };
+
+        Battle_Config default_battle_config{};
+        std::vector<Battle_Config> battle_levels;
     };
 
 }  // namespace Meow_Meow

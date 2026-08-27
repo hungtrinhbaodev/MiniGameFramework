@@ -7,7 +7,10 @@ namespace Meow_Meow {
     class Enemy_Node : public Game_Object {
     public:
         Enemy_Node();
+        Enemy_Node(int enemy_id, int enemy_character_id);
         ~Enemy_Node();
+
+        int get_enemy_id();
 
     protected:
         Custom::Transformed_Rectangle get_bounding_box(void* global_data) override;
@@ -46,13 +49,13 @@ namespace Meow_Meow {
         void action_enemy_jump(float delay, float duration, glm::vec2 character_position);
         void action_enemy_hitted(float delay, float duration, Const::DIRECTION bullet_direction, float percent_health);
 
-        int enemy_animation_id = Const::BASE_ENEMY_ID + 1;
         Character_Animation* enemy_animation = nullptr;
         Image_UI_Node* attacked_image = nullptr;
         Node* container = nullptr;
         Progression_Node* progression_health = nullptr;
         glm::vec2 velosity{0.f, 0.f};
 
+        int enemy_id = 0;
         float current_health = 0.f;
     };
 }  // namespace Meow_Meow

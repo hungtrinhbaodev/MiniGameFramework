@@ -1,3 +1,4 @@
+#include <meow_meow/config/battle_config.h>
 #include <meow_meow/data/global_data.h>
 
 namespace Meow_Meow {
@@ -22,12 +23,31 @@ namespace Meow_Meow {
         return this->battle_layer;
     }
 
-    Character_Node* Global_Data::get_character() {
+    Character_Node* Global_Data::get_character_node() {
         return this->character;
     }
 
     Player_Data& Global_Data::get_player_data() {
         return this->player_data;
+    }
+
+    Enemy_Data& Global_Data::get_enemy_data_by(int enemy_id) {
+        if (this->enemies.find(enemy_id) == this->enemies.end()) {
+            return default_enemy;
+        }
+        return this->enemies[enemy_id];
+    }
+
+    int Global_Data::get_current_battle_level() {
+        return this->current_battle_level;
+    }
+
+    int Global_Data::get_current_battle_wave() {
+        return this->current_battle_wave;
+    }
+
+    void Global_Data::set_current_battle_wave(int current_battle_wave) {
+        this->current_battle_wave = current_battle_wave;
     }
 
     void Global_Data::set_battle_layer(Battle_Layer* battle_layer) {
@@ -36,6 +56,29 @@ namespace Meow_Meow {
 
     void Global_Data::set_character(Character_Node* character) {
         this->character = character;
+    }
+
+    void Global_Data::generate_enemies_at(int wave) {
+        const Battle_Config& battle_config = this->get_config().get_battle_config_at(wave);
+        const Enemy_Behavior_Config& enemy_behavior_config = this->get_config().get_enemy_behavior_config();
+        const Character_Animation_Config& enemy_animation_config = this->get_config().get_enemy_animation_config();
+        int number_generated_enemy_at_wave = battle_config.get_number_enemies_at(wave);
+        new_enemies_id_generated.clear();
+        for (int i = 0; i < number_generated_enemy_at_wave; i++) {
+            int enemy_id = current_enemy_generated_id++;
+            this->enemies[enemy_id] = {
+                enemy_id,
+                enemy_animation_config.get_random_animation_id(),
+                enemy_behavior_config.get_enemy_health(),
+                enemy_behavior_config.get_enemy_health(),
+                false
+            };
+            new_enemies_id_generated.push_back(enemy_id);
+        }
+    }
+
+    std::vector<int> Global_Data::get_new_enemies_id_generated() {
+        return this->new_enemies_id_generated;
     }
 
     void Global_Data::clear() {

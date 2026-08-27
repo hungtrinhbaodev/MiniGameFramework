@@ -1,4 +1,6 @@
+#include <math_custom.h>
 #include <meow_meow/config/character_animation_config.h>
+
 namespace Meow_Meow {
 
     std::string Character_Animation_Information::get_full_path(int level) const {
@@ -86,6 +88,10 @@ namespace Meow_Meow {
             }
         }
         return animations;
+    }
+
+    int Character_Animation_Config::get_random_animation_id() const {
+        return CHARACTER_IDS[Math::random_int(0, CHARACTER_IDS.size() - 1)];
     }
 
 }  // namespace Meow_Meow

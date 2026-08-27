@@ -15,6 +15,9 @@ namespace Meow_Meow {
     public:
         enum DIRECTION { LEFT, RIGHT, UP, DOWN, NONE /** Don't update with NONE state */ };
 
+        /**
+         * Character animation
+         */
         const inline static int BASE_CHARACTER_ID = 0;
         const inline static int NUMBER_CHARACTER = 3;
         const inline static Const_Character_Information MEOW_FANCY{0, "FANCY MEOW"};
@@ -31,15 +34,23 @@ namespace Meow_Meow {
         };
         const inline static Custom::Size CHARACTER_BOUNDING_BOX = {100, 120};
 
+        /**
+         * Enemy animation
+         */
         const inline static int BASE_ENEMY_ID = 1000;
-        const inline static int NUMBER_ENEMY = 8;
+        const inline static int NUMBER_ANIMATION_ENEMY = 8;
         const inline static std::string ENEMY_DEFAULT_PATH = "res/meow_meow/Enemies/Enemy Reg ";
         const inline static std::vector<std::string> ENEMY_ANIMATION_NAMES = {"IDLE", "ATTACK", "DEAD", "WALK"};
         const inline static std::vector<std::string> ENEMY_ANIMATION_FOLDER_NAMES = {"Idle", "Attack", "Dead", "Walk"};
         const inline static std::vector<int> ENEMY_ANIMATION_NUMBER_FRAMES = {20, 25, 60, 35};
         const inline static std::vector<float> ENEMY_ANIMATION_DURATION_PER_FRAMES = {0.04, 0.04, 0.03, 0.03};
-        const inline static std::vector<int> ENEMY_MAX_LEVELS = std::vector<int>(NUMBER_ENEMY, 1);
+        const inline static std::vector<int> ENEMY_MAX_LEVELS = std::vector<int>(NUMBER_ANIMATION_ENEMY, 1);
         const inline static Custom::Size ENEMY_BOUNDING_BOX = {120, 140};
+
+        /**
+         * Shoot animation
+         */
+        const inline static int SHOOT_ANIMATION_NODE_TAG = 0;
 
         /**
          * State machine config to character
@@ -63,11 +74,6 @@ namespace Meow_Meow {
         const inline static Custom::Size BULLET_BOUNDING_BOX = {50, 30};
         const inline static float BULLET_VELOSITY = 700;
         const inline static float BULLET_ACCELARATE = 5;
-
-        /**
-         * Shoot animation
-         */
-        const inline static int SHOOT_ANIMATION_NODE_TAG = 0;
 
         /**
          * Collision
@@ -122,5 +128,12 @@ namespace Meow_Meow {
          * Custom component name
          */
         const inline static std::string ENEMY_BEHAVIOR_COMPONENT_NAME = "ENEMY_BEHAVIOR_COMPONENT";
+
+        /**
+         * Battle level config
+         */
+        const inline static int BATTLE_NUMBER_WAVE = 3;
+        const inline static std::vector<float> BATTLE_DURATION_GENERATE_ENEMY = {0, 120, 240};
+        const inline static std::vector<int> BATTLE_NUMBER_ENEMY_GENEERATED = {3, 5, 5};
     };
 }  // namespace Meow_Meow

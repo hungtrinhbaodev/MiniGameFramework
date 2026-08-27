@@ -12,9 +12,13 @@ namespace Meow_Meow {
 
     protected:
         void attach(void* global_data) override;
+        void fix_update(float delta_time, void* global_data) override;
 
     private:
         Battle_Layer* battle_layer = nullptr;
         Layer_Stats* stats_layer = nullptr;
+        float battle_countdown_wave = 0.f;
+
+        void generate_new_enemies_wave(void* global_data);
     };
 }  // namespace Meow_Meow

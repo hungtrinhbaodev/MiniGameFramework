@@ -36,6 +36,7 @@ namespace Meow_Meow {
 
         Character_Animation_Information get_config(int character_id, std::string animation_name) const;
         std::vector<Character_Animation_Information> get_character_animations(int character_id) const;
+        int get_random_animation_id() const;
 
     private:
         int BASE_CHARACTER_ID;

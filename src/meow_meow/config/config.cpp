@@ -1,7 +1,11 @@
 #include <meow_meow/config/config.h>
 
 namespace Meow_Meow {
-    Config::Config() {}
+    Config::Config() {
+        this->battle_levels.push_back(
+            {Const::BATTLE_NUMBER_WAVE, Const::BATTLE_DURATION_GENERATE_ENEMY, Const::BATTLE_NUMBER_ENEMY_GENEERATED}
+        );
+    }
 
     Config::~Config() {}
 
@@ -28,6 +32,13 @@ namespace Meow_Meow {
 
     const Bullet_Behavior_Config& Config::get_bullet_behavior_config() const {
         return this->bullet_behavior_config;
+    }
+
+    const Battle_Config& Config::get_battle_config_at(int level) const {
+        if (level >= this->battle_levels.size()) {
+            return this->default_battle_config;
+        }
+        return this->battle_levels[level];
     }
 
     std::string Config::get_character_name(int character_id) const {

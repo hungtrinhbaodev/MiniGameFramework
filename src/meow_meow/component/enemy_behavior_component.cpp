@@ -41,7 +41,7 @@ namespace Meow_Meow {
     void Enemy_Behavior_Component::handle_task(Base_Node* target, float delta_time, void* global_data) {
         Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
         Enemy_Behavior_Config behavior_config = data->get_config().get_enemy_behavior_config();
-        Character_Node* character = data->get_character();
+        Character_Node* character = data->get_character_node();
 
         glm::vec2 enemy_position = target->get_position();
         glm::vec2 character_position = character->get_position();
@@ -79,7 +79,7 @@ namespace Meow_Meow {
     void Enemy_Behavior_Component::update_information(Base_Node* target, float delta_time, void* global_data) {
         Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
         Enemy_Behavior_Config behavior_config = data->get_config().get_enemy_behavior_config();
-        Character_Node* character = data->get_character();
+        Character_Node* character = data->get_character_node();
 
         if (this->is_attack_countdown) {
             this->attack_countdown += delta_time;
