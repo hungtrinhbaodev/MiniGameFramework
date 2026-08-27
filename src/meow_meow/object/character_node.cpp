@@ -50,10 +50,6 @@ namespace Meow_Meow {
 
     Character_Node::~Character_Node() {}
 
-    void Character_Node::set_character_animation_id(int character_animation_id) {
-        this->character_animation_id = character_animation_id;
-    }
-
     void Character_Node::init_character_animation() {
         this->character_animation = new Character_Animation(0, 2);
         this->container->add_child(this->character_animation);
@@ -268,9 +264,9 @@ namespace Meow_Meow {
         Battle_Layer* battle_layer = data->get_battle_layer();
         if (!battle_layer)
             return;
-
-        Bullet_Node* bullet =
-            new Bullet_Node(this->character_animation_id, this->horizontal_direction, player_data.get_player_damage());
+        Bullet_Node* bullet = new Bullet_Node(
+            player_data.get_character_animation_id(), this->horizontal_direction, player_data.get_player_damage()
+        );
         float sign_x = horizontal_direction == Const::DIRECTION::LEFT ? -1 : 1;
         glm::vec2 fire_position = this->get_position() + glm::vec2{sign_x, 1} * DELTA_POSITION_BULLET;
         bullet->set_position(fire_position);

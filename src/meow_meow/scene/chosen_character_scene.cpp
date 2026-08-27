@@ -3,6 +3,7 @@
 #include <math.h>
 #include <math_custom.h>
 #include <meow_meow/data/global_data.h>
+#include <meow_meow/scene/battle_scene.h>
 #include <meow_meow/scene/chosen_character_scene.h>
 #include <meow_meow/utils.h>
 #include <test/test_scene.h>
@@ -103,7 +104,14 @@ namespace Meow_Meow {
         btn_start = Button_Node::make(
             "res/meow_meow/BtnGreen.png",
             "START!",
-            [](Button_Node* btn, void* global_data) { Director::get()->change_scene(new Test_Scene(), nullptr); },
+            [this](Button_Node* btn, void* global_data) {
+                Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
+                Player_Data& player_data = data->get_player_data();
+                auto config = data->get_config();
+                std::vector<int> character_ids = config.get_character_ids();
+                player_data.set_character_animation_id(character_ids[this->current_character_index]);
+                Director::get()->change_scene(new Battle_Scene(), global_data);
+            },
             {180, 70},
             {30, 20, 280, 82},
             {20, 20, 20},

@@ -10,8 +10,6 @@ namespace Meow_Meow {
         Character_Node();
         ~Character_Node();
 
-        void set_character_animation_id(int character_animation_id);
-
     protected:
         void fix_update(float delta_time, void* global_data) override;
         void attach(void* global_data) override;
@@ -57,7 +55,6 @@ namespace Meow_Meow {
         void action_character_invincible(float delay, float duration);
         void action_character_dead(float delay, float dead_duration);
 
-        int character_animation_id = 0;
         Character_Animation* character_animation = nullptr;
         Image_UI_Node* attacked_image = nullptr;
         /**
