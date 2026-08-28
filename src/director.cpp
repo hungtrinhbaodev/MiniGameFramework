@@ -59,6 +59,10 @@ void Director::end() {
     }
 }
 
+Scene_Node* Director::get_current_scene() {
+    return this->running_scene;
+}
+
 Base_Node* Director::get_running_scene_background() {
     if (this->running_scene == nullptr) {
         return nullptr;

@@ -15,6 +15,7 @@ public:
     void process_frame(float delta_time);
     void end_frame();
     void end();
+    Scene_Node* get_current_scene();
 
     Base_Node* get_running_scene_background();
 

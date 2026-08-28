@@ -24,8 +24,8 @@ int main(void) {
      * a smooth flow to entry better!
      * */
     // Director::get()->start(new Image_Test_Scene(), nullptr);
-    Director::get()->start(new Meow_Meow::Loading_Scene(), Meow_Meow::Global_Data::get());
-    // Director::get()->start(new Meow_Meow::Battle_Scene(), Meow_Meow::Global_Data::get());
+    // Director::get()->start(new Meow_Meow::Loading_Scene(), Meow_Meow::Global_Data::get());
+    Director::get()->start(new Meow_Meow::Battle_Scene(), Meow_Meow::Global_Data::get());
     // Director::get()->start(new Test_Scene(), Meow_Meow::Global_Data::get());
 
     long start = Utils::now();

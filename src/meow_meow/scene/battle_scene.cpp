@@ -13,6 +13,7 @@ namespace Meow_Meow {
         this->stats_layer = new Layer_Stats();
         this->stats_layer->set_position({0.f, 0.f});
         this->add_child(this->stats_layer);
+        this->set_name("debug");
     }
 
     Battle_Scene::~Battle_Scene() {}
