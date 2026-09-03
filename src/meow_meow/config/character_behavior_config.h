@@ -46,6 +46,6 @@ namespace Meow_Meow {
         Custom::Size bounding_box = {0.f, 0.f};
         float max_health = 0.f;
         float damage = 0.f;
-        float dead_duration;
+        float dead_duration = 0.f;
     };
 }  // namespace Meow_Meow

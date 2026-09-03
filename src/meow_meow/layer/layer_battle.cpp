@@ -6,6 +6,7 @@ namespace Meow_Meow {
     Battle_Layer::Battle_Layer() {
         this->init_bg();
         this->init_character();
+        this->init_effect_layer();
     }
 
     Battle_Layer::~Battle_Layer() {}
@@ -30,10 +31,29 @@ namespace Meow_Meow {
         );
     }
 
+    void Battle_Layer::init_effect_layer() {
+        this->effect_layer = new Layer_Node();
+        this->effect_layer->set_content_size(this->get_content_size());
+        this->effect_layer->set_z_order(1);
+        this->add_child(this->effect_layer);
+    }
+
     void Battle_Layer::show_label_attacked(float delay, float damage, glm::vec2 position) {}
 
     Image_Node* Battle_Layer::get_bg() {
         return this->bg;
+    }
+
+    Character_Node* Battle_Layer::get_character_node() {
+        return this->character;
+    }
+
+    Layer_Node* Battle_Layer::get_effect_layer() {
+        return this->effect_layer;
+    }
+
+    std::vector<Enemy_Node*>& Battle_Layer::get_enemy_nodes() {
+        return this->enemies;
     }
 
     void Battle_Layer::spawn_enemy(Enemy_Data emeny_data) {
@@ -55,10 +75,5 @@ namespace Meow_Meow {
                 i--;
             }
         }
-    }
-
-    void Battle_Layer::attach(void* global_data) {
-        Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
-        data->set_character(this->character);
     }
 }  // namespace Meow_Meow

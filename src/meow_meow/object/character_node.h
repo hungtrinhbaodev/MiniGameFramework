@@ -10,6 +10,8 @@ namespace Meow_Meow {
         Character_Node();
         ~Character_Node();
 
+        bool is_moving_at_direction(Const::DIRECTION direction);
+
     protected:
         void fix_update(float delta_time, void* global_data) override;
         void attach(void* global_data) override;
@@ -20,17 +22,21 @@ namespace Meow_Meow {
     private:
         const int ACTION_HITTED_TAG = 0;
         const int ACTION_INVINCIBLE_TAG = 1;
+        const int ACTION_DASHING_TAG = 2;
 
         const unsigned char ORIGIN_ATTACKED_IMAGE_OPACITY = 100;
         const int NUMBER_FADE_IN_INVINCIBLE_STATE = 3;
         const unsigned char INVISIBLE_OPACITY = 120;
-        glm::vec2 DELTA_POSITION_BULLET = glm::vec2(18, -12);
+        const glm::vec2 DELTA_POSITION_BULLET = glm::vec2(18, -12);
+        const glm::vec2 LEVEL_UP_POSITION = glm::vec2(0, 50);
+        const glm::vec2 ORIGIN_SCALE_CHANNELLING_ANIMATION = glm::vec2(1.5f, 1.5f);
 
         void init_container();
         void init_components();
         void init_character_animation();
         void init_attacked_image();
 
+        void handle_level_up(void* global_data);
         void handle_collision(float delta_time, void* global_data);
         void handle_key_board(float delta_time, void* global_data);
         void handle_state_machine(float delta_time, void* global_data);
@@ -39,7 +45,6 @@ namespace Meow_Meow {
         void sync_attacked_image();
         void sync_player_data(void* global_data);
 
-        bool is_moving_at_direction(Const::DIRECTION direction);
         glm::vec2 get_direction();
 
         void change_to_move(
@@ -50,10 +55,15 @@ namespace Meow_Meow {
         void change_to_hitted(float damage, glm::vec2 enemy_direction, void* global_data);
         void change_to_invincible(void* global_data);
         void change_to_dead(void* global_data);
+        void change_to_dash(void* global_data);
+        void change_to_using_thunder_skill(void* global_data);
 
         void action_character_hitted(float delay, float duration_hitted, glm::vec2 enemy_direction);
         void action_character_invincible(float delay, float duration);
         void action_character_dead(float delay, float dead_duration);
+        void action_character_level_up(float delay);
+        void action_character_dashing(float delay, float dash_duration, float dash_distance);
+        void action_character_channelling_skill_thunder(float delay, float duration);
 
         Character_Animation* character_animation = nullptr;
         Image_UI_Node* attacked_image = nullptr;

@@ -46,6 +46,39 @@ namespace Meow_Meow {
         return this->current_battle_wave;
     }
 
+    std::vector<int> Global_Data::get_new_enemies_id_generated() {
+        return this->new_enemies_id_generated;
+    }
+
+    Layer_Node* Global_Data::get_effect_layer() {
+        return this->effect_layer;
+    }
+
+    bool Global_Data::is_character_level_up() {
+        int current_exp = player_data.get_current_exp();
+        int current_level = player_data.get_character_level();
+        const Character_Level_Config& level_config = this->config.get_character_level_config();
+        if (current_level >= level_config.get_number_max_level()) {
+            return false;
+        }
+        int exp_required = level_config.get_exp_next_level(current_level);
+        return current_exp >= exp_required;
+    }
+
+    void Global_Data::character_level_up() {
+        if (!is_character_level_up())
+            return;
+        int current_exp = player_data.get_current_exp();
+        int current_level = player_data.get_character_level();
+        const Character_Level_Config& level_config = this->config.get_character_level_config();
+        int exp_required = level_config.get_exp_next_level(current_level);
+        this->player_data.set_chracter_level(++current_level);
+        this->player_data.set_current_exp(current_exp % exp_required);
+        this->player_data.set_player_damage(
+            this->player_data.get_player_damage() + level_config.get_bonus_damage_at_level(current_level)
+        );
+    }
+
     void Global_Data::set_current_battle_wave(int current_battle_wave) {
         this->current_battle_wave = current_battle_wave;
     }
@@ -65,6 +98,10 @@ namespace Meow_Meow {
         this->enemies[enemy_id].set_dead(true);
     }
 
+    void Global_Data::set_effect_layer(Layer_Node* layer) {
+        this->effect_layer = layer;
+    }
+
     void Global_Data::generate_enemies_at(int wave) {
         const Battle_Config& battle_config = this->get_config().get_battle_config_at(this->current_battle_level);
         const Enemy_Behavior_Config& enemy_behavior_config = this->get_config().get_enemy_behavior_config();
@@ -82,11 +119,6 @@ namespace Meow_Meow {
             };
             new_enemies_id_generated.push_back(enemy_id);
         }
-        std::cout << "WHAT is number_generated_enemy_at_wave 2 " << new_enemies_id_generated.size() << std::endl;
-    }
-
-    std::vector<int> Global_Data::get_new_enemies_id_generated() {
-        return this->new_enemies_id_generated;
     }
 
     void Global_Data::clear() {

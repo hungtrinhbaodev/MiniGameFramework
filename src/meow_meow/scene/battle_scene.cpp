@@ -13,7 +13,6 @@ namespace Meow_Meow {
         this->stats_layer = new Layer_Stats();
         this->stats_layer->set_position({0.f, 0.f});
         this->add_child(this->stats_layer);
-        this->set_name("debug");
     }
 
     Battle_Scene::~Battle_Scene() {}
@@ -21,6 +20,8 @@ namespace Meow_Meow {
     void Battle_Scene::attach(void* global_data) {
         Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
         data->set_battle_layer(this->battle_layer);
+        data->set_character(this->battle_layer->get_character_node());
+        data->set_effect_layer(this->battle_layer->get_effect_layer());
 
         const Character_Behavior_Config& behavior_config = data->get_config().get_character_behavior_config();
         Player_Data& player_data = data->get_player_data();

@@ -10,7 +10,7 @@
 class Base_Node {
 public:
     Base_Node();
-    ~Base_Node();
+    virtual ~Base_Node();
 
     /**Get type of node to cast when needed */
     virtual Node_Type get_type();

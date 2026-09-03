@@ -72,9 +72,6 @@ namespace Meow_Meow {
 
     void Bullet_Node::handle_boundary(void* global_data) {
         this->remove_from_parent();
-        if (this->velosity <= 0) {
-            this->remove_from_parent();
-        }
     }
 
     void Bullet_Node::init_image_bullet() {

@@ -6,7 +6,7 @@
 class Base_Component {
 public:
     Base_Component();
-    ~Base_Component();
+    virtual ~Base_Component();
 
     std::string get_name();
     bool is_setup();

@@ -24,12 +24,16 @@ namespace Meow_Meow {
         int get_current_battle_level();
         int get_current_battle_wave();
         std::vector<int> get_new_enemies_id_generated();
+        Layer_Node* get_effect_layer();
+        bool is_character_level_up();
 
         void set_current_battle_wave(int current_battle_wave);
         void set_battle_layer(Battle_Layer* battle_layer);
         void set_character(Character_Node* character);
         void set_enemey_dead(int enemy_id);
+        void set_effect_layer(Layer_Node* layer);
         void generate_enemies_at(int wave);
+        void character_level_up();
 
     private:
         static Global_Data* instance;
@@ -47,5 +51,6 @@ namespace Meow_Meow {
 
         Battle_Layer* battle_layer = nullptr;
         Character_Node* character = nullptr;
+        Layer_Node* effect_layer = nullptr;
     };
 }  // namespace Meow_Meow

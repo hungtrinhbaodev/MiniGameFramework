@@ -86,6 +86,7 @@ namespace Meow_Meow {
         if (this->current_level != player_data.get_character_level()) {
             this->character_animation->set_character_level(player_data.get_character_level());
             this->character_animation->play_animation("IDLE");
+            this->current_level = player_data.get_character_level();
         }
         this->label_damage->set_text("Damage: " + std::to_string((int)(player_data.get_player_damage())));
         this->label_level->set_text("Level: " + std::to_string(player_data.get_character_level()));

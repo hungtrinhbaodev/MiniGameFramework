@@ -29,6 +29,10 @@ namespace Meow_Meow {
         return this->dead;
     }
 
+    int Player_Data::get_current_exp() {
+        return this->exp;
+    }
+
     void Player_Data::set_character_animation_id(int id) {
         this->character_animation_id = id;
     }
@@ -51,5 +55,9 @@ namespace Meow_Meow {
 
     void Player_Data::set_dead(bool dead) {
         this->dead = dead;
+    }
+
+    void Player_Data::set_current_exp(int current_exp) {
+        this->exp = current_exp;
     }
 }  // namespace Meow_Meow

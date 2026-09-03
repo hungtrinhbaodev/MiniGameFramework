@@ -7,9 +7,9 @@ namespace Meow_Meow {
     Explosion_Animation::Explosion_Animation(glm::vec2 explosion_position) {
         this->make_animation(
             "EXPLOSION",
-            "res/meow_meow/Explosion/ExplosionFx-Explossion_",
-            20,
-            0.05,
+            ANIMATION_IMAGE_PATH,
+            NUMBER_ANIMATION_FRAME,
+            DURATION_ANIMATION_LOOP,
             Animation_Node::ANIMATION_LOAD_MODE::ASYNC
         );
         this->on_finish_animation_callback("EXPLOSION", [](Base_Node* target, void* global_data) {

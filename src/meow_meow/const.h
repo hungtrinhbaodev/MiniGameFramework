@@ -66,6 +66,9 @@ namespace Meow_Meow {
         const inline static std::string STATE_INVINCIBLE = "INVINCIBLE";
         const inline static std::string STATE_UNEFFECTED = "UNEFFECTED";
         const inline static std::string STATE_DEATH = "DEATH";
+        const inline static std::string STATE_DASHING = "DASHING";
+        const inline static std::string STATE_SKILL_CHANNELLING = "DASHING";
+        const inline static std::string STATE_STUN = "STUN";
 
         /**
          * Bullet
@@ -113,6 +116,7 @@ namespace Meow_Meow {
         const inline static float ENEMY_ATTACKED_DURATION = 0.35f;
         const inline static float ENEMY_ATTACKED_VELOSITY = 20.f;
         const inline static float ENEMY_HEALTH = 250.f;
+        const inline static float ENEMY_KILLED_EXP = 15;
 
         /**
          * Progression health bar
@@ -135,5 +139,29 @@ namespace Meow_Meow {
         const inline static int BATTLE_NUMBER_WAVE = 3;
         const inline static std::vector<float> BATTLE_DURATION_GENERATE_ENEMY = {0, 30, 40};
         const inline static std::vector<int> BATTLE_NUMBER_ENEMY_GENEERATED = {3, 5, 5};
+
+        /**
+         * Character level config
+         */
+        const inline static int CHARACTER_MAX_LEVEL_NUMBER = 5;
+        const inline static std::vector<int> EXP_AT_LEVELS = {0, 30, 45, 70, 100};
+        const inline static std::vector<float> DAMAGE_BONUS_AT_LEVELS = {0.f, 15.f, 15.f, 20.f, 25.f};
+
+        /**
+         * Character skill config
+         */
+        const inline static std::string CHARACTER_SKILL_DASH_COMPONENT_NAME = "SKILL_DASH_COMPONENT";
+        const inline static std::string CHARACTER_SKILL_DASH_ID = "SKILL_DASH";
+        const inline static float CHARACTER_SKILL_DASH_COUNTDOWN = 2.5f;
+        const inline static float CHARACTER_SKILL_DASH_DURATION = 0.5f;
+        const inline static float CHARACTER_SKILL_DASH_DISTANCE = 300.f;
+        const inline static std::string CHARACTER_SKILL_THUNDER_COMPONENT_NAME = "SKILL_THURNDER_COMPONENT";
+        const inline static std::string CHARACTER_SKILL_THUNDER_ID = "SKILL_THUNDER";
+        const inline static float CHARACTER_SKILL_THUNDER_COUNTDOWN = 8.f;
+        const inline static float CHARACTER_SKILL_THUNDER_DAMAGE_TAKEN = 50.f;
+        const inline static float CHARACTER_SKILL_THUNDER_DURATION_STUN = 1.75f;
+        const inline static float CHARACTER_SKILL_THUNDER_TAKEN_RADIUS = 250.f;
+        const inline static int CHARACTER_SKILL_THUNDER_NUMBER_TAKEN = 3;
+        const inline static float CHARACTER_SKILL_THUNDER_CHANNELLING_DURATION = 0.35f;
     };
 }  // namespace Meow_Meow

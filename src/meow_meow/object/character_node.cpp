@@ -1,8 +1,14 @@
 #include <actions.h>
 #include <collision_component.h>
 #include <defined.h>
+#include <label_node.h>
 #include <math_custom.h>
+#include <meow_meow/animation/character_channelling_animation.h>
+#include <meow_meow/animation/level_up_flame_animation.h>
 #include <meow_meow/animation/shoot_animation.h>
+#include <meow_meow/component/character_skill_dash_component.h>
+#include <meow_meow/component/character_skill_thunder_component.h>
+#include <meow_meow/config/character_skill_dash_config.h>
 #include <meow_meow/data/enemy_collision_data.h>
 #include <meow_meow/data/global_data.h>
 #include <meow_meow/layer/layer_battle.h>
@@ -14,28 +20,50 @@
 namespace Meow_Meow {
 
     bool is_character_attacking(State_Machine_Component* state_machine_component) {
-        return state_machine_component->get_current_state_at(Const::TRACK_CONTROLL) == Const::STATE_ATTACK &&
-               !state_machine_component->is_finish_state_at(Const::TRACK_CONTROLL);
+        return state_machine_component->get_current_state_at(Const::TRACK_CONTROLL) == Const::STATE_ATTACK;
     }
 
     bool is_character_attacked(State_Machine_Component* state_machine_component) {
-        return state_machine_component->get_current_state_at(Const::TRACK_EFFECTED) == Const::STATE_ATTACKED &&
-               state_machine_component->is_finish_state_at(Const::TRACK_EFFECTED);
+        return state_machine_component->get_current_state_at(Const::TRACK_EFFECTED) == Const::STATE_ATTACKED;
+    }
+
+    bool is_character_dashing(State_Machine_Component* state_machine_component) {
+        return state_machine_component->get_current_state_at(Const::TRACK_CONTROLL) == Const::STATE_DASHING;
+    }
+
+    bool is_character_channelling(State_Machine_Component* state_machine_component) {
+        return state_machine_component->get_current_state_at(Const::TRACK_CONTROLL) == Const::STATE_SKILL_CHANNELLING;
     }
 
     bool can_process_move_input(State_Machine_Component* state_machine_component, Key_Input_Type type) {
         if (type != Key_Input_Type::PRESSED && type != Key_Input_Type::HOLDING)
             return false;
-        if (is_character_attacking(state_machine_component) || is_character_attacked(state_machine_component)) {
+        if (is_character_attacking(state_machine_component) || is_character_attacked(state_machine_component) ||
+            is_character_dashing(state_machine_component) || is_character_channelling(state_machine_component)) {
             return false;
         }
         return true;
+    }
+
+    bool can_process_release_move_input(
+        Character_Node* character,
+        State_Machine_Component* state_machine_component,
+        Key_Input_Type type,
+        Const::DIRECTION direction
+    ) {
+        if (type != Key_Input_Type::RELEASE && type != Key_Input_Type::CANCEL)
+            return false;
+        return !is_character_attacking(state_machine_component) && !is_character_dashing(state_machine_component) &&
+               !is_character_channelling(state_machine_component) && character->is_moving_at_direction(direction);
     }
 
     bool can_process_attack_input(State_Machine_Component* state_machine_component, Key_Input_Type type) {
         if (type != Key_Input_Type::PRESSED)
             return false;
         if (is_character_attacked(state_machine_component) && !is_character_attacking(state_machine_component)) {
+            return false;
+        }
+        if (is_character_dashing(state_machine_component) || is_character_channelling(state_machine_component)) {
             return false;
         }
         return true;
@@ -87,12 +115,21 @@ namespace Meow_Meow {
         collision->set_track_layer(Const::BATTLE_LAYER_COLLISION);
         this->add_component(collision);
 
+        Character_Skill_Dash_Component* skill_dash = new Character_Skill_Dash_Component();
+        skill_dash->set_name(Const::CHARACTER_SKILL_DASH_COMPONENT_NAME);
+        this->add_component(skill_dash);
+
+        Character_Skill_Thurnder_Component* skill_thunder = new Character_Skill_Thurnder_Component();
+        skill_thunder->set_name(Const::CHARACTER_SKILL_THUNDER_COMPONENT_NAME);
+        this->add_component(skill_thunder);
+
         this->add_key_press_listener(Custom::Key::W);
         this->add_key_press_listener(Custom::Key::A);
         this->add_key_press_listener(Custom::Key::S);
         this->add_key_press_listener(Custom::Key::D);
+        this->add_key_press_listener(Custom::Key::C /** Skill dash */);
+        this->add_key_press_listener(Custom::Key::V /** Skill thunder */);
         this->add_key_press_listener(Custom::Key::SPACE);
-        this->add_key_press_listener(Custom::Key::V);
     }
 
     void Character_Node::attach(void* global_data) {
@@ -386,6 +423,47 @@ namespace Meow_Meow {
         );
     }
 
+    void Character_Node::action_character_level_up(float delay) {
+        Level_Up_Flame_Animation* animation = new Level_Up_Flame_Animation();
+        animation->set_position(LEVEL_UP_POSITION);
+        this->add_child(animation);
+
+        Label_Node* label_level_up = new Label_Node("LEVEL UP!", "", 40);
+        label_level_up->set_color({20, 200, 20});
+        this->add_child(label_level_up);
+
+        float duration = 0.5f;
+        float duration_fade = 0.35f;
+        label_level_up->set_opacity(0);
+        label_level_up->set_anchor({0.5, 0.5});
+        Base_Action* idle = Action::spawn(
+            Action::sequence(Action::fade_to(duration_fade / 2, 120), Action::fade_in(duration_fade / 2)),
+            Action::sequence(
+                Action::scale_to(duration_fade / 2, {1.05f, 1.05f}, Action_Ease::SINE_OUT),
+                Action::scale_to(duration_fade / 2, {1.f, 1.f}, Action_Ease::SINE_IN)
+            )
+        );
+        label_level_up->do_action(
+            Action::sequence(
+                Action::delay(delay),
+                Action::spawn(
+                    Action::sequence(
+                        Action::move_to(duration / 2, {0, 90}, Action_Ease::SINE_OUT),
+                        Action::move_to(duration / 2, {0, 70}, Action_Ease::SINE_IN)
+                    ),
+                    Action::sequence(
+                        Action::scale_to(duration / 2, {1.2f, 1.2f}, Action_Ease::SINE_OUT),
+                        Action::scale_to(duration / 2, {1.f, 1.f}, Action_Ease::SINE_IN)
+                    ),
+                    Action::fade_in(duration * 0.35, Action_Ease::SINE_OUT)
+                ),
+                idle->repeat(3),
+                Action::fade_out(duration / 2),
+                Action::remove_self(true)
+            )
+        );
+    }
+
     void Character_Node::change_to_invincible(void* global_data) {
         Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
         const Character_Behavior_Config& behavior_config = data->get_config().get_character_behavior_config();
@@ -420,6 +498,87 @@ namespace Meow_Meow {
         player_data.set_dead(true);
     }
 
+    void Character_Node::action_character_dashing(float delay, float dash_duration, float dash_distance) {
+        this->container->stop_action(ACTION_DASHING_TAG);
+        this->stop_action(ACTION_DASHING_TAG);
+
+        float sign = this->horizontal_direction == Const::DIRECTION::LEFT ? -1 : 1;
+        float dashing_more = sign * dash_distance;
+        this->do_action(
+            Action::sequence(
+                Action::delay(delay),
+                Action::move_to(dash_duration, this->get_position() + glm::vec2(dashing_more, 0), Action_Ease::SINE_IN)
+            ),
+            ACTION_DASHING_TAG
+        );
+
+        Utils::reset_to_origin(this->container);
+        int number_rotation = 1;
+        float duration_roration = dash_duration / number_rotation;
+        this->container->do_action(
+            Action::sequence(
+                Action::delay(delay),
+                Action::spawn(
+                    Action::sequence(
+                        Action::scale_to(dash_duration / 2, {0.9f, 0.9f}, Action_Ease::SINE_OUT),
+                        Action::scale_to(dash_duration / 2, {1.f, 1.f}, Action_Ease::SINE_IN)
+                    ),
+                    Action::sequence(
+                        Action::fade_to(dash_duration / 2, 220, Action_Ease::SINE_OUT),
+                        Action::fade_in(dash_duration / 2, Action_Ease::SINE_IN)
+                    ),
+                    Action::rotate_to(duration_roration, 360 * sign, Action_Ease::SINE_IN)->repeat(number_rotation)
+                )
+            ),
+            ACTION_DASHING_TAG
+        );
+    }
+
+    void Character_Node::change_to_dash(void* global_data) {
+        Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
+        const Character_Skill_Dash_Config& dash_skill_config = data->get_config().get_character_skill_dash_config();
+
+        State_Machine_Component* state_machine =
+            Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
+
+        Character_Skill_Dash_Component* dash_skill =
+            Utils::get_component<Character_Skill_Dash_Component>(this, Const::CHARACTER_SKILL_DASH_COMPONENT_NAME);
+
+        state_machine->change_state_at(Const::TRACK_CONTROLL, Const::STATE_DASHING, dash_skill_config.dash_duration);
+
+        this->character_animation->play_animation("IDLE");
+        this->action_character_dashing(0.f, dash_skill_config.dash_duration, dash_skill_config.dash_distance);
+
+        dash_skill->activating_skill(global_data);
+    }
+
+    void Character_Node::action_character_channelling_skill_thunder(float delay, float duration) {
+        Character_Channelling_Animation* animation = new Character_Channelling_Animation(duration);
+        animation->set_scale(ORIGIN_SCALE_CHANNELLING_ANIMATION);
+        this->add_child(animation);
+    }
+
+    void Character_Node::change_to_using_thunder_skill(void* global_data) {
+        Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
+        const Character_Skill_Thunder_Config& thunder_skill_config =
+            data->get_config().get_character_skill_thunder_config();
+
+        State_Machine_Component* state_machine =
+            Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
+
+        Character_Skill_Thurnder_Component* thunder_skill = Utils::get_component<Character_Skill_Thurnder_Component>(
+            this, Const::CHARACTER_SKILL_THUNDER_COMPONENT_NAME
+        );
+
+        state_machine->change_state_at(
+            Const::TRACK_CONTROLL, Const::STATE_SKILL_CHANNELLING, thunder_skill_config.channelling_duration
+        );
+
+        this->action_character_channelling_skill_thunder(0.f, thunder_skill_config.channelling_duration);
+
+        thunder_skill->activating_skill(global_data);
+    }
+
     void Character_Node::handle_key_board(float delta_time, void* global_data) {
         Key_Input_Component* key_input =
             Utils::get_component<Key_Input_Component>(this, Defined::COMPONENT_KEY_INPUT_NAME);
@@ -440,8 +599,9 @@ namespace Meow_Meow {
                         );
                         break;
                     }
-                    if (!is_character_attacking(state_machine_component) &&
-                        is_moving_at_direction(Const::DIRECTION::UP)) {
+                    if (can_process_release_move_input(
+                            this, state_machine_component, detail.type, Const::DIRECTION::UP
+                        )) {
                         this->change_to_idle();
                     }
                     break;
@@ -453,8 +613,9 @@ namespace Meow_Meow {
                         );
                         break;
                     }
-                    if (!is_character_attacking(state_machine_component) &&
-                        is_moving_at_direction(Const::DIRECTION::DOWN)) {
+                    if (can_process_release_move_input(
+                            this, state_machine_component, detail.type, Const::DIRECTION::DOWN
+                        )) {
                         this->change_to_idle();
                     }
                     break;
@@ -466,8 +627,9 @@ namespace Meow_Meow {
                         );
                         break;
                     }
-                    if (!is_character_attacking(state_machine_component) &&
-                        is_moving_at_direction(Const::DIRECTION::LEFT)) {
+                    if (can_process_release_move_input(
+                            this, state_machine_component, detail.type, Const::DIRECTION::LEFT
+                        )) {
                         this->change_to_idle();
                     }
                     break;
@@ -479,21 +641,41 @@ namespace Meow_Meow {
                         );
                         break;
                     }
-                    if (!is_character_attacking(state_machine_component) &&
-                        is_moving_at_direction(Const::DIRECTION::RIGHT)) {
+                    if (can_process_release_move_input(
+                            this, state_machine_component, detail.type, Const::DIRECTION::RIGHT
+                        )) {
                         this->change_to_idle();
+                    }
+                    break;
+                }
+                case Custom::Key::C: {
+                    if (detail.type != Key_Input_Type::PRESSED) {
+                        break;
+                    }
+                    Character_Skill_Dash_Component* skill = Utils::get_component<Character_Skill_Dash_Component>(
+                        this, Const::CHARACTER_SKILL_DASH_COMPONENT_NAME
+                    );
+                    if (skill->can_activate_skill(state_machine_component, global_data)) {
+                        this->change_to_dash(global_data);
+                    }
+                    break;
+                }
+                case Custom::Key::V: {
+                    if (detail.type != Key_Input_Type::PRESSED) {
+                        break;
+                    }
+                    Character_Skill_Thurnder_Component* skill =
+                        Utils::get_component<Character_Skill_Thurnder_Component>(
+                            this, Const::CHARACTER_SKILL_THUNDER_COMPONENT_NAME
+                        );
+                    if (skill->can_activate_skill(state_machine_component, global_data)) {
+                        this->change_to_using_thunder_skill(global_data);
                     }
                     break;
                 }
                 case Custom::Key::SPACE: {
                     if (can_process_attack_input(state_machine_component, detail.type)) {
                         this->change_to_attack(global_data);
-                    }
-                    break;
-                }
-                case Custom::Key::V: {
-                    if (detail.type == Key_Input_Type::PRESSED) {
-                        this->action_character_dead(0, 0.75f);
                     }
                     break;
                 }
@@ -516,6 +698,11 @@ namespace Meow_Meow {
             std::string current_state = state_machine_component->get_current_state_at(Const::TRACK_CONTROLL);
             if (current_state == Const::STATE_ATTACK) {
                 this->change_to_idle();
+            } else if (current_state == Const::STATE_DASHING) {
+                this->stop_action(ACTION_DASHING_TAG);
+                this->container->stop_action(ACTION_DASHING_TAG);
+                Utils::reset_to_origin(this->container);
+                this->change_to_idle();
             } else if (current_state == Const::STATE_DEATH) {
                 return;
             }
@@ -537,6 +724,16 @@ namespace Meow_Meow {
                     Const::TRACK_EFFECTED, Const::STATE_UNEFFECTED, State_Machine_Component::INFITY_STATE
                 );
             }
+        }
+    }
+
+    void Character_Node::handle_level_up(void* global_data) {
+        Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
+        if (data->is_character_level_up()) {
+            data->character_level_up();
+            this->action_character_level_up(0.f);
+            Player_Data& player_data = data->get_player_data();
+            this->character_animation->set_character_level(player_data.get_character_level());
         }
     }
 
@@ -564,6 +761,13 @@ namespace Meow_Meow {
             }
         }
 
+        /**
+         * Dashing will be ignore damage!
+         */
+        if (is_character_dashing(state_machine)) {
+            return;
+        }
+
         std::vector<Collision_Information> collisions = collision_component->get_collisioneds();
         for (Collision_Information& collision : collisions) {
             if (collision.tag != Const::ENEMY_COLLISION_TAG) {
@@ -582,6 +786,7 @@ namespace Meow_Meow {
     }
 
     void Character_Node::fix_update(float delta_time, void* global_data) {
+        this->handle_level_up(global_data);
         this->handle_collision(delta_time, global_data);
         this->handle_key_board(delta_time, global_data);
         this->handle_state_machine(delta_time, global_data);

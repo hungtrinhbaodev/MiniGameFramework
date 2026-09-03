@@ -12,6 +12,7 @@ namespace Meow_Meow {
         float get_current_health();
         float get_max_health();
         bool is_dead();
+        int get_current_exp();
 
         void set_character_animation_id(int animation_id);
         void set_chracter_level(int level);
@@ -19,6 +20,7 @@ namespace Meow_Meow {
         void set_current_health(float current_health);
         void set_max_health(float max_health);
         void set_dead(bool dead);
+        void set_current_exp(int current_exp);
 
     private:
         int character_animation_id = 0;
@@ -27,6 +29,7 @@ namespace Meow_Meow {
         float damage = 0.f;
         float current_health = 0.f;
         float max_health = 0.f;
+        int exp = 0;
 
         bool dead = false;
     };

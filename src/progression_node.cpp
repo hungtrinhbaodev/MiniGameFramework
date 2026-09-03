@@ -26,7 +26,6 @@ Progression_Node::Progression_Node() {
     this->inner_progression = new Image_UI_Node();
     this->inner_progression->set_enable_force_renderer_color(true);
     this->inner_progression->set_enable_nine_scale(true);
-    this->inner_progression->set_name("debug");
     this->clipping_node->set_clipping(true);
     this->clipping_node->add_child(this->inner_progression);
     this->clipping_node->set_cascade_opacity(true);

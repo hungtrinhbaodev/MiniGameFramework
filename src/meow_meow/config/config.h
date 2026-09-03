@@ -3,6 +3,9 @@
 #include <meow_meow/config/bullet_behavior_config.h>
 #include <meow_meow/config/character_animation_config.h>
 #include <meow_meow/config/character_behavior_config.h>
+#include <meow_meow/config/character_level_config.h>
+#include <meow_meow/config/character_skill_dash_config.h>
+#include <meow_meow/config/character_skill_thunder_config.h>
 #include <meow_meow/config/enemy_behavior_config.h>
 #include <meow_meow/const.h>
 
@@ -22,6 +25,9 @@ namespace Meow_Meow {
         const Character_Behavior_Config& get_character_behavior_config() const;
         const Bullet_Behavior_Config& get_bullet_behavior_config() const;
         const Battle_Config& get_battle_config_at(int level) const;
+        const Character_Level_Config& get_character_level_config() const;
+        const Character_Skill_Dash_Config& get_character_skill_dash_config() const;
+        const Character_Skill_Thunder_Config& get_character_skill_thunder_config() const;
         std::string get_character_name(int character_id) const;
         std::vector<int> get_character_ids() const;
 
@@ -73,10 +79,29 @@ namespace Meow_Meow {
             Const::ENEMY_ATTACKED_DURATION,
             Const::ENEMY_ATTACKED_VELOSITY,
             Const::ENEMY_HEALTH,
-            Const::ENEMY_BOUNDING_BOX
+            Const::ENEMY_BOUNDING_BOX,
+            Const::ENEMY_KILLED_EXP
         };
         Bullet_Behavior_Config bullet_behavior_config{
             Const::BULLET_VELOSITY, Const::BULLET_ACCELARATE, Const::BULLET_BOUNDING_BOX
+        };
+        Character_Level_Config character_level_config{
+            Const::CHARACTER_MAX_LEVEL_NUMBER, Const::EXP_AT_LEVELS, Const::DAMAGE_BONUS_AT_LEVELS
+        };
+        Character_Skill_Dash_Config character_skill_dash_config{
+            Const::CHARACTER_SKILL_DASH_COUNTDOWN,
+            Const::CHARACTER_SKILL_DASH_ID,
+            Const::CHARACTER_SKILL_DASH_DURATION,
+            Const::CHARACTER_SKILL_DASH_DISTANCE
+        };
+        Character_Skill_Thunder_Config character_skill_thunder_config{
+            Const::CHARACTER_SKILL_THUNDER_ID,
+            Const::CHARACTER_SKILL_THUNDER_COUNTDOWN,
+            Const::CHARACTER_SKILL_THUNDER_NUMBER_TAKEN,
+            Const::CHARACTER_SKILL_THUNDER_CHANNELLING_DURATION,
+            Const::CHARACTER_SKILL_THUNDER_TAKEN_RADIUS,
+            Const::CHARACTER_SKILL_THUNDER_DAMAGE_TAKEN,
+            Const::CHARACTER_SKILL_THUNDER_DURATION_STUN
         };
 
         Battle_Config default_battle_config{};

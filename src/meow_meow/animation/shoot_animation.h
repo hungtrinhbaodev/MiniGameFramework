@@ -11,5 +11,8 @@ namespace Meow_Meow {
 
     private:
         const glm::vec2 ORIGIN_ANCHOR_POINT = {0.1, 0.5};
+        float DURATION_ANIMATION_LOOP = 0.04;
+        int NUMBER_ANIMATION_FRAME = 15;
+        std::string ANIMATION_IMAGE_PATH = "res/meow_meow/ShootFx/Fx2-animation_";
     };
 }  // namespace Meow_Meow

@@ -41,6 +41,18 @@ namespace Meow_Meow {
         return this->battle_levels[level];
     }
 
+    const Character_Level_Config& Config::get_character_level_config() const {
+        return this->character_level_config;
+    }
+
+    const Character_Skill_Dash_Config& Config::get_character_skill_dash_config() const {
+        return this->character_skill_dash_config;
+    }
+
+    const Character_Skill_Thunder_Config& Config::get_character_skill_thunder_config() const {
+        return this->character_skill_thunder_config;
+    }
+
     std::string Config::get_character_name(int character_id) const {
         if (!this->is_character_id(character_id)) {
             return "";

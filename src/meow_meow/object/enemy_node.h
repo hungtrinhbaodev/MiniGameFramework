@@ -17,7 +17,6 @@ namespace Meow_Meow {
         void handle_boundary(void* global_data) override;
         void attach(void* global_data) override;
         void fix_update(float delta_time, void* global_data) override;
-        void on_key_pressed(Custom::Key key, Key_Press_Detail pressed_detail, void* global_data) override;
 
     private:
         const int JUMP_ACTION_TAG = 0;
@@ -26,17 +25,26 @@ namespace Meow_Meow {
         const unsigned char ORIGIN_ATTACKED_IMAGE_OPACITY = 80;
         const glm::vec2 ORIGIN_HEALTH_BAR_POSITION = {0, 80};
         const float DURATION_SHOW_PROGRESSION_HEALTH = 3.5f;
+        const glm::vec2 ORIGIN_THUNDER_ANIMATION = {-15.f, 100.f};
+        const glm::vec2 ORIGIN_THUNDER_SCALE = {1.5f, 0.85f};
 
         void init_container();
         void init_enemy_animation();
         void init_components();
         void init_attacked_image();
-        void init_progression_health();
+        void init_progression_health(void* global_data);
 
         void change_to_walk(void* global_data);
         void change_to_attack(void* global_data);
         void change_to_jump(void* global_data);
-        void change_to_hitted(void* global_data, float damage_take, Const::DIRECTION bullet_direction);
+        void change_to_hitted(
+            void* global_data,
+            float damage_take,
+            Const::DIRECTION bullet_direction,
+            std::string hitted_state,
+            float duration_state
+        );
+        void change_to_hitted_by_thunder_skill(void* global_data);
         void change_to_death(void* global_data);
 
         void handle_collision(float delta_time, void* global_data);
@@ -45,14 +53,18 @@ namespace Meow_Meow {
         void update_enemy_direction();
         void sync_attacked_image();
         void update_colision_data();
+        void sync_progression_container();
 
         void action_enemy_jump(float delay, float duration, glm::vec2 character_position);
         void action_enemy_hitted(float delay, float duration, Const::DIRECTION bullet_direction, float percent_health);
+        void action_enemy_dead(float delay, Layer_Node* label_exp_parent, float killed_exp);
+        void action_enemy_hitted_by_thunder(float delay, float duration, Layer_Node* effect_layer);
 
         Character_Animation* enemy_animation = nullptr;
         Image_UI_Node* attacked_image = nullptr;
         Node* container = nullptr;
         Progression_Node* progression_health = nullptr;
+        Node* progression_container = nullptr;
         glm::vec2 velosity{0.f, 0.f};
 
         int enemy_id = 0;

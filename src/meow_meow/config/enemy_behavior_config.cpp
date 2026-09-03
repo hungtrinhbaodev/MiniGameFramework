@@ -17,7 +17,8 @@ namespace Meow_Meow {
         float enemy_attacked_duration,
         float enemy_attacked_velosity,
         float enemy_health,
-        Custom::Size bounding_box
+        Custom::Size bounding_box,
+        float enemy_killed_exp
     ) {
         this->enemy_jump_distance = enemy_jump_distance;
         this->enemy_velosity = enemy_velosity;
@@ -32,6 +33,7 @@ namespace Meow_Meow {
         this->enemy_attacked_velosity = enemy_attacked_velosity;
         this->enemy_health = enemy_health;
         this->bounding_box = bounding_box;
+        this->enemy_killed_exp = enemy_killed_exp;
     }
 
     Enemy_Behavior_Config::~Enemy_Behavior_Config() {}
@@ -86,6 +88,10 @@ namespace Meow_Meow {
 
     Custom::Size Enemy_Behavior_Config::get_bounding_box() const {
         return this->bounding_box;
+    }
+
+    float Enemy_Behavior_Config::get_enemy_killed_exp() const {
+        return this->enemy_killed_exp;
     }
 
 }  // namespace Meow_Meow

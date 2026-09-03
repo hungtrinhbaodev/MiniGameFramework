@@ -27,7 +27,7 @@ namespace Meow_Meow {
         Custom::Color CHARACTER_NAME_COLOR = {220, 220, 220};
         unsigned char CHARACTER_NAME_OPACITY = 200;
 
-        Image_Node* hall;
+        Image_Node* hall = nullptr;
         Character_Animation* character = nullptr;
         Label_Node* character_name = nullptr;
         int character_id = -1;

@@ -122,10 +122,9 @@ bool Base_Action::spawn(
     bool finish_action =
         this->update_action(target, delta_time, global_data, processing_informations, start_time_chain, debug);
     if (this->next_spawn_chain != nullptr) {
-        bool finish_next_spawn = this->next_spawn_chain->spawn(
+        finish_action &= this->next_spawn_chain->spawn(
             target, delta_time, global_data, processing_informations, start_time_chain, debug
         );
-        return finish_action && finish_next_spawn;
     }
     if (finish_action) {
         if (this->is_repeat_forever || this->repeat_time > 0) {
@@ -149,11 +148,6 @@ bool Base_Action::sequence(
 ) {
     bool finish_action =
         this->update_action(target, delta_time, global_data, processing_informations, start_time_chain, debug);
-    if (finish_action && this->next_sequence_chain != nullptr) {
-        finish_action &= this->next_sequence_chain->sequence(
-            target, delta_time, global_data, processing_informations, start_time_chain, debug
-        );
-    }
     if (finish_action) {
         if (this->is_repeat_forever || this->repeat_time > 0) {
             this->recycle();
@@ -162,6 +156,11 @@ bool Base_Action::sequence(
                 this->repeat_time--;
             }
         }
+    }
+    if (finish_action && this->next_sequence_chain != nullptr) {
+        finish_action &= this->next_sequence_chain->sequence(
+            target, delta_time, global_data, processing_informations, start_time_chain, debug
+        );
     }
     return finish_action;
 }

@@ -8,6 +8,9 @@ Node::Node() {}
 
 Node::~Node() {
     for (Base_Action* action : actions) {
+        if (action->is_debug()) {
+            action->show_debug();
+        }
         delete (action);
     }
     for (Base_Component* component : components) {
@@ -24,6 +27,11 @@ Node::~Node() {
 
 Base_Component* Node::get_component_by_name(std::string name) {
     for (Base_Component* component : components) {
+        if (component->get_name() == name) {
+            return component;
+        }
+    }
+    for (Base_Component* component : detached_components) {
         if (component->get_name() == name) {
             return component;
         }

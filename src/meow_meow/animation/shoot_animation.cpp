@@ -10,7 +10,11 @@ namespace Meow_Meow {
 
     Shoot_Animation::Shoot_Animation(glm::vec2 position, Const::DIRECTION horizontal_direction) {
         this->make_animation(
-            "FIRE", "res/meow_meow/ShootFx/Fx2-animation_", 15, 0.04, Animation_Node::ANIMATION_LOAD_MODE::ASYNC
+            "FIRE",
+            ANIMATION_IMAGE_PATH,
+            NUMBER_ANIMATION_FRAME,
+            DURATION_ANIMATION_LOOP,
+            Animation_Node::ANIMATION_LOAD_MODE::ASYNC
         );
         glm::vec2 anchor = ORIGIN_ANCHOR_POINT;
         anchor.x = horizontal_direction == Const::DIRECTION::LEFT ? (1 - anchor.x) : anchor.x;

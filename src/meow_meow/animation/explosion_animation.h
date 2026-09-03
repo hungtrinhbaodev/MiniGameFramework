@@ -11,5 +11,8 @@ namespace Meow_Meow {
     private:
         const glm::vec2 ORIGIN_EXPLOSION_SCALE = {0.2, 0.2};
         const unsigned char ORIGIN_OPACITY = 180;
+        float DURATION_ANIMATION_LOOP = 0.05;
+        int NUMBER_ANIMATION_FRAME = 20;
+        std::string ANIMATION_IMAGE_PATH = "res/meow_meow/Explosion/ExplosionFx-Explossion_";
     };
 }  // namespace Meow_Meow

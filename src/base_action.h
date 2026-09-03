@@ -30,7 +30,7 @@ public:
     };
 
     Base_Action();
-    ~Base_Action();
+    virtual ~Base_Action();
 
     void assign_target_to_all_chain(Base_Node* target, void* global_data, bool debug = false);
     void assign_target_2(Base_Node* target, void* global_data, bool debug = false);

@@ -1,5 +1,8 @@
 #include <math_custom.h>
 #include <meow_meow/animation/character_animation.h>
+#include <meow_meow/animation/character_channelling_animation.h>
+#include <meow_meow/animation/level_up_flame_animation.h>
+#include <meow_meow/animation/skill_thunder_animation.h>
 #include <meow_meow/data/global_data.h>
 #include <test/test_scene.h>
 
@@ -181,6 +184,7 @@ Test_Scene::Test_Scene() {
     sub_layer->add_child(progression);
 
     this->add_key_press_listener(Custom::Key::V);
+    this->add_key_press_listener(Custom::Key::C);
 }
 
 Test_Scene::~Test_Scene() {}
@@ -341,17 +345,20 @@ void Test_Scene::on_key_pressed(Custom::Key key, Key_Press_Detail pressed_detail
         case Custom::Key::V: {
             if (pressed_detail.type != Key_Input_Type::PRESSED)
                 break;
-            Meow_Meow::Character_Animation* animation =
-                new Meow_Meow::Character_Animation(animation_config.get_random_animation_id(), 1);
-            animation->set_position({Math::random_float(300, 800), Math::random_float(100, 300)});
-            animation->play_animation("WALK");
-            animation->do_action(
-                Action::sequence(
-                    Action::delay(Math::random_float(0, 0.35)),
-                    Action::call_func([animation](Base_Node*, void*) { animation->play_animation("IDLE"); })
-                )
-            );
+            Meow_Meow::Character_Channelling_Animation* animation = new Meow_Meow::Character_Channelling_Animation();
+            animation->set_position({300, 240});
             this->add_child(animation);
+            break;
+        }
+        case Custom::Key::C: {
+            if (pressed_detail.type != Key_Input_Type::PRESSED)
+                break;
+            Meow_Meow::Skill_Thunder_Animation* animation = new Meow_Meow::Skill_Thunder_Animation();
+            animation->set_position({400, 240});
+            this->add_child(animation);
+            break;
+        }
+        default: {
             break;
         }
     }

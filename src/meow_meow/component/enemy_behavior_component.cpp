@@ -1,7 +1,9 @@
 #include <math_custom.h>
+#include <meow_meow/component/character_skill_thunder_component.h>
 #include <meow_meow/component/enemy_behavior_component.h>
 #include <meow_meow/config/enemy_behavior_config.h>
 #include <meow_meow/data/global_data.h>
+#include <utils.h>
 
 namespace Meow_Meow {
     Enemy_Behavior_Component::Enemy_Behavior_Component() {}
@@ -30,6 +32,10 @@ namespace Meow_Meow {
         return this->attacking;
     }
 
+    bool Enemy_Behavior_Component::is_hitted_by_thunder_skill() {
+        return this->hitted_by_thunder_skill;
+    }
+
     glm::vec2 Enemy_Behavior_Component::get_enemy_walking_direction() {
         return this->enemy_direction;
     }
@@ -49,6 +55,24 @@ namespace Meow_Meow {
         this->attacking = false;
         this->jumping = false;
         this->walking = false;
+        this->hitted_by_thunder_skill = false;
+
+        if (character == nullptr) {
+            this->enemy_direction = {0.f, 0.f};
+            return;
+        }
+
+        Character_Skill_Thurnder_Component* skill_thunder = Utils::get_component<Character_Skill_Thurnder_Component>(
+            character, Const::CHARACTER_SKILL_THUNDER_COMPONENT_NAME
+        );
+
+        if (skill_thunder != nullptr) {
+            Enemy_Node* enemy = reinterpret_cast<Enemy_Node*>(target);
+            if (skill_thunder->is_enemy_taken(enemy->get_enemy_id())) {
+                this->hitted_by_thunder_skill = true;
+                return;
+            }
+        }
 
         if (glm::distance(enemy_position, character_position) <= behavior_config.get_emeny_attack_ranage() &&
             !this->is_attack_countdown) {
@@ -73,7 +97,6 @@ namespace Meow_Meow {
         }
 
         this->walking = true;
-        this->enemy_direction = glm::normalize(character_position - enemy_position);
     }
 
     void Enemy_Behavior_Component::update_information(Base_Node* target, float delta_time, void* global_data) {

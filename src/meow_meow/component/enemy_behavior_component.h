@@ -14,6 +14,7 @@ namespace Meow_Meow {
         bool is_walking();
         bool can_jump();
         bool can_attack();
+        bool is_hitted_by_thunder_skill();
 
         glm::vec2 get_enemy_walking_direction();
         glm::vec2 get_jump_position();
@@ -26,6 +27,7 @@ namespace Meow_Meow {
         bool walking = false;
         bool jumping = false;
         bool attacking = false;
+        bool hitted_by_thunder_skill = false;
 
         bool is_attack_countdown = false;
         bool is_jump_countdown = false;
