@@ -250,7 +250,13 @@ namespace Meow_Meow {
             this->velosity = {0.f, 0.f};
         }
 
-        state_machine->change_state_at(Const::TRACK_EFFECTED, hitted_state, duration_state);
+        if (hitted_state == Const::STATE_ATTACKED) {
+            if (state_machine->get_current_state_at(Const::TRACK_EFFECTED) != Const::STATE_STUN) {
+                state_machine->change_state_at(Const::TRACK_EFFECTED, hitted_state, duration_state);
+            }
+        } else {
+            state_machine->change_state_at(Const::TRACK_EFFECTED, hitted_state, duration_state);
+        }
 
         float duration = this->enemy_animation->get_amimation_duration("IDLE");
         this->enemy_animation->play_animation("IDLE", behavior_config.get_enemy_attacked_duration() / duration);

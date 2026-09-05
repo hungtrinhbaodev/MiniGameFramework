@@ -11,7 +11,12 @@ Base_Action::Base_Action() {}
 
 Base_Action::~Base_Action() {
     // clearn all chain sequence and spawn first
-    deep_clean();
+    if (this->next_spawn_chain != nullptr) {
+        delete (this->next_spawn_chain);
+    }
+    if (this->next_sequence_chain != nullptr) {
+        delete (this->next_sequence_chain);
+    }
 }
 
 void Base_Action::set_global_data(void* global_data) {
@@ -220,22 +225,6 @@ bool Base_Action::travel(
 
 bool Base_Action::is_valid_target(Base_Node* target) {
     return true;
-}
-
-void Base_Action::deep_clean() {
-    if (this->next_spawn_chain == nullptr && this->next_sequence_chain == nullptr) {
-        return;
-    }
-    if (this->next_spawn_chain != nullptr) {
-        this->next_spawn_chain->deep_clean();
-        delete (this->next_spawn_chain);
-        this->next_spawn_chain = nullptr;
-    }
-    if (this->next_sequence_chain != nullptr) {
-        this->next_sequence_chain->deep_clean();
-        delete (this->next_sequence_chain);
-        this->next_sequence_chain = nullptr;
-    }
 }
 
 void Base_Action::apply(Base_Node* target, float delta_time) {

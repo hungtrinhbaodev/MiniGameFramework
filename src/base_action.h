@@ -94,7 +94,6 @@ protected:
 
     bool is_end();
     float get_rate();
-    void deep_clean();
     virtual bool is_valid_target(Base_Node* target);
     virtual void setup_target_to_action(Base_Node* target);
     virtual bool update_action(

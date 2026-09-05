@@ -87,7 +87,6 @@ private:
         std::function<void(Base_Node*, void*)> caller = nullptr;
         bool is_removed = false;
     };
-    std::vector<Base_Action*> cleanup_actions;
     std::vector<Base_Component*> components;
 
     /**

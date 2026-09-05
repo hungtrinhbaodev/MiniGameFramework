@@ -25,7 +25,7 @@ namespace Meow_Meow {
         const unsigned char ORIGIN_ATTACKED_IMAGE_OPACITY = 80;
         const glm::vec2 ORIGIN_HEALTH_BAR_POSITION = {0, 80};
         const float DURATION_SHOW_PROGRESSION_HEALTH = 3.5f;
-        const glm::vec2 ORIGIN_THUNDER_ANIMATION = {-15.f, 100.f};
+        const glm::vec2 ORIGIN_THUNDER_ANIMATION = {-5.f, 100.f};
         const glm::vec2 ORIGIN_THUNDER_SCALE = {1.5f, 0.85f};
 
         void init_container();
