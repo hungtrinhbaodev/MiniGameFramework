@@ -9,9 +9,11 @@ Base_Node::Base_Node() {}
 
 Base_Node::~Base_Node() {
     Utils::clean_transform_origin(this);
+    this->is_loop_children = true;
     for (Base_Node* child : children) {
         delete (child);
     }
+    this->is_loop_children = false;
 }
 
 void Base_Node::visit_handle_personal_task(float delta_time, void* global_data) {
@@ -22,9 +24,11 @@ void Base_Node::visit_handle_personal_task(float delta_time, void* global_data) 
         return;
     }
 
+    this->is_loop_children = true;
     for (Base_Node* child : children) {
         child->visit_handle_personal_task(delta_time, global_data);
     }
+    this->is_loop_children = false;
 }
 
 void Base_Node::compute_world_transform(Custom::Transform& world_transform) {
@@ -59,6 +63,7 @@ void Base_Node::visit_draw(
     // to handle something like cliping
     this->before_draw_children(world_transform, draw_index);
 
+    this->is_loop_children = true;
     // Cascade attributes into its children
     for (Base_Node* child : this->children) {
         if (child->z_order < 0) {
@@ -78,6 +83,7 @@ void Base_Node::visit_draw(
             child->visit_draw(world_transform, delta_time, draw_index, global_data, visible && this->visible);
         }
     }
+    this->is_loop_children = false;
 
     // End wrapper caller
     this->after_draw_children(world_transform, draw_index);
@@ -90,9 +96,11 @@ void Base_Node::visit_draw(
 
 void Base_Node::visit_cleanup(float delta_time, void* global_data) {
     this->cleanup_invalid_children(global_data);
+    this->is_loop_children = true;
     for (Base_Node* child : children) {
         child->visit_cleanup(delta_time, global_data);
     }
+    this->is_loop_children = false;
 }
 
 void Base_Node::set_world_transform_information(
@@ -217,20 +225,24 @@ std::vector<Base_Node*>& Base_Node::get_children() {
 }
 
 Base_Node* Base_Node::get_child_by_tag(int tag) {
+    this->is_loop_children = true;
     for (Base_Node* child : children) {
         if (child->tag == tag) {
             return child;
         }
     }
+    this->is_loop_children = false;
     return nullptr;
 }
 
 Base_Node* Base_Node::get_child_by_name(std::string name) {
+    this->is_loop_children = true;
     for (Base_Node* child : children) {
         if (child->name == name) {
             return child;
         }
     }
+    this->is_loop_children = false;
     return nullptr;
 }
 
@@ -339,7 +351,8 @@ void Base_Node::add_child(Base_Node* child) {
     }
     child->parent = this;
     child->add_child_order = ++current_child_order;
-    waiting_added_children.push_back(child);
+    child->is_enter = false;
+    this->waiting_added_children.push_back(child);
 }
 
 void Base_Node::travel(float delta_time, void* global_data) {
@@ -369,15 +382,18 @@ bool Base_Node::remove_child(Base_Node* child, bool is_cleanup) {
         return false;
     }
     bool is_removed = false;
+    this->is_loop_children = true;
     for (int i = 0; i < children.size(); i++) {
         if (children[i] == child) {
             is_removed = true;
             break;
         }
     }
+    this->is_loop_children = false;
     if (is_removed) {
         child->is_cleanup = is_cleanup;
         child->is_valid = false;
+        child->is_enter = false;
     }
     return is_removed;
 }
@@ -393,6 +409,7 @@ void Base_Node::sort_nodes() {
 
 void Base_Node::cleanup_invalid_children(void* global_data) {
     int valid_child_count = 0;
+    this->is_loop_children = true;
     for (int i = 0; i < children.size(); i++) {
         Base_Node* child = children[i];
         if (!child->is_valid) {
@@ -407,15 +424,23 @@ void Base_Node::cleanup_invalid_children(void* global_data) {
             child->add_child_order = ++valid_child_count;
         }
     }
-    current_child_order = valid_child_count;
+    this->is_loop_children = false;
+    this->current_child_order = valid_child_count;
 }
 
 void Base_Node::added_waiting_children(float delta_time, void* global_data) {
-    for (Base_Node* child : waiting_added_children) {
+    for (Base_Node* child : this->waiting_added_children) {
         child->is_valid = true;
         child->is_cleanup = false;
-        children.push_back(child);
-        child->enter(global_data);
+        this->children.push_back(child);
     }
-    waiting_added_children.clear();
+    this->waiting_added_children.clear();
+    this->is_loop_children = true;
+    for (Base_Node* child : this->children) {
+        if (!child->is_enter) {
+            child->enter(global_data);
+            child->is_enter = true;
+        }
+    }
+    this->is_loop_children = false;
 }

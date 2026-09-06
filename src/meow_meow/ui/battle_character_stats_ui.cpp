@@ -8,6 +8,7 @@ namespace Meow_Meow {
         this->set_content_size(LAYER_SIZE);
         this->init_box_character();
         this->init_character_stats();
+        this->set_name("Battle_Character_Stats_UI");
     }
 
     Battle_Character_Stats_UI::~Battle_Character_Stats_UI() {}

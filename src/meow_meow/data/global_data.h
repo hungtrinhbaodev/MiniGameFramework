@@ -21,9 +21,11 @@ namespace Meow_Meow {
         Character_Node* get_character_node();
         Player_Data& get_player_data();
         Enemy_Data& get_enemy_data_by(int enemy_id);
+        Enemy_Data& get_boss_data_by(int boss_id);
         int get_current_battle_level();
         int get_current_battle_wave();
         std::vector<int> get_new_enemies_id_generated();
+        std::vector<int> get_new_bosses_id_generated();
         Layer_Node* get_effect_layer();
         bool is_character_level_up();
 
@@ -43,7 +45,9 @@ namespace Meow_Meow {
 
         Enemy_Data default_enemy{};
         std::map<int, Enemy_Data> enemies;
+        std::map<int, Enemy_Data> bosses;
         std::vector<int> new_enemies_id_generated;
+        std::vector<int> new_bosses_id_generated;
 
         int current_battle_level = 0;
         int current_battle_wave = 0;

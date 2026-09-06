@@ -1,5 +1,6 @@
 #pragma once
 #include <animation_node.h>
+#include <meow_meow/config/character_animation_config.h>
 
 namespace Meow_Meow {
     class Character_Animation : public Animation_Node {
@@ -15,6 +16,7 @@ namespace Meow_Meow {
     protected:
         void fix_update(float delta_time, void* global_data) override;
         void draw(Custom::Transform& world_transform, int& draw_index) override;
+        virtual const Character_Animation_Config& get_animation_config(void* global_data);
 
     private:
         int character_id = -1;

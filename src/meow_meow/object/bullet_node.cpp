@@ -19,6 +19,7 @@ namespace Meow_Meow {
         this->damage = damage;
         this->init_image_bullet();
         this->init_components();
+        this->set_name("Bullet_Node");
     }
 
     Bullet_Node::~Bullet_Node() {

@@ -1,5 +1,8 @@
 #include <meow_meow/data/player_data.h>
 
+#include <algorithm>
+#include <iostream>
+
 namespace Meow_Meow {
     Player_Data::Player_Data() {}
 
@@ -46,7 +49,7 @@ namespace Meow_Meow {
     }
 
     void Player_Data::set_current_health(float current_health) {
-        this->current_health = current_health;
+        this->current_health = std::max(0.f, std::min(current_health, this->max_health));
     }
 
     void Player_Data::set_max_health(float max_health) {

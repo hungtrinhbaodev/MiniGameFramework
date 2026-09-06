@@ -9,10 +9,8 @@ namespace Meow_Meow {
         ~Enemy_Behavior_Component();
 
         void start_attack_countdown();
-        void start_jump_countdown();
 
         bool is_walking();
-        bool can_jump();
         bool can_attack();
         bool is_hitted_by_thunder_skill();
 
@@ -22,17 +20,15 @@ namespace Meow_Meow {
     protected:
         void update_information(Base_Node* target, float delta_time, void* global_data) override;
         void handle_task(Base_Node* target, float delta_time, void* global_data) override;
+        virtual const Enemy_Behavior_Config& get_behavior_config(void* global_data) const;
 
     private:
         bool walking = false;
-        bool jumping = false;
         bool attacking = false;
         bool hitted_by_thunder_skill = false;
 
         bool is_attack_countdown = false;
-        bool is_jump_countdown = false;
         float attack_countdown = 0;
-        float jump_countdown = 0;
 
         glm::vec2 enemy_direction{0.f, 0.f};
         glm::vec2 jump_position{0.f, 0.f};

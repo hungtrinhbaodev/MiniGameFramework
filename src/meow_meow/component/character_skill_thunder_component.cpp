@@ -17,7 +17,7 @@ namespace Meow_Meow {
             state_machine->get_current_state_at(Const::TRACK_CONTROLL) == Const::STATE_SKILL_CHANNELLING) {
             return false;
         }
-        return Character_Skill_Component::can_activate_skill(state_machine, global_data);
+        return Skill_Component::can_activate_skill(state_machine, global_data);
     }
 
     bool Character_Skill_Thurnder_Component::is_enemy_taken(int enemy_id) {
@@ -35,13 +35,13 @@ namespace Meow_Meow {
         Character_Node* character = data->get_character_node();
         Battle_Layer* battle_layer = data->get_battle_layer();
         enemy_taken_ids.clear();
-        Character_Skill_Component::activating_skill(global_data);
+        Skill_Component::activating_skill(global_data);
         if (character == nullptr || battle_layer == nullptr) {
             return;
         }
         float radius_taken = skill_config.radius_taken;
         int number_enemy_taken = skill_config.number_taken;
-        std::vector<Enemy_Node*>& enemies = battle_layer->get_enemy_nodes();
+        std::vector<Enemy_Node*> enemies = battle_layer->get_enemy_nodes();
         glm::vec2 character_position = character->get_position();
         for (Enemy_Node* enemy : enemies) {
             glm::vec2 enemy_position = enemy->get_position();
@@ -68,7 +68,7 @@ namespace Meow_Meow {
         Base_Node* target, float delta_time, void* global_data
     ) {
         this->enemy_taken_ids.clear();
-        Character_Skill_Component::update_information(target, delta_time, global_data);
+        Skill_Component::update_information(target, delta_time, global_data);
     }
 
 }  // namespace Meow_Meow

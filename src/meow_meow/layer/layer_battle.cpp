@@ -7,6 +7,7 @@ namespace Meow_Meow {
         this->init_bg();
         this->init_character();
         this->init_effect_layer();
+        this->set_name("Battle_Layer");
     }
 
     Battle_Layer::~Battle_Layer() {}
@@ -36,6 +37,7 @@ namespace Meow_Meow {
         this->effect_layer->set_content_size(this->get_content_size());
         this->effect_layer->set_z_order(1);
         this->add_child(this->effect_layer);
+        this->effect_layer->set_name("Battle_Layer::effect_layer");
     }
 
     void Battle_Layer::show_label_attacked(float delay, float damage, glm::vec2 position) {}
@@ -52,8 +54,15 @@ namespace Meow_Meow {
         return this->effect_layer;
     }
 
-    std::vector<Enemy_Node*>& Battle_Layer::get_enemy_nodes() {
-        return this->enemies;
+    std::vector<Enemy_Node*> Battle_Layer::get_enemy_nodes() {
+        std::vector<Enemy_Node*> enemies;
+        for (Enemy_Node* enemy : this->enemies) {
+            enemies.push_back(enemy);
+        }
+        for (Enemy_Node* boss : this->bosses) {
+            enemies.push_back(boss);
+        }
+        return enemies;
     }
 
     void Battle_Layer::spawn_enemy(Enemy_Data emeny_data) {
@@ -72,6 +81,24 @@ namespace Meow_Meow {
                 this->enemies[i]->remove_from_parent();
                 this->enemies[i] = this->enemies.back();
                 this->enemies.pop_back();
+                i--;
+            }
+        }
+    }
+    void Battle_Layer::spawn_boss(Enemy_Data boss_data) {
+        Boss_Node* boss = new Boss_Node(boss_data.get_enemy_id(), boss_data.get_enemy_animation_id());
+        glm::vec2 player_position = this->character->get_position();
+        boss->set_position(player_position + glm::vec2{Math::random_float(-1000, 1000), Math::random_float(-400, 400)});
+        this->add_child(boss);
+        this->bosses.push_back(boss);
+    }
+
+    void Battle_Layer::remove_boss_by(int boss_id) {
+        for (int i = 0; i < this->bosses.size(); i++) {
+            if (this->bosses[i]->get_enemy_id() == boss_id) {
+                this->bosses[i]->remove_from_parent();
+                this->bosses[i] = this->bosses.back();
+                this->bosses.pop_back();
                 i--;
             }
         }

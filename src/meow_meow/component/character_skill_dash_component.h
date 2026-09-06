@@ -1,8 +1,8 @@
 #pragma once
-#include <meow_meow/component/character_skill_component.h>
+#include <meow_meow/component/skill_component.h>
 
 namespace Meow_Meow {
-    class Character_Skill_Dash_Component : public Character_Skill_Component {
+    class Character_Skill_Dash_Component : public Skill_Component {
     public:
         Character_Skill_Dash_Component();
         ~Character_Skill_Dash_Component();

@@ -1,4 +1,5 @@
 #include <director.h>
+#include <exercises/movement_scene.h>
 #include <meow_meow/data/global_data.h>
 #include <meow_meow/scene/battle_scene.h>
 #include <meow_meow/scene/chosen_character_scene.h>
@@ -27,6 +28,7 @@ int main(void) {
     // Director::get()->start(new Meow_Meow::Loading_Scene(), Meow_Meow::Global_Data::get());
     Director::get()->start(new Meow_Meow::Battle_Scene(), Meow_Meow::Global_Data::get());
     // Director::get()->start(new Test_Scene(), Meow_Meow::Global_Data::get());
+    // Director::get()->start(new Exercises::Movement_Scene(), nullptr);
 
     long start = Utils::now();
     while (!Libs_Wrapper::window_should_close(window)) {

@@ -38,6 +38,13 @@ namespace Meow_Meow {
         return this->enemies[enemy_id];
     }
 
+    Enemy_Data& Global_Data::get_boss_data_by(int boss_id) {
+        if (this->bosses.find(boss_id) == this->bosses.end()) {
+            return default_enemy;
+        }
+        return this->bosses[boss_id];
+    }
+
     int Global_Data::get_current_battle_level() {
         return this->current_battle_level;
     }
@@ -48,6 +55,10 @@ namespace Meow_Meow {
 
     std::vector<int> Global_Data::get_new_enemies_id_generated() {
         return this->new_enemies_id_generated;
+    }
+
+    std::vector<int> Global_Data::get_new_bosses_id_generated() {
+        return this->new_bosses_id_generated;
     }
 
     Layer_Node* Global_Data::get_effect_layer() {
@@ -105,9 +116,16 @@ namespace Meow_Meow {
     void Global_Data::generate_enemies_at(int wave) {
         const Battle_Config& battle_config = this->get_config().get_battle_config_at(this->current_battle_level);
         const Enemy_Behavior_Config& enemy_behavior_config = this->get_config().get_enemy_behavior_config();
+        const Enemy_Behavior_Config& boss_behavior_config = this->get_config().get_enemy_behavior_config();
         const Character_Animation_Config& enemy_animation_config = this->get_config().get_enemy_animation_config();
+        const Character_Animation_Config& boss_animation_config = this->get_config().get_boss_animation_config();
+
         int number_generated_enemy_at_wave = battle_config.get_number_enemies_at(wave);
+        int number_generated_boss_at_wave = battle_config.get_number_bosses_at(wave);
+
         new_enemies_id_generated.clear();
+        new_bosses_id_generated.clear();
+
         for (int i = 0; i < number_generated_enemy_at_wave; i++) {
             int enemy_id = current_enemy_generated_id++;
             this->enemies[enemy_id] = {
@@ -118,6 +136,18 @@ namespace Meow_Meow {
                 false
             };
             new_enemies_id_generated.push_back(enemy_id);
+        }
+
+        for (int i = 0; i < number_generated_boss_at_wave; i++) {
+            int enemy_id = current_enemy_generated_id++;
+            this->bosses[enemy_id] = {
+                enemy_id,
+                boss_animation_config.get_random_animation_id(),
+                boss_behavior_config.get_enemy_health(),
+                boss_behavior_config.get_enemy_health(),
+                false
+            };
+            new_bosses_id_generated.push_back(enemy_id);
         }
     }
 

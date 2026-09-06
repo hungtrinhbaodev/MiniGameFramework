@@ -25,8 +25,8 @@ namespace Meow_Meow {
 
         const Character_Behavior_Config& behavior_config = data->get_config().get_character_behavior_config();
         Player_Data& player_data = data->get_player_data();
-        player_data.set_current_health(behavior_config.get_max_health());
         player_data.set_max_health(behavior_config.get_max_health());
+        player_data.set_current_health(behavior_config.get_max_health());
         player_data.set_player_damage(behavior_config.get_damage());
     }
 
@@ -56,6 +56,13 @@ namespace Meow_Meow {
             int enemy_id = new_enemies_id[i];
             Enemy_Data& enemy_data = data->get_enemy_data_by(enemy_id);
             this->battle_layer->spawn_enemy(enemy_data);
+        }
+
+        std::vector<int> new_bossed_id = data->get_new_bosses_id_generated();
+        for (int i = 0; i < new_bossed_id.size(); i++) {
+            int boss_id = new_bossed_id[i];
+            Enemy_Data& enemy_data = data->get_boss_data_by(boss_id);
+            this->battle_layer->spawn_boss(enemy_data);
         }
     }
 }  // namespace Meow_Meow

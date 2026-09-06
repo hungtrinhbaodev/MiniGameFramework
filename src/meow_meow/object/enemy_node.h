@@ -1,5 +1,7 @@
 #pragma once
+#include <collision_component.h>
 #include <meow_meow/animation/character_animation.h>
+#include <meow_meow/config/enemy_behavior_config.h>
 #include <meow_meow/object/game_object.h>
 #include <progression_node.h>
 
@@ -17,6 +19,20 @@ namespace Meow_Meow {
         void handle_boundary(void* global_data) override;
         void attach(void* global_data) override;
         void fix_update(float delta_time, void* global_data) override;
+        virtual const Enemy_Behavior_Config& get_behavior_config_from(void* global_data) const;
+        virtual void update_collision_component(Collision_Component* collision);
+        virtual void init_skill_components();
+        virtual bool handle_active_skill(void* global_data);
+        /**
+         * Using to boss class extend can handle that individual state
+         * */
+        virtual bool handle_other_state(void* global_data);
+        virtual void remove_from_battle(void* global_data);
+        virtual void clean_collision_data(Collision_Component* collision);
+
+        Character_Animation* enemy_animation = nullptr;
+        Node* container = nullptr;
+        Image_UI_Node* attacked_image = nullptr;
 
     private:
         const int JUMP_ACTION_TAG = 0;
@@ -52,22 +68,24 @@ namespace Meow_Meow {
         void update_movement(float delta_time);
         void update_enemy_direction();
         void sync_attacked_image();
-        void update_colision_data();
         void sync_progression_container();
+        void update_colision_data();
 
         void action_enemy_jump(float delay, float duration, glm::vec2 character_position);
         void action_enemy_hitted(float delay, float duration, Const::DIRECTION bullet_direction, float percent_health);
         void action_enemy_dead(float delay, Layer_Node* label_exp_parent, float killed_exp);
-        void action_enemy_hitted_by_thunder(float delay, float duration, Layer_Node* effect_layer);
 
-        Character_Animation* enemy_animation = nullptr;
-        Image_UI_Node* attacked_image = nullptr;
-        Node* container = nullptr;
+        void action_enemy_hitted_by_thunder(float delay, float duration, Layer_Node* effect_layer);
         Progression_Node* progression_health = nullptr;
         Node* progression_container = nullptr;
         glm::vec2 velosity{0.f, 0.f};
 
         int enemy_id = 0;
         float current_health = 0.f;
+
+        /**
+         * Debug
+         */
+        int call_clean_collision_data_count = 0;
     };
 }  // namespace Meow_Meow

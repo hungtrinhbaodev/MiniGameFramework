@@ -14,7 +14,7 @@ namespace Meow_Meow {
             state_machine->get_current_state_at(Const::TRACK_CONTROLL) == Const::STATE_SKILL_CHANNELLING) {
             return false;
         }
-        return Character_Skill_Component::can_activate_skill(state_machine, global_data);
+        return Skill_Component::can_activate_skill(state_machine, global_data);
     }
 
     void Character_Skill_Dash_Component::attach(Base_Node* target, void* global_data) {

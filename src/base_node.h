@@ -112,19 +112,23 @@ protected:
     virtual void exit(void* global_data);
 
 private:
-    int current_child_order = 0;
     int tag = -1;
     std::string name = "";
     bool visible = true;
-    int total_node = 1;
+    int current_child_order = 0;
     int add_child_order = -1;
     std::vector<Base_Node*> waiting_added_children;
     // Invalid happen when node in list cleanup_children
     // with this node we don't keep track it anymore
     bool is_cleanup = false;
+    bool is_enter = false;
     std::map<std::string, void*> user_data;
 
     void sort_nodes();
     void cleanup_invalid_children(void* global_data);
     void added_waiting_children(float delta_time, void* global_data);
+    /**
+     * Debug cyclic
+     */
+    bool is_loop_children = false;
 };

@@ -5,10 +5,12 @@
 #include <string>
 
 namespace Meow_Meow {
-    class Character_Skill_Component : public Base_Component {
+    class Skill_Component : public Base_Component {
     public:
-        Character_Skill_Component();
-        ~Character_Skill_Component();
+        Skill_Component();
+        ~Skill_Component();
+
+        std::string get_skill_id();
 
         virtual bool can_activate_skill(State_Machine_Component* state_machine, void* global_data);
         virtual void activating_skill(void* global_data);

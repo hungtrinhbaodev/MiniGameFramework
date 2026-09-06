@@ -5,6 +5,7 @@
 #include <math_custom.h>
 #include <meow_meow/animation/skill_thunder_animation.h>
 #include <meow_meow/component/enemy_behavior_component.h>
+#include <meow_meow/component/enemy_jump_skill_component.h>
 #include <meow_meow/config/character_skill_thunder_config.h>
 #include <meow_meow/const.h>
 #include <meow_meow/data/bullet_collision_data.h>
@@ -18,8 +19,8 @@ namespace Meow_Meow {
     Enemy_Node::Enemy_Node() {
         this->init_container();
         this->init_enemy_animation();
-        this->init_components();
         this->init_attacked_image();
+        this->set_name("Enemy_Node");
     }
 
     Enemy_Node::Enemy_Node(int enemy_id, int enemy_character_id) : Enemy_Node() {
@@ -36,7 +37,7 @@ namespace Meow_Meow {
 
     Custom::Transformed_Rectangle Enemy_Node::get_bounding_box(void* global_data) {
         Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
-        const Enemy_Behavior_Config& behavior_config = data->get_config().get_enemy_behavior_config();
+        const Enemy_Behavior_Config& behavior_config = this->get_behavior_config_from(global_data);
 
         Custom::Size bounding_size = behavior_config.get_bounding_box();
         return Custom::Transformed_Rectangle{
@@ -46,7 +47,7 @@ namespace Meow_Meow {
 
     void Enemy_Node::handle_boundary(void* global_data) {
         Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
-        const Enemy_Behavior_Config& behavior_config = data->get_config().get_enemy_behavior_config();
+        const Enemy_Behavior_Config& behavior_config = this->get_behavior_config_from(global_data);
 
         Battle_Layer* battle_layer = data->get_battle_layer();
         Custom::Size layer_size = battle_layer->get_content_size();
@@ -87,6 +88,7 @@ namespace Meow_Meow {
         this->attacked_image->set_opacity(ORIGIN_ATTACKED_IMAGE_OPACITY);
         Utils::save_transform_origin(this->attacked_image);
         this->container->add_child(this->attacked_image);
+        this->container->set_name("Enemy_Node::container");
     }
 
     void Enemy_Node::init_components() {
@@ -102,11 +104,12 @@ namespace Meow_Meow {
 
         Collision_Component* collision = new Collision_Component();
         collision->set_name(Defined::COMPONENT_COLLISION_NAME);
-        collision->set_tag(Const::ENEMY_COLLISION_TAG);
         collision->set_box_size(Const::ENEMY_BOUNDING_BOX);
         collision->set_track_layer(Const::BATTLE_LAYER_COLLISION);
-        collision->set_owner_data(new Enemy_Collision_Data());
+        this->update_collision_component(collision);
         this->add_component(collision);
+
+        this->init_skill_components();
     }
 
     void Enemy_Node::init_progression_health(void* global_data) {
@@ -129,12 +132,15 @@ namespace Meow_Meow {
         this->progression_health->set_percent(100);
         effect_layer->add_child(this->progression_container);
         Utils::save_transform_origin(this->progression_health);
+        this->progression_container->set_name("Enemy_Node::progression_container");
     }
 
     void Enemy_Node::attach(void* global_data) {
+        this->init_components();
+
         this->enemy_animation->play_animation("IDLE");
         Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
-        const Enemy_Behavior_Config& behavior_config = data->get_config().get_enemy_behavior_config();
+        const Enemy_Behavior_Config& behavior_config = this->get_behavior_config_from(global_data);
 
         Collision_Component* collision =
             Utils::get_component<Collision_Component>(this, Defined::COMPONENT_COLLISION_NAME);
@@ -153,7 +159,7 @@ namespace Meow_Meow {
 
     void Enemy_Node::change_to_attack(void* global_data) {
         Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
-        const auto& behavior_config = data->get_config().get_enemy_behavior_config();
+        const auto& behavior_config = this->get_behavior_config_from(global_data);
 
         State_Machine_Component* state_machine =
             Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
@@ -183,7 +189,7 @@ namespace Meow_Meow {
 
     void Enemy_Node::change_to_death(void* global_data) {
         Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
-        const auto& behavior_config = data->get_config().get_enemy_behavior_config();
+        const auto& behavior_config = this->get_behavior_config_from(global_data);
 
         State_Machine_Component* state_machine =
             Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
@@ -197,8 +203,7 @@ namespace Meow_Meow {
          */
         Collision_Component* collision =
             Utils::get_component<Collision_Component>(this, Defined::COMPONENT_COLLISION_NAME);
-        Enemy_Collision_Data* collision_data = Utils::get_collision_owner_data<Enemy_Collision_Data>(collision);
-        delete (collision_data);
+        this->clean_collision_data(collision);
         this->remove_component(Defined::COMPONENT_COLLISION_NAME);
 
         /**
@@ -221,7 +226,7 @@ namespace Meow_Meow {
         float duration_state
     ) {
         Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
-        const Enemy_Behavior_Config& behavior_config = data->get_config().get_enemy_behavior_config();
+        const Enemy_Behavior_Config& behavior_config = this->get_behavior_config_from(global_data);
         Enemy_Data& enemy_data = data->get_enemy_data_by(this->get_enemy_id());
 
         State_Machine_Component* state_machine =
@@ -281,27 +286,26 @@ namespace Meow_Meow {
 
     void Enemy_Node::change_to_jump(void* global_data) {
         Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
-        const auto& behavior_config = data->get_config().get_enemy_behavior_config();
 
         State_Machine_Component* state_machine =
             Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
 
-        Enemy_Behavior_Component* behavior =
-            Utils::get_component<Enemy_Behavior_Component>(this, Const::ENEMY_BEHAVIOR_COMPONENT_NAME);
+        const Enemy_Skill_Jump_Config& skill_jump_config = data->get_config().get_enemy_skill_jump_config();
 
-        behavior->start_jump_countdown();
+        Enemy_Jump_Skill_Component* skill_jump =
+            Utils::get_component<Enemy_Jump_Skill_Component>(this, Const::ENEMY_SKILL_JUMP_COMPONENT_NAME);
+        skill_jump->activating_skill(global_data);
+
         float animation_duration = this->enemy_animation->get_amimation_duration("IDLE");
-        this->enemy_animation->play_animation("IDLE", behavior_config.get_enemy_jump_duration() / animation_duration);
-        this->action_enemy_jump(0.f, behavior_config.get_enemy_jump_duration(), behavior->get_jump_position());
+        this->enemy_animation->play_animation("IDLE", skill_jump_config.duration_jump / animation_duration);
+        this->action_enemy_jump(0.f, skill_jump_config.duration_jump, skill_jump->get_jump_position());
 
-        state_machine->change_state_at(
-            Const::TRACK_CONTROLL, Const::STATE_JUMP, behavior_config.get_enemy_jump_duration()
-        );
+        state_machine->change_state_at(Const::TRACK_CONTROLL, Const::STATE_JUMP, skill_jump_config.duration_jump);
     }
 
     void Enemy_Node::change_to_walk(void* global_data) {
         Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
-        const auto& behavior_config = data->get_config().get_enemy_behavior_config();
+        const auto& behavior_config = this->get_behavior_config_from(global_data);
 
         State_Machine_Component* state_machine =
             Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
@@ -452,6 +456,7 @@ namespace Meow_Meow {
         Skill_Thunder_Animation* animation = new Skill_Thunder_Animation(duration);
         animation->set_position(this->get_position() + ORIGIN_THUNDER_ANIMATION);
         animation->set_scale(ORIGIN_THUNDER_SCALE);
+        animation->set_name("Enemy_Node::Skill_Thunder_Animation");
         effect_layer->add_child(animation);
     }
 
@@ -469,7 +474,7 @@ namespace Meow_Meow {
             Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
             Battle_Layer* battle_layer = data->get_battle_layer();
             if (battle_layer != nullptr) {
-                battle_layer->remove_enemy_by(this->get_enemy_id());
+                this->remove_from_battle(global_data);
                 if (this->progression_container != nullptr) {
                     this->progression_container->remove_from_parent();
                 }
@@ -485,6 +490,7 @@ namespace Meow_Meow {
         label_exp->set_anchor({0.5f, 0.5f});
         label_exp->set_color({20, 220, 20});
         label_exp_parent->add_child(label_exp);
+        label_exp->set_name("Enemy_Node::label_exp");
         float delta_y = Math::random_float(60, 80);
         float duration = 0.5;
         float duration_wait = 1.25;
@@ -509,8 +515,7 @@ namespace Meow_Meow {
     }
 
     void Enemy_Node::handle_collision(float delta_time, void* global_data) {
-        Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
-        const Enemy_Behavior_Config& behavior_config = data->get_config().get_enemy_behavior_config();
+        const Enemy_Behavior_Config& behavior_config = this->get_behavior_config_from(global_data);
 
         Collision_Component* collision_component =
             Utils::get_component<Collision_Component>(this, Defined::COMPONENT_COLLISION_NAME);
@@ -522,11 +527,8 @@ namespace Meow_Meow {
         State_Machine_Component* state_machine =
             Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
 
-        if (!state_machine->is_finish_state_at(Const::TRACK_EFFECTED)) {
-            std::string current_state = state_machine->get_current_state_at(Const::TRACK_EFFECTED);
-            if (current_state == Const::STATE_ATTACKED) {
-                return;
-            }
+        if (state_machine->get_current_state_at(Const::TRACK_EFFECTED) == Const::STATE_ATTACKED) {
+            return;
         }
 
         std::vector<Collision_Information> collisions = collision_component->get_collisioneds();
@@ -549,9 +551,58 @@ namespace Meow_Meow {
         }
     }
 
+    bool Enemy_Node::handle_active_skill(void* global_data) {
+        State_Machine_Component* state_machine =
+            Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
+
+        Enemy_Jump_Skill_Component* skill_jump =
+            Utils::get_component<Enemy_Jump_Skill_Component>(this, Const::ENEMY_SKILL_JUMP_COMPONENT_NAME);
+
+        if (skill_jump->can_activate_skill(state_machine, global_data)) {
+            this->change_to_jump(global_data);
+            return true;
+        }
+
+        return false;
+    }
+
+    bool Enemy_Node::handle_other_state(void* global_data) {
+        return false;
+    }
+
+    void Enemy_Node::remove_from_battle(void* global_data) {
+        Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
+        Battle_Layer* battle_layer = data->get_battle_layer();
+        if (battle_layer == nullptr)
+            return;
+        battle_layer->remove_enemy_by(this->get_enemy_id());
+    }
+
+    void Enemy_Node::clean_collision_data(Collision_Component* collision) {
+        Enemy_Collision_Data* collision_data = Utils::get_collision_owner_data<Enemy_Collision_Data>(collision);
+        delete (collision_data);
+    }
+
+    const Enemy_Behavior_Config& Enemy_Node::get_behavior_config_from(void* global_data) const {
+        Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
+        return data->get_config().get_enemy_behavior_config();
+    }
+
+    void Enemy_Node::update_collision_component(Collision_Component* collision) {
+        collision->set_tag(Const::ENEMY_COLLISION_TAG);
+        Enemy_Collision_Data* collision_data = new Enemy_Collision_Data();
+        collision->set_owner_data(collision_data);
+    }
+
+    void Enemy_Node::init_skill_components() {
+        Enemy_Jump_Skill_Component* skill_jump = new Enemy_Jump_Skill_Component();
+        skill_jump->set_name(Const::ENEMY_SKILL_JUMP_COMPONENT_NAME);
+        this->add_component(skill_jump);
+    }
+
     void Enemy_Node::handle_state_machine(float delta_time, void* global_data) {
         Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
-        const auto& behavior_config = data->get_config().get_enemy_behavior_config();
+        const auto& behavior_config = this->get_behavior_config_from(global_data);
         Enemy_Data& enemy_data = data->get_enemy_data_by(this->get_enemy_id());
 
         State_Machine_Component* state_machine =
@@ -562,6 +613,10 @@ namespace Meow_Meow {
 
         Collision_Component* collision =
             Utils::get_component<Collision_Component>(this, Defined::COMPONENT_COLLISION_NAME);
+
+        if (collision == nullptr) {
+            return;
+        }
 
         std::string state_at_effected = state_machine->get_current_state_at(Const::TRACK_EFFECTED);
         std::string state_at_controll = state_machine->get_current_state_at(Const::TRACK_CONTROLL);
@@ -591,17 +646,17 @@ namespace Meow_Meow {
                         collision_data->set_damage_deal(0.f);
                     }
 
-                    if (behavior->can_attack()) {
-                        this->change_to_attack(global_data);
-                    } else if (behavior->can_jump()) {
-                        this->change_to_jump(global_data);
-                    } else if (behavior->is_walking()) {
-                        this->change_to_walk(global_data);
-                    } else {
-                        state_machine->change_state_at(
-                            Const::TRACK_CONTROLL, Const::STATE_IDLE, State_Machine_Component::INFITY_STATE
-                        );
-                        this->enemy_animation->play_animation("IDLE");
+                    if (!this->handle_active_skill(global_data)) {
+                        if (behavior->can_attack()) {
+                            this->change_to_attack(global_data);
+                        } else if (behavior->is_walking()) {
+                            this->change_to_walk(global_data);
+                        } else {
+                            state_machine->change_state_at(
+                                Const::TRACK_CONTROLL, Const::STATE_IDLE, State_Machine_Component::INFITY_STATE
+                            );
+                            this->enemy_animation->play_animation("IDLE");
+                        }
                     }
                 }
             }

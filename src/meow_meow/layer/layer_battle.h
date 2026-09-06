@@ -2,6 +2,7 @@
 #include <image_node.h>
 #include <layer_node.h>
 #include <meow_meow/data/enemy_data.h>
+#include <meow_meow/object/boss_node.h>
 #include <meow_meow/object/character_node.h>
 #include <meow_meow/object/enemy_node.h>
 
@@ -17,7 +18,9 @@ namespace Meow_Meow {
 
         void spawn_enemy(Enemy_Data emeny_data);
         void remove_enemy_by(int enemy_id);
-        std::vector<Enemy_Node*>& get_enemy_nodes();
+        void spawn_boss(Enemy_Data boss_data);
+        void remove_boss_by(int boss_id);
+        std::vector<Enemy_Node*> get_enemy_nodes();
 
     private:
         void init_bg();
@@ -30,5 +33,6 @@ namespace Meow_Meow {
         Layer_Node* effect_layer = nullptr;
         Image_Node* bg = nullptr;
         std::vector<Enemy_Node*> enemies;
+        std::vector<Boss_Node*> bosses;
     };
 }  // namespace Meow_Meow

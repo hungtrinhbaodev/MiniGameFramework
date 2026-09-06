@@ -33,6 +33,18 @@ namespace Meow_Meow {
         Animation_Node::play_animation(name, speed, is_reset);
     }
 
+    const Character_Animation_Config& Character_Animation::get_animation_config(void* global_data) {
+        Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
+        const auto& config = data->get_config();
+        if (config.is_character_animation_id(this->character_id)) {
+            return config.get_character_animation_config();
+        }
+        if (config.is_boss_animation_id(this->character_id)) {
+            return config.get_boss_animation_config();
+        }
+        return config.get_enemy_animation_config();
+    }
+
     bool Character_Animation::intialize(void* global_data) {
         if (this->character_id < 0) {
             return false;
@@ -42,12 +54,10 @@ namespace Meow_Meow {
         }
         Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
         auto config = data->get_config();
-        auto character_config = config.get_enemy_animation_config();
-        Animation_Node::ANIMATION_LOAD_MODE load_mode = Animation_Node::ANIMATION_LOAD_MODE::SMOOTH;
-        if (config.is_character_id(this->character_id)) {
-            character_config = config.get_character_animation_config();
-            load_mode = Animation_Node::ANIMATION_LOAD_MODE::IMMEDIATE;
-        }
+        const auto& character_config = this->get_animation_config(global_data);
+        Animation_Node::ANIMATION_LOAD_MODE load_mode = !config.is_character_animation_id(this->character_id)
+                                                            ? Animation_Node::ANIMATION_LOAD_MODE::SMOOTH
+                                                            : Animation_Node::ANIMATION_LOAD_MODE::IMMEDIATE;
         std::vector<Character_Animation_Information> animations =
             character_config.get_character_animations(this->character_id);
         for (const auto& animation : animations) {

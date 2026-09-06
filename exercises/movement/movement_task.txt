@@ -1,0 +1,18 @@
+In last lession you have a view point about image attribute, in this lession your task to complie the attribute with the frame loop to create a action
+Task 1: Open a window with size width: 800, height: 480.
+    - Require:
+        * The origin of window position (0, 0) is the bottom-left corner of window.
+        * The vector up with direction is from bottom to top.
+        * The vector right width direction is from left to right.
+Task 2: Create one image with name "01.png"
+    - Require:
+        * Image will have a DEFAULT ATTRIBUTES as position = (128, 329), scale = (1, 1), rotation = 0.
+Task 3: When pressed un key we produce the action to our image:
+    - Require:
+        * KEY A: set image as DEFAULT SCALE, DEFAULT POSITION, (NOTE: WITHOUT DEFAULT ROTATION), the image will move from (128, 329) to (728, 145) in 2 second.
+        * KEY V: set image as DEFAULT SCALE, POSITION AT (728, 145), (NOTE: WITHOUT DEFAULT ROTATION), the image will move from (728, 145) to (128, 329) in 2 second.
+        * KEY C: set image as DEFAULT SCALE, DEFAULT POSITION, (NOTE: WITHOUT DEFAULT ROTATION), the image will scale from (1, 1) to (1.5, 1.5) in 1 second.
+        * KEY D: set image as SCALE AT (1.5, 1.5), DEFAULT POSITION, (NOTE: WITHOUT DEFAULT ROTATION), the image will scale from (1.5, 1.5) to (1, 1) in 1 second.
+        * KEY W: set image as DEFAULT SCALE, DEFAULT POSITION, (NOTE: WITHOUT DEFAULT ROTATION), the image will rotate forever each second with more 360 degree.
+        * KEY S: set image as DEFAULT SCALE, DEFAULT POSITION, (NOTE: WITHOUT DEFAULT ROTATION), the image will stop rotation and keep the remain angle.
+Note: PLEASE what the demo to see what happen!

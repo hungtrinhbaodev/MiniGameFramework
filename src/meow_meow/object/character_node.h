@@ -23,6 +23,8 @@ namespace Meow_Meow {
         const int ACTION_HITTED_TAG = 0;
         const int ACTION_INVINCIBLE_TAG = 1;
         const int ACTION_DASHING_TAG = 2;
+        const int ACTION_FLIGHT_TAG = 3;
+        const int ACTION_STUN_TAG = 4;
 
         const unsigned char ORIGIN_ATTACKED_IMAGE_OPACITY = 100;
         const int NUMBER_FADE_IN_INVINCIBLE_STATE = 3;
@@ -57,6 +59,8 @@ namespace Meow_Meow {
         void change_to_dead(void* global_data);
         void change_to_dash(void* global_data);
         void change_to_using_thunder_skill(void* global_data);
+        void change_to_flight(void* global_data, float skill_damage);
+        void change_to_stun(void* global_data);
 
         void action_character_hitted(float delay, float duration_hitted, glm::vec2 enemy_direction);
         void action_character_invincible(float delay, float duration);
@@ -64,6 +68,8 @@ namespace Meow_Meow {
         void action_character_level_up(float delay);
         void action_character_dashing(float delay, float dash_duration, float dash_distance);
         void action_character_channelling_skill_thunder(float delay, float duration);
+        void action_character_flight(float delay, float duration_fly);
+        void action_character_stunned(float delay, float duration_stun);
 
         Character_Animation* character_animation = nullptr;
         Image_UI_Node* attacked_image = nullptr;

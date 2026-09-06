@@ -9,6 +9,7 @@
 #include <meow_meow/component/character_skill_dash_component.h>
 #include <meow_meow/component/character_skill_thunder_component.h>
 #include <meow_meow/config/character_skill_dash_config.h>
+#include <meow_meow/data/boss_collision_data.h>
 #include <meow_meow/data/enemy_collision_data.h>
 #include <meow_meow/data/global_data.h>
 #include <meow_meow/layer/layer_battle.h>
@@ -35,11 +36,17 @@ namespace Meow_Meow {
         return state_machine_component->get_current_state_at(Const::TRACK_CONTROLL) == Const::STATE_SKILL_CHANNELLING;
     }
 
+    bool is_character_stunned(State_Machine_Component* state_machine_component) {
+        return state_machine_component->get_current_state_at(Const::TRACK_CONTROLL) == Const::STATE_FLIGHT ||
+               state_machine_component->get_current_state_at(Const::TRACK_EFFECTED) == Const::STATE_STUN;
+    }
+
     bool can_process_move_input(State_Machine_Component* state_machine_component, Key_Input_Type type) {
         if (type != Key_Input_Type::PRESSED && type != Key_Input_Type::HOLDING)
             return false;
         if (is_character_attacking(state_machine_component) || is_character_attacked(state_machine_component) ||
-            is_character_dashing(state_machine_component) || is_character_channelling(state_machine_component)) {
+            is_character_dashing(state_machine_component) || is_character_channelling(state_machine_component) ||
+            is_character_stunned(state_machine_component)) {
             return false;
         }
         return true;
@@ -54,7 +61,8 @@ namespace Meow_Meow {
         if (type != Key_Input_Type::RELEASE && type != Key_Input_Type::CANCEL)
             return false;
         return !is_character_attacking(state_machine_component) && !is_character_dashing(state_machine_component) &&
-               !is_character_channelling(state_machine_component) && character->is_moving_at_direction(direction);
+               !is_character_channelling(state_machine_component) && character->is_moving_at_direction(direction) &&
+               !is_character_stunned(state_machine_component);
     }
 
     bool can_process_attack_input(State_Machine_Component* state_machine_component, Key_Input_Type type) {
@@ -74,6 +82,7 @@ namespace Meow_Meow {
         this->init_character_animation();
         this->init_attacked_image();
         this->init_components();
+        this->set_name("Character_Node");
     }
 
     Character_Node::~Character_Node() {}
@@ -558,6 +567,46 @@ namespace Meow_Meow {
         this->add_child(animation);
     }
 
+    void Character_Node::action_character_flight(float delay, float duration_fly) {
+        this->container->stop_action(ACTION_FLIGHT_TAG);
+        Utils::reset_to_origin(this->container);
+        this->container->do_action(
+            Action::sequence(
+                Action::delay(delay),
+                Action::spawn(
+                    Action::sequence(
+                        Action::move_to(duration_fly / 2, {0, 200}, Action_Ease::SINE_OUT),
+                        Action::move_to(duration_fly / 2, {0, 0}, Action_Ease::SINE_IN)
+                    ),
+                    Action::rotate_to(duration_fly, 360, Action_Ease::SINE_IN),
+                    Action::sequence(
+                        Action::fade_to(duration_fly / 2, 220, Action_Ease::SINE_OUT),
+                        Action::fade_in(duration_fly / 2, Action_Ease::SINE_IN)
+                    ),
+                    Action::sequence(
+                        Action::scale_to(duration_fly / 2, {1.25f, 1.25f}, Action_Ease::SINE_OUT),
+                        Action::scale_to(duration_fly / 2, {1.f, 1.f}, Action_Ease::SINE_IN)
+                    )
+                )
+            ),
+            ACTION_FLIGHT_TAG
+        );
+    }
+
+    void Character_Node::action_character_stunned(float delay, float duration_stun) {
+        this->container->stop_action(ACTION_STUN_TAG);
+        const int NUMBER_ROTATION = 3;
+        float duration = duration_stun / NUMBER_ROTATION;
+        Utils::reset_to_origin(this->container);
+        Base_Action* action_stunned = Action::sequence(
+            Action::rotate_to(duration / 2, 5, Action_Ease::SINE_OUT),
+            Action::move_to(duration / 2, -5, Action_Ease::SINE_IN)
+        );
+        this->container->do_action(
+            Action::sequence(Action::delay(delay), action_stunned->repeat(NUMBER_ROTATION)), ACTION_STUN_TAG
+        );
+    }
+
     void Character_Node::change_to_using_thunder_skill(void* global_data) {
         Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
         const Character_Skill_Thunder_Config& thunder_skill_config =
@@ -577,6 +626,35 @@ namespace Meow_Meow {
         this->action_character_channelling_skill_thunder(0.f, thunder_skill_config.channelling_duration);
 
         thunder_skill->activating_skill(global_data);
+    }
+
+    void Character_Node::change_to_flight(void* global_data, float skill_damage) {
+        Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
+        const Boss_Skill_Flash_Config& skill_config = data->get_config().get_boss_skill_flash_config();
+
+        State_Machine_Component* state_machine =
+            Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
+
+        this->character_animation->play_animation("IDLE");
+        Player_Data& player_data = data->get_player_data();
+        player_data.set_current_health(player_data.get_current_health() - skill_damage);
+
+        state_machine->change_state_at(Const::TRACK_CONTROLL, Const::STATE_FLIGHT, skill_config.fly_duration);
+        this->action_character_flight(0.f, skill_config.fly_duration);
+    }
+
+    void Character_Node::change_to_stun(void* global_data) {
+        Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
+        const Boss_Skill_Flash_Config& skill_config = data->get_config().get_boss_skill_flash_config();
+
+        State_Machine_Component* state_machine =
+            Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
+
+        this->character_animation->play_animation("IDLE");
+        state_machine->change_state_at(Const::TRACK_CONTROLL, Const::STATE_IDLE, State_Machine_Component::INFITY_STATE);
+        state_machine->change_state_at(Const::TRACK_EFFECTED, Const::STATE_STUN, skill_config.stun_duration);
+
+        this->action_character_stunned(0.f, skill_config.stun_duration);
     }
 
     void Character_Node::handle_key_board(float delta_time, void* global_data) {
@@ -703,6 +781,16 @@ namespace Meow_Meow {
                 this->container->stop_action(ACTION_DASHING_TAG);
                 Utils::reset_to_origin(this->container);
                 this->change_to_idle();
+            } else if (current_state == Const::STATE_FLIGHT) {
+                this->container->stop_action(ACTION_FLIGHT_TAG);
+                Utils::reset_to_origin(this->container);
+                if (player_data.get_current_health() <= 0) {
+                    this->change_to_dead(global_data);
+                } else {
+                    this->change_to_stun(global_data);
+                }
+            } else if (current_state == Const::STATE_SKILL_CHANNELLING) {
+                this->change_to_idle();
             } else if (current_state == Const::STATE_DEATH) {
                 return;
             }
@@ -719,6 +807,12 @@ namespace Meow_Meow {
                 }
             } else if (current_state == Const::STATE_INVINCIBLE) {
                 this->container->stop_action(ACTION_INVINCIBLE_TAG);
+                Utils::reset_to_origin(this->container);
+                state_machine_component->change_state_at(
+                    Const::TRACK_EFFECTED, Const::STATE_UNEFFECTED, State_Machine_Component::INFITY_STATE
+                );
+            } else if (current_state == Const::STATE_STUN) {
+                this->container->stop_action(ACTION_STUN_TAG);
                 Utils::reset_to_origin(this->container);
                 state_machine_component->change_state_at(
                     Const::TRACK_EFFECTED, Const::STATE_UNEFFECTED, State_Machine_Component::INFITY_STATE
@@ -770,18 +864,28 @@ namespace Meow_Meow {
 
         std::vector<Collision_Information> collisions = collision_component->get_collisioneds();
         for (Collision_Information& collision : collisions) {
-            if (collision.tag != Const::ENEMY_COLLISION_TAG) {
-                continue;
+            if (collision.tag == Const::BOSS_COLLISION_TAG) {
+                Boss_Collision_Data* boss_collison = reinterpret_cast<Boss_Collision_Data*>(collision.owner_data);
+                if (boss_collison->get_using_skill_id() != "" && boss_collison->get_skill_damage() > 0) {
+                    Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
+                    if (data->get_config().is_boss_flash_skill(boss_collison->get_using_skill_id())) {
+                        this->change_to_flight(global_data, boss_collison->get_skill_damage());
+                        boss_collison->set_damage_deal(0.f);
+                    }
+                    break;
+                }
             }
-            Enemy_Collision_Data* enemy_collision = reinterpret_cast<Enemy_Collision_Data*>(collision.owner_data);
-            if (enemy_collision->get_damage_deal() <= 0) {
-                continue;
+            if (collision.tag == Const::BOSS_COLLISION_TAG || collision.tag == Const::ENEMY_COLLISION_TAG) {
+                Enemy_Collision_Data* enemy_collision = reinterpret_cast<Enemy_Collision_Data*>(collision.owner_data);
+                if (enemy_collision->get_damage_deal() <= 0) {
+                    continue;
+                }
+                this->change_to_hitted(
+                    enemy_collision->get_damage_deal(), enemy_collision->get_enemy_direction(), global_data
+                );
+                enemy_collision->set_damage_deal(0.f);
+                break;
             }
-            this->change_to_hitted(
-                enemy_collision->get_damage_deal(), enemy_collision->get_enemy_direction(), global_data
-            );
-            enemy_collision->set_damage_deal(0.f);
-            break;
         }
     }
 

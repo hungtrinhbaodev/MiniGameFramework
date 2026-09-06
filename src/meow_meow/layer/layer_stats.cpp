@@ -5,6 +5,7 @@ namespace Meow_Meow {
     Layer_Stats::Layer_Stats() {
         this->set_content_size({Libs_Wrapper::get_screen_width(), Libs_Wrapper::get_screen_height()});
         this->init_stats_ui();
+        this->set_name("Layer_Stats");
     }
 
     Layer_Stats::~Layer_Stats() {}
