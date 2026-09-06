@@ -36,6 +36,10 @@ namespace Meow_Meow {
         return state_machine_component->get_current_state_at(Const::TRACK_CONTROLL) == Const::STATE_SKILL_CHANNELLING;
     }
 
+    bool is_character_dead(State_Machine_Component* state_machine_component) {
+        return state_machine_component->get_current_state_at(Const::TRACK_CONTROLL) == Const::STATE_DEATH;
+    }
+
     bool is_character_stunned(State_Machine_Component* state_machine_component) {
         return state_machine_component->get_current_state_at(Const::TRACK_CONTROLL) == Const::STATE_FLIGHT ||
                state_machine_component->get_current_state_at(Const::TRACK_EFFECTED) == Const::STATE_STUN;
@@ -591,6 +595,19 @@ namespace Meow_Meow {
             ),
             ACTION_FLIGHT_TAG
         );
+        this->attacked_image->stop_action(ACTION_FLIGHT_TAG);
+        Utils::reset_to_origin(this->container);
+        this->attacked_image->set_visible(false);
+        this->attacked_image->do_action(
+            Action::sequence(
+                Action::delay(delay),
+                Action::show(),
+                Action::fade_to(duration_fly * 0.35, ORIGIN_ATTACKED_IMAGE_OPACITY, Action_Ease::SINE_OUT),
+                Action::delay(duration_fly * 0.45),
+                Action::hide()
+            ),
+            ACTION_FLIGHT_TAG
+        );
     }
 
     void Character_Node::action_character_stunned(float delay, float duration_stun) {
@@ -783,7 +800,10 @@ namespace Meow_Meow {
                 this->change_to_idle();
             } else if (current_state == Const::STATE_FLIGHT) {
                 this->container->stop_action(ACTION_FLIGHT_TAG);
+                this->attacked_image->stop_action(ACTION_FLIGHT_TAG);
+                this->attacked_image->set_visible(false);
                 Utils::reset_to_origin(this->container);
+                Utils::reset_to_origin(this->attacked_image);
                 if (player_data.get_current_health() <= 0) {
                     this->change_to_dead(global_data);
                 } else {
@@ -841,18 +861,18 @@ namespace Meow_Meow {
         State_Machine_Component* state_machine =
             Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
 
-        if (state_machine->get_current_state_at(Const::TRACK_CONTROLL) == Const::STATE_DEATH) {
+        std::string current_controll_state = state_machine->get_current_state_at(Const::TRACK_CONTROLL);
+
+        if (current_controll_state == Const::STATE_DEATH) {
             return;
         }
 
         /**
          * @Note: if player already hitted or invisible we ignore phase attack damge of enemy!
          */
-        if (!state_machine->is_finish_state_at(Const::TRACK_EFFECTED)) {
-            std::string current_state = state_machine->get_current_state_at(Const::TRACK_EFFECTED);
-            if (current_state == Const::STATE_INVINCIBLE || current_state == Const::STATE_ATTACKED) {
-                return;
-            }
+        if (current_controll_state == Const::STATE_INVINCIBLE || current_controll_state == Const::STATE_ATTACKED ||
+            current_controll_state == Const::STATE_FLIGHT) {
+            return;
         }
 
         /**
@@ -870,7 +890,7 @@ namespace Meow_Meow {
                     Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
                     if (data->get_config().is_boss_flash_skill(boss_collison->get_using_skill_id())) {
                         this->change_to_flight(global_data, boss_collison->get_skill_damage());
-                        boss_collison->set_damage_deal(0.f);
+                        boss_collison->set_skill_damage(0.f);
                     }
                     break;
                 }
@@ -890,6 +910,11 @@ namespace Meow_Meow {
     }
 
     void Character_Node::fix_update(float delta_time, void* global_data) {
+        State_Machine_Component* state_machine =
+            Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
+        if (is_character_dead(state_machine)) {
+            return;
+        }
         this->handle_level_up(global_data);
         this->handle_collision(delta_time, global_data);
         this->handle_key_board(delta_time, global_data);

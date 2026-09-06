@@ -116,7 +116,7 @@ namespace Meow_Meow {
     void Global_Data::generate_enemies_at(int wave) {
         const Battle_Config& battle_config = this->get_config().get_battle_config_at(this->current_battle_level);
         const Enemy_Behavior_Config& enemy_behavior_config = this->get_config().get_enemy_behavior_config();
-        const Enemy_Behavior_Config& boss_behavior_config = this->get_config().get_enemy_behavior_config();
+        const Enemy_Behavior_Config& boss_behavior_config = this->get_config().get_boss_behavior_config();
         const Character_Animation_Config& enemy_animation_config = this->get_config().get_enemy_animation_config();
         const Character_Animation_Config& boss_animation_config = this->get_config().get_boss_animation_config();
 

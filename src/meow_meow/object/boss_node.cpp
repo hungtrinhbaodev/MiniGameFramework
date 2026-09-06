@@ -19,6 +19,15 @@ namespace Meow_Meow {
         return data->get_config().get_boss_behavior_config();
     }
 
+    Enemy_Data& Boss_Node::get_enemy_data(void* global_data) {
+        Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
+        return data->get_boss_data_by(this->get_enemy_id());
+    }
+
+    Custom::Anchor_Point Boss_Node::get_origin_animation_anchor_point() {
+        return ORIGIN_ANIMATION_ANCHOR_POINT;
+    }
+
     void Boss_Node::update_collision_component(Collision_Component* collision) {
         collision->set_tag(Const::BOSS_COLLISION_TAG);
         collision->set_owner_data(new Boss_Collision_Data());
@@ -30,6 +39,13 @@ namespace Meow_Meow {
         this->add_component(flash_skill);
     }
 
+    void Boss_Node::update_ui_attrubutes() {
+        this->enemy_animation->set_anchor(ORIGIN_ANIMATION_ANCHOR_POINT.to_vec2());
+        Utils::save_transform_origin(this->enemy_animation);
+        this->progression_health->set_position(ORIGIN_HEALTH_BAR_POSITION);
+        Utils::save_transform_origin(this->progression_health);
+    }
+
     bool Boss_Node::handle_active_skill(void* global_data) {
         State_Machine_Component* state_machine =
             Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
@@ -38,6 +54,7 @@ namespace Meow_Meow {
             Utils::get_component<Boss_Skill_Flash_Component>(this, Const::BOSS_SKILL_FLASH_COMPONENT_NAME);
 
         if (flash_skill->can_activate_skill(state_machine, global_data)) {
+            flash_skill->activating_skill(global_data);
             this->change_to_channeling(global_data, flash_skill->get_skill_id());
             return true;
         }
@@ -56,6 +73,7 @@ namespace Meow_Meow {
     void Boss_Node::clean_collision_data(Collision_Component* collision) {
         Boss_Collision_Data* collision_data = Utils::get_collision_owner_data<Boss_Collision_Data>(collision);
         delete (collision_data);
+        collision->set_owner_data(nullptr);
     }
 
     bool Boss_Node::handle_other_state(void* global_data) {
@@ -70,9 +88,10 @@ namespace Meow_Meow {
             if (current_state == Const::STATE_SKILL_CHANNELLING) {
                 this->container->stop_action(ACTION_CHANNELLING_SKILL_TAG);
                 this->attacked_image->stop_action(ACTION_CHANNELLING_SKILL_TAG);
+                this->attacked_image->set_visible(false);
                 Utils::reset_to_origin(this->container);
                 Utils::reset_to_origin(this->attacked_image);
-                if (this->channelling_skill == flash_skill_config.skill_id) {
+                if (data->get_config().is_boss_flash_skill(this->channelling_skill)) {
                     this->change_to_flash(global_data);
                     return true;
                 }
@@ -113,6 +132,8 @@ namespace Meow_Meow {
             ),
             ACTION_CHANNELLING_SKILL_TAG
         );
+        this->attacked_image->stop_action(ACTION_CHANNELLING_SKILL_TAG);
+        this->attacked_image->set_opacity(ORIGIN_ATTACKED_IMAGE_OPACITY);
         this->attacked_image->do_action(
             Action::sequence(Action::delay(delay), Action::show(), Action::delay(duration_channelling), Action::hide()),
             ACTION_CHANNELLING_SKILL_TAG
@@ -125,6 +146,8 @@ namespace Meow_Meow {
 
         State_Machine_Component* state_machine =
             Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
+
+        this->velosity = {0.f, 0.f};
 
         this->channelling_skill = skill_id;
         float duration_channelling = 0.f;

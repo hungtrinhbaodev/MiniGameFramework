@@ -3,6 +3,7 @@
 #include <meow_meow/config/boss_skill_flash_config.h>
 #include <meow_meow/config/enemy_behavior_config.h>
 #include <meow_meow/data/global_data.h>
+#include <utils.h>
 
 namespace Meow_Meow {
     Boss_Skill_Flash_Component::Boss_Skill_Flash_Component() {}
@@ -11,6 +12,18 @@ namespace Meow_Meow {
 
     bool Boss_Skill_Flash_Component::can_activate_skill(State_Machine_Component* state_machine, void* global_data) {
         Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
+        Character_Node* character = data->get_character_node();
+
+        if (character == nullptr) {
+            return false;
+        }
+
+        State_Machine_Component* player_state_machine =
+            Utils::get_component<State_Machine_Component>(character, Defined::COMPONENT_STATE_MACHINE_NAME);
+        if (player_state_machine->get_current_state_at(Const::TRACK_CONTROLL) == Const::STATE_DEATH) {
+            return false;
+        }
+
         const Boss_Skill_Flash_Config& skill_config = data->get_config().get_boss_skill_flash_config();
         if (state_machine->get_current_state_at(Const::TRACK_EFFECTED) == Const::STATE_ATTACKED ||
             state_machine->get_current_state_at(Const::TRACK_EFFECTED) == Const::STATE_STUN) {
@@ -50,6 +63,7 @@ namespace Meow_Meow {
             return;
         this->player_position = character->get_position();
         this->boss_position = target->get_position();
+        Skill_Component::update_information(target, delta_time, global_data);
     }
 
 }  // namespace Meow_Meow

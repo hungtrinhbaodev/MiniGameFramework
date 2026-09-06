@@ -22,6 +22,7 @@ namespace Meow_Meow {
         virtual const Enemy_Behavior_Config& get_behavior_config_from(void* global_data) const;
         virtual void update_collision_component(Collision_Component* collision);
         virtual void init_skill_components();
+        virtual void update_ui_attrubutes();
         virtual bool handle_active_skill(void* global_data);
         /**
          * Using to boss class extend can handle that individual state
@@ -29,16 +30,22 @@ namespace Meow_Meow {
         virtual bool handle_other_state(void* global_data);
         virtual void remove_from_battle(void* global_data);
         virtual void clean_collision_data(Collision_Component* collision);
+        virtual Enemy_Data& get_enemy_data(void* global_data);
+        virtual Custom::Anchor_Point get_origin_animation_anchor_point();
+
+        const unsigned char ORIGIN_ATTACKED_IMAGE_OPACITY = 80;
 
         Character_Animation* enemy_animation = nullptr;
         Node* container = nullptr;
         Image_UI_Node* attacked_image = nullptr;
+        Progression_Node* progression_health = nullptr;
+        Node* progression_container = nullptr;
+        glm::vec2 velosity{0.f, 0.f};
 
     private:
         const int JUMP_ACTION_TAG = 0;
         const int HITTED_ACTION_TAG = 1;
         const Custom::Anchor_Point ORIGIN_ANIMATION_ANCHOR_POINT = {0.35, 0.5};
-        const unsigned char ORIGIN_ATTACKED_IMAGE_OPACITY = 80;
         const glm::vec2 ORIGIN_HEALTH_BAR_POSITION = {0, 80};
         const float DURATION_SHOW_PROGRESSION_HEALTH = 3.5f;
         const glm::vec2 ORIGIN_THUNDER_ANIMATION = {-5.f, 100.f};
@@ -76,9 +83,6 @@ namespace Meow_Meow {
         void action_enemy_dead(float delay, Layer_Node* label_exp_parent, float killed_exp);
 
         void action_enemy_hitted_by_thunder(float delay, float duration, Layer_Node* effect_layer);
-        Progression_Node* progression_health = nullptr;
-        Node* progression_container = nullptr;
-        glm::vec2 velosity{0.f, 0.f};
 
         int enemy_id = 0;
         float current_health = 0.f;

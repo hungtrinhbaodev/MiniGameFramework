@@ -155,6 +155,8 @@ namespace Meow_Meow {
         state_machine->change_state_at(
             Const::TRACK_EFFECTED, Const::STATE_UNEFFECTED, State_Machine_Component::INFITY_STATE
         );
+
+        this->update_ui_attrubutes();
     }
 
     void Enemy_Node::change_to_attack(void* global_data) {
@@ -184,7 +186,14 @@ namespace Meow_Meow {
          * Attach the damage into collision data
          */
         Enemy_Collision_Data* collision_data = Utils::get_collision_owner_data<Enemy_Collision_Data>(collision);
-        collision_data->set_damage_deal(behavior_config.get_emeny_attack_damage());
+        float damage_deal = behavior_config.get_emeny_attack_damage();
+        this->schedule_once(
+            Const::STATE_ATTACK,
+            behavior_config.get_enemy_attack_duration() * 0.5,
+            [collision_data, damage_deal](Base_Node* target, void* global_data) {
+                collision_data->set_damage_deal(damage_deal);
+            }
+        );
     }
 
     void Enemy_Node::change_to_death(void* global_data) {
@@ -227,7 +236,7 @@ namespace Meow_Meow {
     ) {
         Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
         const Enemy_Behavior_Config& behavior_config = this->get_behavior_config_from(global_data);
-        Enemy_Data& enemy_data = data->get_enemy_data_by(this->get_enemy_id());
+        Enemy_Data& enemy_data = this->get_enemy_data(global_data);
 
         State_Machine_Component* state_machine =
             Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
@@ -527,7 +536,9 @@ namespace Meow_Meow {
         State_Machine_Component* state_machine =
             Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
 
-        if (state_machine->get_current_state_at(Const::TRACK_EFFECTED) == Const::STATE_ATTACKED) {
+        std::string current_controll_state = state_machine->get_current_state_at(Const::TRACK_CONTROLL);
+        std::string current_effect_state = state_machine->get_current_state_at(Const::TRACK_EFFECTED);
+        if (current_effect_state == Const::STATE_ATTACKED || current_controll_state == Const::STATE_SKILL_CHANNELLING) {
             return;
         }
 
@@ -536,6 +547,8 @@ namespace Meow_Meow {
             if (collision.tag != Const::BULLET_COLLISION_TAG)
                 continue;
             Bullet_Collision_Data* collision_data = reinterpret_cast<Bullet_Collision_Data*>(collision.owner_data);
+            if (collision_data == nullptr)
+                continue;
             if (collision_data->get_damage_deal() <= 0 || collision_data->is_hitted())
                 continue;
             this->change_to_hitted(
@@ -581,6 +594,16 @@ namespace Meow_Meow {
     void Enemy_Node::clean_collision_data(Collision_Component* collision) {
         Enemy_Collision_Data* collision_data = Utils::get_collision_owner_data<Enemy_Collision_Data>(collision);
         delete (collision_data);
+        collision->set_owner_data(nullptr);
+    }
+
+    Enemy_Data& Enemy_Node::get_enemy_data(void* global_data) {
+        Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
+        return data->get_enemy_data_by(this->get_enemy_id());
+    }
+
+    Custom::Anchor_Point Enemy_Node::get_origin_animation_anchor_point() {
+        return ORIGIN_ANIMATION_ANCHOR_POINT;
     }
 
     const Enemy_Behavior_Config& Enemy_Node::get_behavior_config_from(void* global_data) const {
@@ -600,10 +623,12 @@ namespace Meow_Meow {
         this->add_component(skill_jump);
     }
 
+    void Enemy_Node::update_ui_attrubutes() {}
+
     void Enemy_Node::handle_state_machine(float delta_time, void* global_data) {
         Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
         const auto& behavior_config = this->get_behavior_config_from(global_data);
-        Enemy_Data& enemy_data = data->get_enemy_data_by(this->get_enemy_id());
+        Enemy_Data& enemy_data = this->get_enemy_data(global_data);
 
         State_Machine_Component* state_machine =
             Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
@@ -641,12 +666,15 @@ namespace Meow_Meow {
                      * we remove the damage deal in collision!
                      */
                     if (state_at_controll == Const::STATE_ATTACK) {
+                        this->unschedule(Const::STATE_ATTACK);
                         Enemy_Collision_Data* collision_data =
                             Utils::get_collision_owner_data<Enemy_Collision_Data>(collision);
-                        collision_data->set_damage_deal(0.f);
+                        if (collision_data != nullptr) {
+                            collision_data->set_damage_deal(0.f);
+                        }
                     }
 
-                    if (!this->handle_active_skill(global_data)) {
+                    if (!this->handle_active_skill(global_data) && !this->handle_other_state(global_data)) {
                         if (behavior->can_attack()) {
                             this->change_to_attack(global_data);
                         } else if (behavior->is_walking()) {
@@ -695,9 +723,11 @@ namespace Meow_Meow {
 
         bool is_right = behavior->get_enemy_walking_direction().x > 0;
         this->enemy_animation->set_flipped_x(is_right);
-        glm::vec2 anchor = !is_right
-                               ? ORIGIN_ANIMATION_ANCHOR_POINT.to_vec2()
-                               : glm::vec2{1.0f - ORIGIN_ANIMATION_ANCHOR_POINT.x, ORIGIN_ANIMATION_ANCHOR_POINT.y};
+        glm::vec2 anchor = !is_right ? this->get_origin_animation_anchor_point().to_vec2()
+                                     : glm::vec2{
+                                           1.0f - this->get_origin_animation_anchor_point().x,
+                                           this->get_origin_animation_anchor_point().y
+                                       };
         this->enemy_animation->set_anchor(anchor);
     }
 
@@ -723,6 +753,8 @@ namespace Meow_Meow {
             return;
 
         Enemy_Collision_Data* collision_data = Utils::get_collision_owner_data<Enemy_Collision_Data>(collision);
+        if (collision_data == nullptr)
+            return;
         collision_data->set_enemy_direction(behavior->get_enemy_walking_direction());
     }
 

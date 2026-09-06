@@ -13,8 +13,10 @@ namespace Meow_Meow {
         State_Machine_Component* state_machine, void* global_data
     ) {
         if (state_machine->get_current_state_at(Const::TRACK_EFFECTED) == Const::STATE_ATTACKED ||
+            state_machine->get_current_state_at(Const::TRACK_EFFECTED) == Const::STATE_STUN ||
             state_machine->get_current_state_at(Const::TRACK_CONTROLL) == Const::STATE_DASHING ||
-            state_machine->get_current_state_at(Const::TRACK_CONTROLL) == Const::STATE_SKILL_CHANNELLING) {
+            state_machine->get_current_state_at(Const::TRACK_CONTROLL) == Const::STATE_SKILL_CHANNELLING ||
+            state_machine->get_current_state_at(Const::TRACK_CONTROLL) == Const::STATE_FLIGHT) {
             return false;
         }
         return Skill_Component::can_activate_skill(state_machine, global_data);

@@ -31,10 +31,6 @@ namespace Meow_Meow {
         return this->enemy_direction;
     }
 
-    glm::vec2 Enemy_Behavior_Component::get_jump_position() {
-        return this->jump_position;
-    }
-
     const Enemy_Behavior_Config& Enemy_Behavior_Component::get_behavior_config(void* global_data) const {
         Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
         return data->get_config().get_enemy_behavior_config();
@@ -53,6 +49,17 @@ namespace Meow_Meow {
         this->hitted_by_thunder_skill = false;
 
         if (character == nullptr) {
+            this->enemy_direction = {0.f, 0.f};
+            return;
+        }
+
+        State_Machine_Component* state_machine =
+            Utils::get_component<State_Machine_Component>(character, Defined::COMPONENT_STATE_MACHINE_NAME);
+
+        if (state_machine != nullptr &&
+            (state_machine->get_current_state_at(Const::TRACK_CONTROLL) == Const::STATE_DEATH ||
+             state_machine->get_current_state_at(Const::TRACK_CONTROLL) == Const::STATE_FLIGHT)) {
+            this->walking = true;
             this->enemy_direction = {0.f, 0.f};
             return;
         }

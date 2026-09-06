@@ -53,8 +53,9 @@ namespace Meow_Meow {
         const inline static int BASE_BOSS_ID = 2000;
         const inline static int NUMBER_ANIMATION_BOSS = 7;
         const inline static std::string BOSS_DEFAULT_PATH = "res/meow_meow/Enemies/Enemy Boss ";
-        const inline static std::vector<int> BOSS_ANIMATION_NUMBER_FRAMES = {20, 40, 50, 35};
-        const inline static std::vector<float> BOSS_ANIMATION_DURATION_PER_FRAMES = {0.04, 0.03, 0.03, 0.03};
+        const inline static std::vector<int> BOSS_ANIMATION_NUMBER_FRAMES = {20, 40, 50, 25};
+        const inline static std::vector<float> BOSS_ANIMATION_DURATION_PER_FRAMES = {0.04, 0.03, 0.03, 0.04};
+        const inline static Custom::Size BOSS_BOUNDING_BOX = {160, 160};
 
         /**
          * Shoot animation
@@ -136,8 +137,8 @@ namespace Meow_Meow {
          */
         const inline static float BOSS_VELOSITY = 60.f;
         const inline static float BOSS_ATTACK_DAMGE = 60.f;
-        const inline static float BOSS_DURATION_ATTACK = 0.55f;
-        const inline static float BOSS_HEALTH = 1000.f;
+        const inline static float BOSS_DURATION_ATTACK = 0.75f;
+        const inline static float BOSS_HEALTH = 1500.f;
         const inline static bool BOSS_ENABLE_JUMP = true;
 
         /**
@@ -159,8 +160,8 @@ namespace Meow_Meow {
          * Battle level config
          */
         const inline static int BATTLE_NUMBER_WAVE = 3;
-        const inline static std::vector<float> BATTLE_DURATION_GENERATE_ENEMY = {0, 30, 40};
-        const inline static std::vector<int> BATTLE_NUMBER_ENEMY_GENERATED = {3, 5, 5};
+        const inline static std::vector<float> BATTLE_DURATION_GENERATE_ENEMY = {0, 60, 40};
+        const inline static std::vector<int> BATTLE_NUMBER_ENEMY_GENERATED = {0, 5, 5};
         const inline static std::vector<int> BATTLE_NUMBER_BOSS_GENERATED = {1, 0, 0};
 
         /**
@@ -206,7 +207,7 @@ namespace Meow_Meow {
         const inline static std::string BOSS_SKILL_FLASH_COMPONENT_NAME = "SKILL_FLASH_COMPONENT";
         const inline static std::string BOSS_SKILL_FLASH_ID = "FLASH_JUMP";
         const inline static float BOSS_SKILL_FLASH_COUNTDOWN = 15.0f;
-        const inline static float BOSS_SKILL_FLASH_DURATION = 1.5f;
+        const inline static float BOSS_SKILL_FLASH_DURATION = 0.5f;
         const inline static float BOSS_SKILL_FLASH_CHANNELLING_DURATION = 0.75f;
         const inline static float BOSS_SKILL_FLASH_DAMAGE = 100.f;
         const inline static float BOSS_SKILL_FLASH_DISTANCE = 500.f;

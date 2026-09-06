@@ -27,6 +27,18 @@ namespace Meow_Meow {
 
     bool Enemy_Jump_Skill_Component::can_activate_skill(State_Machine_Component* state_machine, void* global_data) {
         Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
+
+        Character_Node* character = data->get_character_node();
+        if (character == nullptr) {
+            return false;
+        }
+
+        State_Machine_Component* player_state_machine =
+            Utils::get_component<State_Machine_Component>(character, Defined::COMPONENT_STATE_MACHINE_NAME);
+        if (player_state_machine->get_current_state_at(Const::TRACK_CONTROLL) == Const::STATE_DEATH) {
+            return false;
+        }
+
         const Enemy_Skill_Jump_Config& skill_config = data->get_config().get_enemy_skill_jump_config();
         if (state_machine->get_current_state_at(Const::TRACK_EFFECTED) == Const::STATE_ATTACKED ||
             state_machine->get_current_state_at(Const::TRACK_EFFECTED) == Const::STATE_STUN) {

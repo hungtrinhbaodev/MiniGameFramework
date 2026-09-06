@@ -15,7 +15,6 @@ namespace Meow_Meow {
         bool is_hitted_by_thunder_skill();
 
         glm::vec2 get_enemy_walking_direction();
-        glm::vec2 get_jump_position();
 
     protected:
         void update_information(Base_Node* target, float delta_time, void* global_data) override;

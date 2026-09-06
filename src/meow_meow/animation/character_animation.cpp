@@ -62,12 +62,14 @@ namespace Meow_Meow {
             character_config.get_character_animations(this->character_id);
         for (const auto& animation : animations) {
             bool is_dead = animation.animation_name == "DEAD";
+            bool is_boss_attack =
+                animation.animation_name == "ATTACK" && data->get_config().is_boss_animation_id(this->character_id);
             this->make_animation(
                 animation.animation_name,
                 animation.get_full_path(this->character_level),
                 animation.number_frame,
                 animation.duration_per_frame,
-                !is_dead ? load_mode : Animation_Node::ANIMATION_LOAD_MODE::IMMEDIATE
+                !is_dead && !is_boss_attack ? load_mode : Animation_Node::ANIMATION_LOAD_MODE::IMMEDIATE
             );
         }
         return true;

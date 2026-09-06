@@ -108,13 +108,13 @@ namespace Meow_Meow {
             Const::ENEMY_ATTACK_RANGE,
             Const::ENEMY_DURATION_WALK,
             Const::ENEMY_DURATION_JUMP,
-            Const::ENEMY_DURATION_ATTACK,
+            Const::BOSS_DURATION_ATTACK,
             Const::ENEMY_ATTACK_COUNTDOWN,
             Const::ENEMY_JUMP_COUNTDOWN,
             Const::ENEMY_ATTACKED_DURATION,
             Const::ENEMY_ATTACKED_VELOSITY,
             Const::BOSS_HEALTH,
-            Const::ENEMY_BOUNDING_BOX,
+            Const::BOSS_BOUNDING_BOX,
             Const::ENEMY_KILLED_EXP,
             Const::BOSS_ENABLE_JUMP
         };
