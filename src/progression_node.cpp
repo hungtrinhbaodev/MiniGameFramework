@@ -3,19 +3,25 @@
 
 Progression_Node* Progression_Node::make(
     std::string image_bg,
+    bool enable_nine_scale,
     Custom::Rectangle_Area cap_insets,
     Custom::Size renderer_size,
     Custom::Color inner_progression_color,
     glm::vec2 inner_padding,
-    glm::vec2 inner_delta_position
+    glm::vec2 inner_delta_position,
+    unsigned char inner_opacity
 ) {
     Progression_Node* progression = new Progression_Node();
     progression->set_image(image_bg);
-    progression->set_cap_insets(cap_insets.x, cap_insets.y, cap_insets.width, cap_insets.height);
+    progression->set_enable_nine_scale(enable_nine_scale);
+    if (enable_nine_scale) {
+        progression->set_cap_insets(cap_insets.x, cap_insets.y, cap_insets.width, cap_insets.height);
+        progression->set_renderer_size(renderer_size);
+    }
     progression->set_progression_color(inner_progression_color);
     progression->set_inner_padding(inner_padding);
     progression->set_inner_delta_position(inner_delta_position);
-    progression->set_renderer_size(renderer_size);
+    progression->inner_progression->set_opacity(inner_opacity);
     return progression;
 }
 
@@ -80,12 +86,15 @@ void Progression_Node::fix_update(float delta_time, void* global_data) {
 }
 
 void Progression_Node::sync_inner_progression() {
+    this->inner_progression->set_enable_nine_scale(this->is_enable_nine_scale());
     Custom::Size size = this->get_renderer_size();
     this->clipping_node->set_content_size({size.width, size.height});
     this->clipping_node->set_position({-size.width * anchor.x, -size.height * anchor.y});
     glm::vec2 inner_position = {size.width / 2, size.height / 2};
-    this->inner_progression->set_cap_insets(this->get_cap_insets());
-    this->inner_progression->set_renderer_size({size.width - inner_padding.x, size.height - inner_padding.y});
+    if (this->is_enable_nine_scale()) {
+        this->inner_progression->set_cap_insets(this->get_cap_insets());
+        this->inner_progression->set_renderer_size({size.width - inner_padding.x, size.height - inner_padding.y});
+    }
     inner_position += this->inner_delta_positon;
     this->inner_progression->set_position(inner_position);
     this->set_percent(this->get_percent());

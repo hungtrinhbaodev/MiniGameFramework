@@ -81,6 +81,10 @@ namespace Meow_Meow {
         return this->boss_skil_flash_config;
     }
 
+    const Character_Skill_UI_Config& Config::get_character_skill_ui_config() const {
+        return this->skill_ui_config;
+    }
+
     std::string Config::get_character_name(int character_id) const {
         if (!this->is_character_animation_id(character_id)) {
             return "";

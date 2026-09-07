@@ -17,6 +17,7 @@ namespace Meow_Meow {
 
     protected:
         void update_information(Base_Node* target, float delta_time, void* global_data) override;
+        void handle_task(Base_Node* target, float delta_time, void* global_data) override;
         void set_skill_id(std::string skill_id);
         void set_countdown_time(float countdown_time);
 
@@ -26,5 +27,6 @@ namespace Meow_Meow {
         float current_countdown_time = 0.f;
 
         void start_countdown_time();
+        void update_skill_data(void* global_data);
     };
 }  // namespace Meow_Meow

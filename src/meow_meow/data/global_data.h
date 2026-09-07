@@ -2,6 +2,7 @@
 #include <meow_meow/config/config.h>
 #include <meow_meow/data/enemy_data.h>
 #include <meow_meow/data/player_data.h>
+#include <meow_meow/data/skill_data.h>
 #include <meow_meow/layer/layer_battle.h>
 #include <meow_meow/object/character_node.h>
 
@@ -28,6 +29,8 @@ namespace Meow_Meow {
         std::vector<int> get_new_bosses_id_generated();
         Layer_Node* get_effect_layer();
         bool is_character_level_up();
+        std::vector<Skill_Data>& get_characters_skill_data();
+        Skill_Data* get_skill_data_by(std::string skill_name);
 
         void set_current_battle_wave(int current_battle_wave);
         void set_battle_layer(Battle_Layer* battle_layer);
@@ -56,5 +59,9 @@ namespace Meow_Meow {
         Battle_Layer* battle_layer = nullptr;
         Character_Node* character = nullptr;
         Layer_Node* effect_layer = nullptr;
+
+        std::vector<Skill_Data> character_skills_data;
+
+        void init_skills_data();
     };
 }  // namespace Meow_Meow

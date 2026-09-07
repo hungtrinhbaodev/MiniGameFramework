@@ -140,6 +140,7 @@ namespace Meow_Meow {
         const inline static float BOSS_DURATION_ATTACK = 0.75f;
         const inline static float BOSS_HEALTH = 1500.f;
         const inline static bool BOSS_ENABLE_JUMP = true;
+        const inline static float BOSS_ATTACK_RANGE = 100.f;
 
         /**
          * Progression health bar
@@ -160,9 +161,9 @@ namespace Meow_Meow {
          * Battle level config
          */
         const inline static int BATTLE_NUMBER_WAVE = 3;
-        const inline static std::vector<float> BATTLE_DURATION_GENERATE_ENEMY = {0, 60, 40};
-        const inline static std::vector<int> BATTLE_NUMBER_ENEMY_GENERATED = {0, 5, 5};
-        const inline static std::vector<int> BATTLE_NUMBER_BOSS_GENERATED = {1, 0, 0};
+        const inline static std::vector<float> BATTLE_DURATION_GENERATE_ENEMY = {0, 25, 40};
+        const inline static std::vector<int> BATTLE_NUMBER_ENEMY_GENERATED = {5, 7, 5};
+        const inline static std::vector<int> BATTLE_NUMBER_BOSS_GENERATED = {0, 0, 1};
 
         /**
          * Character level config
@@ -213,5 +214,18 @@ namespace Meow_Meow {
         const inline static float BOSS_SKILL_FLASH_DISTANCE = 500.f;
         const inline static float BOSS_SKILL_FLASH_DURATION_FLY = 1.f;
         const inline static float BOSS_SKILL_FLASH_DURATION_STUN = 0.5f;
+
+        /**
+         * Character skill ui countdown config
+         * @Note: the skill id need to be same as skill id
+         * in skill config to sync ui countdown
+         */
+        const inline static std::vector<std::string> CHARACTER_SKILL_IDS = {
+            CHARACTER_SKILL_DASH_ID, CHARACTER_SKILL_THUNDER_ID
+        };
+        const inline static std::vector<std::string> CHARACTER_SKILL_NAMES = {"Dash: C", "Thunder: V"};
+        const inline static std::vector<std::string> CHARACTER_SKILL_IMAGE_PATHS = {
+            "res/meow_meow/AddonIcon1.png", "res/meow_meow/AddonIcon3.png"
+        };
     };
 }  // namespace Meow_Meow

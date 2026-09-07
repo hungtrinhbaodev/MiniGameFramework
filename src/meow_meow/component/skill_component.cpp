@@ -1,4 +1,5 @@
 #include <meow_meow/component/skill_component.h>
+#include <meow_meow/data/global_data.h>
 
 namespace Meow_Meow {
     Skill_Component::Skill_Component() {}
@@ -28,6 +29,14 @@ namespace Meow_Meow {
 
     void Skill_Component::activating_skill(void* global_data) {
         this->start_countdown_time();
+    }
+
+    void Skill_Component::handle_task(Base_Node* target, float delta_time, void* global_data) {
+        Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
+        Skill_Data* skill_data = data->get_skill_data_by(this->skill_id);
+        if (skill_data == nullptr)
+            return;
+        skill_data->percent_countdown = this->current_countdown_time / this->countdown_time * 100;
     }
 
     void Skill_Component::update_information(Base_Node* target, float delta_time, void* global_data) {

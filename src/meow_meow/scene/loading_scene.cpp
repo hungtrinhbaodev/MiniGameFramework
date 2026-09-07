@@ -21,6 +21,7 @@ namespace Meow_Meow {
         Custom::Size screen_size = get_content_size();
         loading = Progression_Node::make(
             "res/meow_meow/AddonBoxNumber.png",
+            true,
             CAP_INSETS_LOADING_BAR,
             RENDERER_SIZE_LOADING_BAR,
             COLOR_PROGRESSION_BAR,

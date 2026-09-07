@@ -42,7 +42,12 @@ namespace Meow_Meow {
         float start_x = LAYER_PADDING.width + SIZE_BACKGROUND_BOX.width * 0.9 + LAYER_GAP.width;
         float start_y = LAYER_SIZE.height - LAYER_PADDING.height;
         this->health_progression = Progression_Node::make(
-            PATH_PROGRESSION, CAP_INSETS_PROGRESSION, SIZE_PROGRESSION, HEALTH_COLOR_PROGRESSION, PADDING_PROGRESSION
+            PATH_PROGRESSION,
+            true,
+            CAP_INSETS_PROGRESSION,
+            SIZE_PROGRESSION,
+            HEALTH_COLOR_PROGRESSION,
+            PADDING_PROGRESSION
         );
         this->health_progression->set_anchor({0.f, 0.5f});
         this->health_progression->set_position({start_x, start_y - SIZE_PROGRESSION.height / 2});

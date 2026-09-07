@@ -7,6 +7,7 @@
 #include <meow_meow/config/character_level_config.h>
 #include <meow_meow/config/character_skill_dash_config.h>
 #include <meow_meow/config/character_skill_thunder_config.h>
+#include <meow_meow/config/character_skill_ui_config.h>
 #include <meow_meow/config/enemy_behavior_config.h>
 #include <meow_meow/config/enemy_skill_jump_config.h>
 #include <meow_meow/const.h>
@@ -36,6 +37,7 @@ namespace Meow_Meow {
         const Character_Skill_Thunder_Config& get_character_skill_thunder_config() const;
         const Enemy_Skill_Jump_Config& get_enemy_skill_jump_config() const;
         const Boss_Skill_Flash_Config& get_boss_skill_flash_config() const;
+        const Character_Skill_UI_Config& get_character_skill_ui_config() const;
         std::string get_character_name(int character_id) const;
         std::vector<int> get_character_ids() const;
 
@@ -105,7 +107,7 @@ namespace Meow_Meow {
             Const::ENEMY_JUMP_DISTANCE,
             Const::BOSS_VELOSITY,
             Const::BOSS_ATTACK_DAMGE,
-            Const::ENEMY_ATTACK_RANGE,
+            Const::BOSS_ATTACK_RANGE,
             Const::ENEMY_DURATION_WALK,
             Const::ENEMY_DURATION_JUMP,
             Const::BOSS_DURATION_ATTACK,
@@ -154,6 +156,9 @@ namespace Meow_Meow {
             Const::BOSS_SKILL_FLASH_DISTANCE,
             Const::BOSS_SKILL_FLASH_DURATION_FLY,
             Const::BOSS_SKILL_FLASH_DURATION_STUN
+        };
+        Character_Skill_UI_Config skill_ui_config{
+            Const::CHARACTER_SKILL_IDS, Const::CHARACTER_SKILL_NAMES, Const::CHARACTER_SKILL_IMAGE_PATHS
         };
         Battle_Config default_battle_config{};
         std::vector<Battle_Config> battle_levels;

@@ -7,11 +7,13 @@ class Progression_Node : public Image_UI_Node {
 public:
     static Progression_Node* make(
         std::string image_bg,
+        bool enable_nine_scale,
         Custom::Rectangle_Area cap_insets,
         Custom::Size renderer_size,
         Custom::Color inner_progression_color,
         glm::vec2 inner_padding = {0.f, 0.f},
-        glm::vec2 inner_delta_position = {0.f, 0.f}
+        glm::vec2 inner_delta_position = {0.f, 0.f},
+        unsigned char inner_opacity = 255
     );
 
     Progression_Node();

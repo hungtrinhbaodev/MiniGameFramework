@@ -120,6 +120,7 @@ namespace Meow_Meow {
         this->progression_container = new Node();
         this->progression_health = Progression_Node::make(
             Const::PATH_HEALTH_BAR,
+            true,
             Const::HEALTH_BAR_CAP_INSETS,
             Const::HEALTH_BAR_SIZE,
             Const::HEALTH_BAR_COLOR,
@@ -387,7 +388,7 @@ namespace Meow_Meow {
                         Action::fade_in(duration / 2, Action_Ease::SINE_IN)
                     ),
                     Action::sequence(
-                        Action::move_to(duration / 2, {10 * sign, 0}, Action_Ease::SINE_OUT),
+                        Action::move_to(duration / 2, {5 * sign, 0}, Action_Ease::SINE_OUT),
                         Action::move_to(duration / 2, {0, 0}, Action_Ease::SINE_IN)
                     )
                 )
@@ -657,23 +658,21 @@ namespace Meow_Meow {
 
         if (state_machine->is_finish_state_at(Const::TRACK_CONTROLL)) {
             /**
+             * If duration attack finish and player is not take it
+             * we remove the damage deal in collision!
+             */
+            if (state_at_controll == Const::STATE_ATTACK) {
+                this->unschedule(Const::STATE_ATTACK);
+                Enemy_Collision_Data* collision_data = Utils::get_collision_owner_data<Enemy_Collision_Data>(collision);
+                if (collision_data != nullptr) {
+                    collision_data->set_damage_deal(0.f);
+                }
+            }
+            /**
              * @Note: if enemy is attacked we don't update anything!
              */
             if (state_at_effected != Const::STATE_ATTACKED && state_at_effected != Const::STATE_STUN) {
                 if (state_at_controll != Const::STATE_DEATH) {
-                    /**
-                     * If duration attack finish and player is not take it
-                     * we remove the damage deal in collision!
-                     */
-                    if (state_at_controll == Const::STATE_ATTACK) {
-                        this->unschedule(Const::STATE_ATTACK);
-                        Enemy_Collision_Data* collision_data =
-                            Utils::get_collision_owner_data<Enemy_Collision_Data>(collision);
-                        if (collision_data != nullptr) {
-                            collision_data->set_damage_deal(0.f);
-                        }
-                    }
-
                     if (!this->handle_active_skill(global_data) && !this->handle_other_state(global_data)) {
                         if (behavior->can_attack()) {
                             this->change_to_attack(global_data);

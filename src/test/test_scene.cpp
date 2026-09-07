@@ -155,8 +155,9 @@ Test_Scene::Test_Scene() {
         std::cout << "Hi there, pressed me 2! " << touch_position.x << ", " << touch_position.y << std::endl;
     });
 
-    progression =
-        Progression_Node::make("res/meow_meow/AddonBoxNumber.png", {30, 10, 74, 31}, {200, 40}, {20, 160, 20}, {6, 8});
+    progression = Progression_Node::make(
+        "res/meow_meow/AddonBoxNumber.png", true, {30, 10, 74, 31}, {200, 40}, {20, 160, 20}, {6, 8}
+    );
     progression->set_position({120.f, 40.f});
     progression->do_action(Action::sequence(Action::rotate_by(3, 360, Action_Ease::SINE_OUT))->repeat_forever());
 

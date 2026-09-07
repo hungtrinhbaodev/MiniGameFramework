@@ -11,9 +11,19 @@ namespace Meow_Meow {
         return instance;
     }
 
-    Global_Data::Global_Data() {}
+    Global_Data::Global_Data() {
+        this->init_skills_data();
+    }
 
     Global_Data::~Global_Data() {}
+
+    void Global_Data::init_skills_data() {
+        const Character_Skill_UI_Config& skills_config = this->get_config().get_character_skill_ui_config();
+        for (int i = 0; i < skills_config.skills.size(); i++) {
+            const Skill_Information& skill = skills_config.skills[i];
+            this->character_skills_data.push_back({skill.skill_id, 0});
+        }
+    }
 
     const Config& Global_Data::get_config() {
         return config;
@@ -74,6 +84,20 @@ namespace Meow_Meow {
         }
         int exp_required = level_config.get_exp_next_level(current_level);
         return current_exp >= exp_required;
+    }
+
+    std::vector<Skill_Data>& Global_Data::get_characters_skill_data() {
+        return this->character_skills_data;
+    }
+
+    Skill_Data* Global_Data::get_skill_data_by(std::string skill_name) {
+        for (int i = 0; i < this->character_skills_data.size(); i++) {
+            Skill_Data* skill_data = &this->character_skills_data[i];
+            if (skill_data->skill_id == skill_name) {
+                return skill_data;
+            }
+        }
+        return nullptr;
     }
 
     void Global_Data::character_level_up() {

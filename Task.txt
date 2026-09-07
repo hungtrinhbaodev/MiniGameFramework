@@ -43,11 +43,11 @@
 [Done]: Add logic collision to border layer to player.
 [Done]: Add enemy object node.
 [Done]: Add logic collision to bullet and enemy.
-[]: Add level system to upgrade game.
+[Done]: Add level system to upgrade game.
 []: Add progression of enemy spwan.
 [Done]: Separate health layer into main battle layer.
-[]: Add boss node.
-[]: Add skill system to character (dash, random bullet and booming).
+[Done]: Add boss node.
+[Done]: Add skill system to character (dash, random bullet and booming).
 []: Update movement to enemy to make it more realistic.
 
 []: Refactor variable name in key press system to read easier.

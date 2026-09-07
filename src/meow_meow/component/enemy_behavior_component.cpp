@@ -99,7 +99,9 @@ namespace Meow_Meow {
 
         glm::vec2 enemy_position = target->get_position();
         glm::vec2 character_position = character->get_position();
-        this->enemy_direction = glm::normalize(character_position - enemy_position);
+
+        this->enemy_direction =
+            glm::normalize(character_position - enemy_position + glm::vec2(0, Math::random_float(-200, 200)));
     }
 
 }  // namespace Meow_Meow
