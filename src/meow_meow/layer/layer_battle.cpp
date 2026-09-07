@@ -82,9 +82,11 @@ namespace Meow_Meow {
                 this->enemies[i] = this->enemies.back();
                 this->enemies.pop_back();
                 i--;
+                this->removed_enemies_id.push_back(enemy_id);
             }
         }
     }
+
     void Battle_Layer::spawn_boss(Enemy_Data boss_data) {
         Boss_Node* boss = new Boss_Node(boss_data.get_enemy_id(), boss_data.get_enemy_animation_id());
         glm::vec2 player_position = this->character->get_position();
@@ -100,7 +102,20 @@ namespace Meow_Meow {
                 this->bosses[i] = this->bosses.back();
                 this->bosses.pop_back();
                 i--;
+                this->removed_bosses_id.push_back(boss_id);
             }
         }
+    }
+
+    void Battle_Layer::fix_update(float delta_time, void* global_data) {
+        Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
+        for (int id : this->removed_enemies_id) {
+            data->remove_enemy_by(id);
+        }
+        for (int id : this->removed_bosses_id) {
+            data->remove_boss_by(id);
+        }
+        this->removed_enemies_id.clear();
+        this->removed_bosses_id.clear();
     }
 }  // namespace Meow_Meow

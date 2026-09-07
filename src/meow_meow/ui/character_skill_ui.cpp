@@ -15,7 +15,8 @@ namespace Meow_Meow {
             return 0.f;
         glm::vec2 image_scale = this->progression_skill->get_scale();
         Custom::Size image_size = this->progression_skill->get_renderer_size();
-        return image_size.height * image_scale.y * 0.85;
+        glm::vec2 scale = this->get_scale();
+        return image_size.height * image_scale.y * 0.85 * scale.y;
     }
 
     void Character_Skill_UI::attach(void* global_data) {
@@ -67,7 +68,7 @@ namespace Meow_Meow {
         Custom::Size image_size = this->progression_skill->get_renderer_size();
         glm::vec2 image_scale = this->progression_skill->get_scale();
         this->label_skill_name->set_position(
-            {image_size.width * image_scale.x + GAP_WIDTH_UI, image_size.height * 0.35 * image_scale.y}
+            {image_size.width * image_scale.x + GAP_WIDTH_UI, image_size.height * 0.4 * image_scale.y}
         );
         this->add_child(this->label_skill_name);
         this->label_skill_name->set_text(skill->skill_display_name);

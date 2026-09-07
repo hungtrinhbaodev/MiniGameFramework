@@ -344,18 +344,19 @@ void Test_Scene::on_key_pressed(Custom::Key key, Key_Press_Detail pressed_detail
     auto& animation_config = data->get_config().get_enemy_animation_config();
     switch (key) {
         case Custom::Key::V: {
-            if (pressed_detail.type != Key_Input_Type::PRESSED)
-                break;
-            Meow_Meow::Character_Channelling_Animation* animation = new Meow_Meow::Character_Channelling_Animation();
+            // if (this->win_game_gui != nullptr) {
+            //     this->win_game_gui->remove_from_parent();
+            // }
+            // this->win_game_gui = new Meow_Meow::Win_Game_GUI();
+            // this->add_child(this->win_game_gui);
+            Meow_Meow::Character_Fire_Run_Animation* animation = new Meow_Meow::Character_Fire_Run_Animation();
             animation->set_position({300, 240});
             this->add_child(animation);
             break;
         }
         case Custom::Key::C: {
-            if (pressed_detail.type != Key_Input_Type::PRESSED)
-                break;
-            Meow_Meow::Skill_Thunder_Animation* animation = new Meow_Meow::Skill_Thunder_Animation();
-            animation->set_position({400, 240});
+            Meow_Meow::Character_Fire_Ball_Animation* animation = new Meow_Meow::Character_Fire_Ball_Animation();
+            animation->set_position({450, 240});
             this->add_child(animation);
             break;
         }

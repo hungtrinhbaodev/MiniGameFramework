@@ -18,6 +18,7 @@ namespace Meow_Meow {
     Global_Data::~Global_Data() {}
 
     void Global_Data::init_skills_data() {
+        this->character_skills_data.clear();
         const Character_Skill_UI_Config& skills_config = this->get_config().get_character_skill_ui_config();
         for (int i = 0; i < skills_config.skills.size(); i++) {
             const Skill_Information& skill = skills_config.skills[i];
@@ -100,6 +101,24 @@ namespace Meow_Meow {
         return nullptr;
     }
 
+    float Global_Data::get_current_battle_duration() {
+        return this->current_battle_duration;
+    }
+
+    bool Global_Data::is_player_win() {
+        const Battle_Config& battle_config = this->get_config().get_battle_config_at(this->current_battle_level);
+        if (this->current_battle_wave >= battle_config.get_number_wave()) {
+            if (this->enemies.size() <= 0 && this->bosses.size() <= 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool Global_Data::is_player_lose() {
+        return this->get_player_data().is_dead();
+    }
+
     void Global_Data::character_level_up() {
         if (!is_character_level_up())
             return;
@@ -112,6 +131,10 @@ namespace Meow_Meow {
         this->player_data.set_player_damage(
             this->player_data.get_player_damage() + level_config.get_bonus_damage_at_level(current_level)
         );
+    }
+
+    void Global_Data::set_current_battle_duration(float duration) {
+        this->current_battle_duration = duration;
     }
 
     void Global_Data::set_current_battle_wave(int current_battle_wave) {
@@ -172,6 +195,18 @@ namespace Meow_Meow {
                 false
             };
             new_bosses_id_generated.push_back(enemy_id);
+        }
+    }
+
+    void Global_Data::remove_boss_by(int boss_id) {
+        if (this->bosses.find(boss_id) != this->bosses.end()) {
+            this->bosses.erase(boss_id);
+        }
+    }
+
+    void Global_Data::remove_enemy_by(int enemy_id) {
+        if (this->enemies.find(enemy_id) != this->enemies.end()) {
+            this->enemies.erase(enemy_id);
         }
     }
 

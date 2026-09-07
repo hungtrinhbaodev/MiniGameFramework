@@ -8,6 +8,11 @@
 #include <label_node.h>
 #include <layer_node.h>
 #include <math_custom.h>
+#include <meow_meow/animation/character_fire_ball_anmimation.h>
+#include <meow_meow/animation/character_fire_run_animation.h>
+#include <meow_meow/gui/lose_game_gui.h>
+#include <meow_meow/gui/start_round_gui.h>
+#include <meow_meow/gui/win_game_gui.h>
 #include <progression_node.h>
 #include <scene_node.h>
 
@@ -32,4 +37,7 @@ private:
     Image_Node* image2 = nullptr;
     Progression_Node* progression = nullptr;
     Button_Node* btn = nullptr;
+    Meow_Meow::Win_Game_GUI* win_game_gui = nullptr;
+    Meow_Meow::Lose_Game_GUI* lose_game_gui = nullptr;
+    Meow_Meow::Start_Round_GUI* start_round_gui = nullptr;
 };

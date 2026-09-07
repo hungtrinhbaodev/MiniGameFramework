@@ -13,6 +13,9 @@ public:
     Custom::Size get_content_size();
     Node_Type get_type() override;
 
+    void set_enable_layer_color(bool enable);
+    void set_layer_color(Custom::Color color);
+
     void set_clipping(bool is_clipping);
     void set_content_size(Custom::Size size);
     void set_content_size(float size_x, float size_y);
@@ -21,6 +24,7 @@ public:
 
 protected:
     void before_draw_children(Custom::Transform& world_transform, int& draw_index) override;
+    void draw(Custom::Transform& world_transform, int& draw_index) override;
     void after_draw_children(Custom::Transform& world_transform, int& draw_index) override;
     void compute_world_transform(Custom::Transform& world_transform) override;
 
@@ -28,6 +32,9 @@ private:
     bool is_show_boundary = false;
     bool is_clipping = false;
     Custom::Size size;
+
+    bool enable_layer_color = false;
+    Custom::Color layer_color = {255, 255, 255};
 
     Base_Node* focus_target = nullptr;
     float strike_duration_move = 0.f;

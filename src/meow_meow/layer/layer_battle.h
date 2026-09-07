@@ -22,6 +22,9 @@ namespace Meow_Meow {
         void remove_boss_by(int boss_id);
         std::vector<Enemy_Node*> get_enemy_nodes();
 
+    protected:
+        void fix_update(float delta_time, void* global_data) override;
+
     private:
         void init_bg();
         void init_character();
@@ -34,5 +37,7 @@ namespace Meow_Meow {
         Image_Node* bg = nullptr;
         std::vector<Enemy_Node*> enemies;
         std::vector<Boss_Node*> bosses;
+        std::vector<int> removed_bosses_id;
+        std::vector<int> removed_enemies_id;
     };
 }  // namespace Meow_Meow

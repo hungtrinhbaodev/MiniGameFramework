@@ -43,4 +43,12 @@ namespace Meow_Meow {
         return this->duration_enemies_generated[wave];
     }
 
+    float Battle_Config::get_total_duration_generate() const {
+        float total_duration = 0;
+        for (int duration : duration_enemies_generated) {
+            total_duration += duration;
+        }
+        return total_duration;
+    }
+
 }  // namespace Meow_Meow

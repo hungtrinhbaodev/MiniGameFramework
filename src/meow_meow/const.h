@@ -161,7 +161,7 @@ namespace Meow_Meow {
          * Battle level config
          */
         const inline static int BATTLE_NUMBER_WAVE = 3;
-        const inline static std::vector<float> BATTLE_DURATION_GENERATE_ENEMY = {0, 25, 40};
+        const inline static std::vector<float> BATTLE_DURATION_GENERATE_ENEMY = {0, 30, 40};
         const inline static std::vector<int> BATTLE_NUMBER_ENEMY_GENERATED = {5, 7, 5};
         const inline static std::vector<int> BATTLE_NUMBER_BOSS_GENERATED = {0, 0, 1};
 
@@ -223,7 +223,7 @@ namespace Meow_Meow {
         const inline static std::vector<std::string> CHARACTER_SKILL_IDS = {
             CHARACTER_SKILL_DASH_ID, CHARACTER_SKILL_THUNDER_ID
         };
-        const inline static std::vector<std::string> CHARACTER_SKILL_NAMES = {"Dash: C", "Thunder: V"};
+        const inline static std::vector<std::string> CHARACTER_SKILL_NAMES = {"Dash: C", "Fire: V"};
         const inline static std::vector<std::string> CHARACTER_SKILL_IMAGE_PATHS = {
             "res/meow_meow/AddonIcon1.png", "res/meow_meow/AddonIcon3.png"
         };

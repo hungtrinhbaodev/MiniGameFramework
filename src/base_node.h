@@ -63,6 +63,8 @@ public:
     void set_name(std::string name);
     void set_color(Custom::Color color);
     void set_user_data(std::string key, void* data);
+    void set_speed_update(float speed);
+    void set_paused(bool paused);
 
     void add_child(Base_Node* child);
 
@@ -87,9 +89,14 @@ protected:
      * like handle user inputs (touch, key board) and some custom logic before draw,...
      */
     void travel(float delta_time, void* global_data = nullptr);
-    void visit_handle_personal_task(float delta_time, void* global_data);
+    void visit_handle_personal_task(float delta_time, void* global_data, bool is_paused);
     void visit_draw(
-        Custom::Transform& world_transform, float delta_time, int& draw_index, void* global_data, bool visible
+        Custom::Transform& world_transform,
+        float delta_time,
+        int& draw_index,
+        void* global_data,
+        bool visible,
+        bool is_paused
     );
     virtual void compute_world_transform(Custom::Transform& world_transform);
     virtual void inverse_world_transform(Custom::Transform& world_transform, unsigned char inverse_opacity);
@@ -127,8 +134,6 @@ private:
     void sort_nodes();
     void cleanup_invalid_children(void* global_data);
     void added_waiting_children(float delta_time, void* global_data);
-    /**
-     * Debug cyclic
-     */
-    bool is_loop_children = false;
+    float speed_update = 1.f;
+    bool paused = false;
 };

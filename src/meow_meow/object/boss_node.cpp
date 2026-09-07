@@ -74,6 +74,7 @@ namespace Meow_Meow {
         Boss_Collision_Data* collision_data = Utils::get_collision_owner_data<Boss_Collision_Data>(collision);
         delete (collision_data);
         collision->set_owner_data(nullptr);
+        this->unschedule(Const::STATE_ATTACK);
     }
 
     bool Boss_Node::handle_other_state(void* global_data) {
@@ -114,6 +115,20 @@ namespace Meow_Meow {
         }
 
         return false;
+    }
+
+    bool Boss_Node::can_take_damage(void* global_data) {
+        State_Machine_Component* state_machine =
+            Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
+
+        std::string current_controll_state = state_machine->get_current_state_at(Const::TRACK_CONTROLL);
+        std::string current_effect_state = state_machine->get_current_state_at(Const::TRACK_EFFECTED);
+        if (current_effect_state == Const::STATE_ATTACKED || current_controll_state == Const::STATE_SKILL_CHANNELLING ||
+            current_controll_state == Const::STATE_SKILL_FLASH) {
+            return false;
+        }
+
+        return true;
     }
 
     void Boss_Node::action_channelling_skill(float delay, float duration_channelling) {

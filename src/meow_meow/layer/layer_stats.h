@@ -1,5 +1,6 @@
 #include <layer_node.h>
 #include <meow_meow/ui/battle_character_stats_ui.h>
+#include <meow_meow/ui/battle_wave_progression_ui.h>
 #include <meow_meow/ui/character_skill_ui.h>
 
 namespace Meow_Meow {
@@ -15,12 +16,16 @@ namespace Meow_Meow {
     private:
         const glm::vec2 ORIGIN_START_SKILL_UI_POSITION = {5.f, 17.f};
         const float GAP_HEIGHT_PER_SKILL_UI = 2.f;
+        const glm::vec2 PADDING_BATTLE_PROGRESSION = {5.f, 5.f};
+        const glm::vec2 ORIGIN_WAVE_PROGRESSION_SCALE = {1.f, 1.f};
 
         void init_stats_ui();
         void init_skills_ui(void* global_data);
+        void init_battle_progreesion_ui();
         void update_skills_ui_location();
 
         Battle_Character_Stats_UI* stats_ui = nullptr;
+        Battle_Wave_Progression_UI* battle_prgression_ui = nullptr;
         std::vector<Character_Skill_UI*> skills_ui;
     };
 }  // namespace Meow_Meow

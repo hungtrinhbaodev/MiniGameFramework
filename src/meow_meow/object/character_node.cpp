@@ -4,6 +4,7 @@
 #include <label_node.h>
 #include <math_custom.h>
 #include <meow_meow/animation/character_channelling_animation.h>
+#include <meow_meow/animation/character_fire_ball_anmimation.h>
 #include <meow_meow/animation/level_up_flame_animation.h>
 #include <meow_meow/animation/shoot_animation.h>
 #include <meow_meow/component/character_skill_dash_component.h>
@@ -431,7 +432,12 @@ namespace Meow_Meow {
                     )
                 ),
                 Action::hide(),
-                Action::call_func([this](Base_Node* target, void* global_data) { this->set_visible(false); })
+                Action::call_func([this](Base_Node* target, void* global_data) {
+                    this->set_visible(false);
+                    Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
+                    Player_Data& player_data = data->get_player_data();
+                    player_data.set_dead(true);
+                })
             )
         );
     }
@@ -506,9 +512,7 @@ namespace Meow_Meow {
 
         this->remove_component(Defined::COMPONENT_COLLISION_NAME);
 
-        Player_Data& player_data = data->get_player_data();
         this->action_character_dead(0, behavior_config.get_dead_duration());
-        player_data.set_dead(true);
     }
 
     void Character_Node::action_character_dashing(float delay, float dash_duration, float dash_distance) {
@@ -566,9 +570,27 @@ namespace Meow_Meow {
     }
 
     void Character_Node::action_character_channelling_skill_thunder(float delay, float duration) {
-        Character_Channelling_Animation* animation = new Character_Channelling_Animation(duration);
-        animation->set_scale(ORIGIN_SCALE_CHANNELLING_ANIMATION);
+        // Character_Channelling_Animation* animation = new Character_Channelling_Animation(duration);
+        // animation->set_scale(ORIGIN_SCALE_CHANNELLING_ANIMATION);
+        // this->add_child(animation);
+        Character_Fire_Ball_Animation* animation = new Character_Fire_Ball_Animation();
         this->add_child(animation);
+        animation->set_opacity(0);
+        animation->set_scale({0.f, 0.f});
+        animation->do_action(
+            Action::sequence(
+                Action::delay(0.f),
+                Action::spawn(
+                    Action::sequence(
+                        Action::scale_to(duration / 2, {1.2f, 1.2f}, Action_Ease::SINE_OUT),
+                        Action::scale_to(duration / 2, {1.f, 1.f}, Action_Ease::SINE_IN)
+                    ),
+                    Action::fade_to(duration * 0.5, ORIGIN_OPACITY_FIRE_BALL_ANIMATION, Action_Ease::SINE_OUT)
+                ),
+                Action::fade_out(duration * 0.5, Action_Ease::SINE_IN),
+                Action::remove_self(true)
+            )
+        );
     }
 
     void Character_Node::action_character_flight(float delay, float duration_fly) {
@@ -862,6 +884,7 @@ namespace Meow_Meow {
             Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
 
         std::string current_controll_state = state_machine->get_current_state_at(Const::TRACK_CONTROLL);
+        std::string current_effected_state = state_machine->get_current_state_at(Const::TRACK_EFFECTED);
 
         if (current_controll_state == Const::STATE_DEATH) {
             return;
@@ -870,7 +893,7 @@ namespace Meow_Meow {
         /**
          * @Note: if player already hitted or invisible we ignore phase attack damge of enemy!
          */
-        if (current_controll_state == Const::STATE_INVINCIBLE || current_controll_state == Const::STATE_ATTACKED ||
+        if (current_controll_state == Const::STATE_INVINCIBLE || current_effected_state == Const::STATE_ATTACKED ||
             current_controll_state == Const::STATE_FLIGHT) {
             return;
         }

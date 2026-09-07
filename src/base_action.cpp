@@ -334,6 +334,7 @@ void Base_Action::recycle() {
     processing_informations.clear();
     this->added_into_processing_informations = false;
     this->current_duration = 0.0f;
+    this->is_setup = false;
     if (this->type == Action_Type::ALWAY_HAPPEN) {
         this->is_appled = false;
     }

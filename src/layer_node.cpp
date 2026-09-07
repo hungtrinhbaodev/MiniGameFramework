@@ -65,6 +65,14 @@ void Layer_Node::set_camera_focus_on(Base_Node* target, float strike_duration_mo
     );
 }
 
+void Layer_Node::set_enable_layer_color(bool enable) {
+    this->enable_layer_color = enable;
+}
+
+void Layer_Node::set_layer_color(Custom::Color color) {
+    this->layer_color = color;
+}
+
 void Layer_Node::set_clipping(bool is_clipping) {
     this->is_clipping = is_clipping;
 }
@@ -78,6 +86,17 @@ void Layer_Node::before_draw_children(Custom::Transform& world_transform, int& d
 
     if (this->is_clipping) {
         Libs_Wrapper::start_draw_clipping(this->size.width, this->size.height, {world_transform, anchor, draw_index});
+        draw_index++;
+    }
+}
+
+void Layer_Node::draw(Custom::Transform& world_transform, int& draw_index) {
+    if (this->enable_layer_color) {
+        Libs_Wrapper::draw_rectangle(
+            this->get_content_size().width,
+            this->get_content_size().height,
+            {world_transform, this->anchor, draw_index, this->layer_color}
+        );
         draw_index++;
     }
 }

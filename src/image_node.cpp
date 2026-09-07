@@ -31,6 +31,12 @@ Custom::Size Image_Node::get_content_size() {
     return image_info.size;
 }
 
+Custom::Size Image_Node::get_scaled_size() {
+    Custom::Size size = this->get_content_size();
+    glm::vec2 scale = this->get_scale();
+    return Custom::Size{size.width * scale.x, size.height * scale.y};
+}
+
 Node_Type Image_Node::get_type() {
     return Node_Type::IMAGE;
 }

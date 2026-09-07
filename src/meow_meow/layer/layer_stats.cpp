@@ -14,6 +14,7 @@ namespace Meow_Meow {
 
     void Layer_Stats::attach(void* global_data) {
         this->init_skills_ui(global_data);
+        this->init_battle_progreesion_ui();
     }
 
     void Layer_Stats::fix_update(float delta_time, void* global_data) {
@@ -25,6 +26,16 @@ namespace Meow_Meow {
         Custom::Size ui_size = this->stats_ui->get_content_size();
         this->stats_ui->set_position({0, this->get_content_size().height - ui_size.height});
         this->add_child(this->stats_ui);
+    }
+
+    void Layer_Stats::init_battle_progreesion_ui() {
+        this->battle_prgression_ui = new Battle_Wave_Progression_UI();
+        this->battle_prgression_ui->set_scale(ORIGIN_WAVE_PROGRESSION_SCALE);
+        float width = this->battle_prgression_ui->get_ui_width();
+        this->battle_prgression_ui->set_position(
+            {this->get_content_size().width - PADDING_BATTLE_PROGRESSION.x - width, PADDING_BATTLE_PROGRESSION.y}
+        );
+        this->add_child(this->battle_prgression_ui);
     }
 
     void Layer_Stats::init_skills_ui(void* global_data) {

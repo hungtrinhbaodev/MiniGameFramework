@@ -14,6 +14,7 @@ public:
 
     std::string get_image();
     Custom::Size get_content_size();
+    Custom::Size get_scaled_size();
     Node_Type get_type() override;
     std::function<void(glm::vec2, Base_Node*, void*)> get_touch_caller();
     bool is_enable_touched();

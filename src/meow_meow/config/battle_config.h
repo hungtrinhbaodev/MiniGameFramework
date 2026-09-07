@@ -17,6 +17,7 @@ namespace Meow_Meow {
         float get_number_enemies_at(int wave) const;
         float get_number_bosses_at(int wave) const;
         float get_duration_generate_enemy_at(int wave) const;
+        float get_total_duration_generate() const;
 
     private:
         int number_wave = 0;

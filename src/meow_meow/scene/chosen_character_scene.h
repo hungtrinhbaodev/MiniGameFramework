@@ -27,7 +27,6 @@ namespace Meow_Meow {
         float effect_show_lights(float delay);
         float effect_show_logo(float delay);
         float effect_blur_bg(float delay);
-
         float effect_shake_light_when_change_character(float delay);
         void on_change_character(int next_character);
 

@@ -19,6 +19,7 @@ namespace Meow_Meow {
         void clean_collision_data(Collision_Component* collision) override;
         Enemy_Data& get_enemy_data(void* global_data) override;
         Custom::Anchor_Point get_origin_animation_anchor_point() override;
+        bool can_take_damage(void* global_data) override;
 
     private:
         const int ACTION_CHANNELLING_SKILL_TAG = 0;

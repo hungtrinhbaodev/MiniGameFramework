@@ -31,6 +31,9 @@ namespace Meow_Meow {
         bool is_character_level_up();
         std::vector<Skill_Data>& get_characters_skill_data();
         Skill_Data* get_skill_data_by(std::string skill_name);
+        float get_current_battle_duration();
+        bool is_player_win();
+        bool is_player_lose();
 
         void set_current_battle_wave(int current_battle_wave);
         void set_battle_layer(Battle_Layer* battle_layer);
@@ -39,6 +42,9 @@ namespace Meow_Meow {
         void set_effect_layer(Layer_Node* layer);
         void generate_enemies_at(int wave);
         void character_level_up();
+        void set_current_battle_duration(float duration);
+        void remove_boss_by(int boss_id);
+        void remove_enemy_by(int enemy_id);
 
     private:
         static Global_Data* instance;
@@ -61,6 +67,7 @@ namespace Meow_Meow {
         Layer_Node* effect_layer = nullptr;
 
         std::vector<Skill_Data> character_skills_data;
+        float current_battle_duration = 0;
 
         void init_skills_data();
     };

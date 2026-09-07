@@ -11,8 +11,15 @@ namespace Meow_Meow {
         Chosen_Character_UI(int character_id);
         ~Chosen_Character_UI();
 
+        Character_Animation* get_character_animation();
+
+        void set_character_id(int character_id);
+        void set_character_level(int character_level);
+        void set_hide_label_name(bool hide);
+
     protected:
         void attach(void* global_data) override;
+        void fix_update(float delta_time, void* global_data) override;
 
     private:
         void init_hall();
@@ -31,5 +38,7 @@ namespace Meow_Meow {
         Character_Animation* character = nullptr;
         Label_Node* character_name = nullptr;
         int character_id = -1;
+        int character_level = 1;
+        bool hide_label_name = false;
     };
 }  // namespace Meow_Meow

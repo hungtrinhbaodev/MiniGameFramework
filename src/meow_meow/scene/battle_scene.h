@@ -1,5 +1,8 @@
 #pragma once
 #include <layer_node.h>
+#include <meow_meow/gui/lose_game_gui.h>
+#include <meow_meow/gui/start_round_gui.h>
+#include <meow_meow/gui/win_game_gui.h>
 #include <meow_meow/layer/layer_battle.h>
 #include <meow_meow/layer/layer_stats.h>
 #include <scene_node.h>
@@ -19,6 +22,9 @@ namespace Meow_Meow {
         Layer_Stats* stats_layer = nullptr;
         float battle_countdown_wave = 0.f;
 
+        Win_Game_GUI* win_game_gui = nullptr;
+        Lose_Game_GUI* lose_game_gui = nullptr;
+        Start_Round_GUI* start_round_gui = nullptr;
         void generate_new_enemies_wave(void* global_data);
     };
 }  // namespace Meow_Meow

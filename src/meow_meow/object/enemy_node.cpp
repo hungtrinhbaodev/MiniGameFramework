@@ -3,6 +3,7 @@
 #include <defined.h>
 #include <label_node.h>
 #include <math_custom.h>
+#include <meow_meow/animation/character_fire_run_animation.h>
 #include <meow_meow/animation/skill_thunder_animation.h>
 #include <meow_meow/component/enemy_behavior_component.h>
 #include <meow_meow/component/enemy_jump_skill_component.h>
@@ -245,6 +246,16 @@ namespace Meow_Meow {
         Enemy_Behavior_Component* behavior =
             Utils::get_component<Enemy_Behavior_Component>(this, Const::ENEMY_BEHAVIOR_COMPONENT_NAME);
 
+        Collision_Component* collision =
+            Utils::get_component<Collision_Component>(this, Defined::COMPONENT_COLLISION_NAME);
+
+        if (collision != nullptr) {
+            Enemy_Collision_Data* collision_data = Utils::get_collision_owner_data<Enemy_Collision_Data>(collision);
+            if (collision_data != nullptr) {
+                collision_data->set_damage_deal(0.f);
+            }
+        }
+
         if (state_machine->get_current_state_at(Const::TRACK_CONTROLL) == Const::STATE_JUMP) {
             this->stop_action(JUMP_ACTION_TAG);
             this->container->stop_action(JUMP_ACTION_TAG);
@@ -463,11 +474,30 @@ namespace Meow_Meow {
     }
 
     void Enemy_Node::action_enemy_hitted_by_thunder(float delay, float duration, Layer_Node* effect_layer) {
-        Skill_Thunder_Animation* animation = new Skill_Thunder_Animation(duration);
-        animation->set_position(this->get_position() + ORIGIN_THUNDER_ANIMATION);
-        animation->set_scale(ORIGIN_THUNDER_SCALE);
-        animation->set_name("Enemy_Node::Skill_Thunder_Animation");
-        effect_layer->add_child(animation);
+        float duration_fire = 0.4;
+        Character_Fire_Run_Animation* fire = new Character_Fire_Run_Animation();
+        glm::vec2 enemy_position = this->get_position();
+        fire->set_opacity(0);
+        fire->set_position(enemy_position + ORIGIN_FIRE_RUN_ANIMATION_POSITION);
+        fire->set_scale({0.f, 0.f});
+        fire->do_action(
+            Action::sequence(
+                Action::delay(delay),
+                Action::spawn(
+                    Action::sequence(
+                        Action::scale_to(duration_fire / 2, {1.2f, 1.2f}, Action_Ease::SINE_OUT),
+                        Action::scale_to(duration_fire / 2, {1.f, 1.f}, Action_Ease::SINE_IN)
+                    ),
+                    Action::move_to(
+                        duration_fire, enemy_position + END_FIRE_RUN_ANIMATION_POSITION, Action_Ease::SINE_IN
+                    ),
+                    Action::fade_to(duration_fire * 0.35, ORIGIN_FIRE_RUN_ANIMATION_OPACITY, Action_Ease::SINE_IN)
+                ),
+                Action::fade_out((std::max(0.f, duration - duration_fire) * 0.5), Action_Ease::SINE_IN),
+                Action::remove_self(true)
+            )
+        );
+        effect_layer->add_child(fire);
     }
 
     void Enemy_Node::action_enemy_dead(float delay, Layer_Node* label_exp_parent, float killed_exp) {
@@ -524,6 +554,18 @@ namespace Meow_Meow {
         );
     }
 
+    bool Enemy_Node::can_take_damage(void* global_data) {
+        State_Machine_Component* state_machine =
+            Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
+
+        std::string current_effect_state = state_machine->get_current_state_at(Const::TRACK_EFFECTED);
+        if (current_effect_state == Const::STATE_ATTACKED) {
+            return false;
+        }
+
+        return true;
+    }
+
     void Enemy_Node::handle_collision(float delta_time, void* global_data) {
         const Enemy_Behavior_Config& behavior_config = this->get_behavior_config_from(global_data);
 
@@ -537,9 +579,7 @@ namespace Meow_Meow {
         State_Machine_Component* state_machine =
             Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
 
-        std::string current_controll_state = state_machine->get_current_state_at(Const::TRACK_CONTROLL);
-        std::string current_effect_state = state_machine->get_current_state_at(Const::TRACK_EFFECTED);
-        if (current_effect_state == Const::STATE_ATTACKED || current_controll_state == Const::STATE_SKILL_CHANNELLING) {
+        if (!this->can_take_damage(global_data)) {
             return;
         }
 
@@ -595,6 +635,7 @@ namespace Meow_Meow {
     void Enemy_Node::clean_collision_data(Collision_Component* collision) {
         Enemy_Collision_Data* collision_data = Utils::get_collision_owner_data<Enemy_Collision_Data>(collision);
         delete (collision_data);
+        this->unschedule(Const::STATE_ATTACK);
         collision->set_owner_data(nullptr);
     }
 

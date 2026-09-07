@@ -20,7 +20,7 @@ namespace Meow_Meow {
 
     private:
         const int LABEL_SKILL_FONT_SIZE = 22;
-        const Custom::Color LABEL_SKILL_COLOR = {220, 30, 180};
+        const Custom::Color LABEL_SKILL_COLOR = {230, 230, 230};
         const Custom::Color INNER_PROGRESSION_COLOR = {30, 30, 30};
         const unsigned char INNER_PROGRESSION_OPACITY = 160;
         const glm::vec2 ORIGIN_PRGRESSION_SCALE = {0.65f, 0.65f};

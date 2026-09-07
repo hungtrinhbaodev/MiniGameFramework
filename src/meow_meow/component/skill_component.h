@@ -27,6 +27,5 @@ namespace Meow_Meow {
         float current_countdown_time = 0.f;
 
         void start_countdown_time();
-        void update_skill_data(void* global_data);
     };
 }  // namespace Meow_Meow

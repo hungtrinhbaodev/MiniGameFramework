@@ -15,13 +15,35 @@ namespace Meow_Meow {
 
     Chosen_Character_UI::~Chosen_Character_UI() {}
 
+    Character_Animation* Chosen_Character_UI::get_character_animation() {
+        return this->character;
+    }
+
+    void Chosen_Character_UI::set_character_id(int character_id) {
+        this->character_id = character_id;
+        this->character->set_character_id(this->character_id);
+    }
+
+    void Chosen_Character_UI::set_character_level(int character_level) {
+        this->character_level = character_level;
+        this->character->set_character_level(this->character_level);
+    }
+
+    void Chosen_Character_UI::set_hide_label_name(bool hide) {
+        this->hide_label_name = hide;
+    }
+
     void Chosen_Character_UI::attach(void* global_data) {
         Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
         auto& config = data->get_config();
         this->character->set_character_id(this->character_id);
-        this->character->set_character_level(1);
+        this->character->set_character_level(this->character_level);
         this->character_name->set_text(config.get_character_name(this->character_id));
         this->character->play_animation("IDLE", 1.f);
+    }
+
+    void Chosen_Character_UI::fix_update(float delta_time, void* global_data) {
+        this->character_name->set_visible(!this->hide_label_name);
     }
 
     void Chosen_Character_UI::init_hall() {

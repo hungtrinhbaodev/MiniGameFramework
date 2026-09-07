@@ -18,7 +18,7 @@ namespace Meow_Meow {
         this->is_initialize = false;
     }
 
-    void Character_Animation ::set_character_level(int character_level) {
+    void Character_Animation::set_character_level(int character_level) {
         this->character_level = character_level;
         this->is_initialize = false;
     }

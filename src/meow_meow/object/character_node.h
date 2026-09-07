@@ -32,6 +32,7 @@ namespace Meow_Meow {
         const glm::vec2 DELTA_POSITION_BULLET = glm::vec2(18, -12);
         const glm::vec2 LEVEL_UP_POSITION = glm::vec2(0, 50);
         const glm::vec2 ORIGIN_SCALE_CHANNELLING_ANIMATION = glm::vec2(1.5f, 1.5f);
+        const unsigned char ORIGIN_OPACITY_FIRE_BALL_ANIMATION = 210;
 
         void init_container();
         void init_components();
