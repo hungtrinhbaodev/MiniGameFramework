@@ -24,6 +24,8 @@ namespace Meow_Meow {
         const Custom::Color INNER_PROGRESSION_COLOR = {30, 30, 30};
         const unsigned char INNER_PROGRESSION_OPACITY = 160;
         const glm::vec2 ORIGIN_PRGRESSION_SCALE = {0.65f, 0.65f};
+        const float PROGRESSION_FIX_WIDTH = 109 * ORIGIN_PRGRESSION_SCALE.x;
+        const float PROGRESSION_FIX_HEIGHT = 97 * ORIGIN_PRGRESSION_SCALE.y;
         const float GAP_WIDTH_UI = 5.f;
 
         void init_progression_skill(const Skill_Information* skill);

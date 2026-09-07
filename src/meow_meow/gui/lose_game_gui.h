@@ -9,6 +9,9 @@ namespace Meow_Meow {
         Lose_Game_GUI();
         ~Lose_Game_GUI();
 
+    protected:
+        void attach(void* global_data) override;
+
     private:
         const std::string PATH_IMAGE_LOSE_GAME = "res/meow_meow/LosePopUp.png";
         const glm::vec2 ORIGIN_IMAGE_LOSE_GAME_SCALE = {0.6f, 0.6f};
@@ -19,6 +22,9 @@ namespace Meow_Meow {
 
         void init_image_lose_game();
         void init_btn_back();
+
+        float effect_show_image_lose(float delay);
+        float effect_show_btn_back(float delay);
 
         Image_Node* image_lose = nullptr;
         Button_Node* btn_back = nullptr;

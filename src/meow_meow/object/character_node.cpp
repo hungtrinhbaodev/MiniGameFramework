@@ -319,7 +319,14 @@ namespace Meow_Meow {
             player_data.get_character_animation_id(), this->horizontal_direction, player_data.get_player_damage()
         );
         float sign_x = horizontal_direction == Const::DIRECTION::LEFT ? -1 : 1;
-        glm::vec2 fire_position = this->get_position() + glm::vec2{sign_x, 1} * DELTA_POSITION_BULLET;
+        glm::vec2 bullet_delta_position = {0, 0};
+        if (DELTA_POSITION_BULLET_BY_CHARACTER_ID.find(player_data.get_character_animation_id()) ==
+            DELTA_POSITION_BULLET_BY_CHARACTER_ID.end()) {
+            bullet_delta_position = DELTA_POSITION_BULLET_BY_CHARACTER_ID[0];
+        } else {
+            bullet_delta_position = DELTA_POSITION_BULLET_BY_CHARACTER_ID[player_data.get_character_animation_id()];
+        }
+        glm::vec2 fire_position = this->get_position() + glm::vec2{sign_x, 1} * bullet_delta_position;
         bullet->set_position(fire_position);
         battle_layer->add_child(bullet);
 

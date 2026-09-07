@@ -23,7 +23,7 @@ namespace Meow_Meow {
         void set_current_exp(int current_exp);
 
     private:
-        int character_animation_id = 0;
+        int character_animation_id = 2;
         int character_level = 1;
 
         float damage = 0.f;

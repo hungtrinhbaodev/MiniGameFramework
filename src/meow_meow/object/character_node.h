@@ -4,6 +4,8 @@
 #include <meow_meow/const.h>
 #include <meow_meow/object/game_object.h>
 
+#include <map>
+
 namespace Meow_Meow {
     class Character_Node : public Game_Object {
     public:
@@ -29,7 +31,9 @@ namespace Meow_Meow {
         const unsigned char ORIGIN_ATTACKED_IMAGE_OPACITY = 100;
         const int NUMBER_FADE_IN_INVINCIBLE_STATE = 3;
         const unsigned char INVISIBLE_OPACITY = 120;
-        const glm::vec2 DELTA_POSITION_BULLET = glm::vec2(18, -12);
+        std::map<int, glm::vec2> DELTA_POSITION_BULLET_BY_CHARACTER_ID = {
+            {0, glm::vec2(18, -12)}, {1, glm::vec2(40, -5)}, {2, glm::vec2(30, -25)}
+        };
         const glm::vec2 LEVEL_UP_POSITION = glm::vec2(0, 50);
         const glm::vec2 ORIGIN_SCALE_CHANNELLING_ANIMATION = glm::vec2(1.5f, 1.5f);
         const unsigned char ORIGIN_OPACITY_FIRE_BALL_ANIMATION = 210;

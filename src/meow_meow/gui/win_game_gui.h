@@ -26,6 +26,10 @@ namespace Meow_Meow {
         void init_character_ui();
         void init_btn_back();
 
+        float effect_show_image_win(float delay);
+        float effect_show_btn_back(float delay);
+        float effect_show_character(float delay);
+
         Image_Node* image_win = nullptr;
         Chosen_Character_UI* character = nullptr;
         Button_Node* btn_back = nullptr;

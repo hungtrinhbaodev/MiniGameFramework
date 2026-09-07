@@ -344,20 +344,25 @@ void Test_Scene::on_key_pressed(Custom::Key key, Key_Press_Detail pressed_detail
     auto& animation_config = data->get_config().get_enemy_animation_config();
     switch (key) {
         case Custom::Key::V: {
-            // if (this->win_game_gui != nullptr) {
-            //     this->win_game_gui->remove_from_parent();
-            // }
-            // this->win_game_gui = new Meow_Meow::Win_Game_GUI();
-            // this->add_child(this->win_game_gui);
-            Meow_Meow::Character_Fire_Run_Animation* animation = new Meow_Meow::Character_Fire_Run_Animation();
-            animation->set_position({300, 240});
-            this->add_child(animation);
+            if (this->win_game_gui != nullptr) {
+                this->win_game_gui->remove_from_parent();
+            }
+            this->win_game_gui = new Meow_Meow::Win_Game_GUI();
+            this->add_child(this->win_game_gui);
+            // Meow_Meow::Character_Fire_Run_Animation* animation = new Meow_Meow::Character_Fire_Run_Animation();
+            // animation->set_position({300, 240});
+            // this->add_child(animation);
             break;
         }
         case Custom::Key::C: {
-            Meow_Meow::Character_Fire_Ball_Animation* animation = new Meow_Meow::Character_Fire_Ball_Animation();
-            animation->set_position({450, 240});
-            this->add_child(animation);
+            if (this->lose_game_gui != nullptr) {
+                this->lose_game_gui->remove_from_parent();
+            }
+            this->lose_game_gui = new Meow_Meow::Lose_Game_GUI();
+            this->add_child(this->lose_game_gui);
+            // Meow_Meow::Character_Fire_Ball_Animation* animation = new Meow_Meow::Character_Fire_Ball_Animation();
+            // animation->set_position({450, 240});
+            // this->add_child(animation);
             break;
         }
         default: {

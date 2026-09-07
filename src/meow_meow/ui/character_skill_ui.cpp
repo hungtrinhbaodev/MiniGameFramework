@@ -67,9 +67,7 @@ namespace Meow_Meow {
         this->label_skill_name->set_color(LABEL_SKILL_COLOR);
         Custom::Size image_size = this->progression_skill->get_renderer_size();
         glm::vec2 image_scale = this->progression_skill->get_scale();
-        this->label_skill_name->set_position(
-            {image_size.width * image_scale.x + GAP_WIDTH_UI, image_size.height * 0.4 * image_scale.y}
-        );
+        this->label_skill_name->set_position({PROGRESSION_FIX_WIDTH + GAP_WIDTH_UI, PROGRESSION_FIX_HEIGHT * 0.5});
         this->add_child(this->label_skill_name);
         this->label_skill_name->set_text(skill->skill_display_name);
     }
