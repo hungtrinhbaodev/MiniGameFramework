@@ -20,6 +20,7 @@
 #include "rlgl.h"
 
 int MAX_CLIPPING_POINTS = 64;
+const int MAX_TEXTURE_LOAD_PER_FRAME = 3;
 
 namespace Libs_Wrapper {
     enum RayLib_Draw_Type { IMAGE, TEXT, START_CLIPPING, END_CLIPPING, LINE, RECTANGLE };
@@ -241,8 +242,12 @@ namespace Libs_Wrapper {
      * @Note: one frame we load one async texture
      * from image to make the game smooth!
      */
-    bool is_loaded_texture_async_in_frame = false;
+    int loaded_async_texture_in_frame_count = 0;
     long frame_count;
+
+    bool can_load_texture_aysnc() {
+        return loaded_async_texture_in_frame_count < MAX_TEXTURE_LOAD_PER_FRAME;
+    }
 
     void load_async_texture(std::string path, RayLib_Texture_Info* info) {
         Image image = LoadImage(path.data());
@@ -250,6 +255,16 @@ namespace Libs_Wrapper {
             std::unique_lock<std::mutex> lock(resource_mutex);
             info->loaded_state = Defined::RESOURCE_LOADED_STATE::LOADED;
             info->inner_image = image;
+        }
+    }
+
+    void on_load_texture_from_image(RayLib_Texture_Info& texture_info) {
+        if (texture_info.loaded_state == Defined::RESOURCE_LOADED_STATE::LOADED && !texture_info.is_loaded_texture) {
+            texture_info.data = LoadTextureFromImage(texture_info.inner_image);
+            texture_info.info = {
+                (float)texture_info.data.width, (float)texture_info.data.height, texture_info.loaded_state
+            };
+            texture_info.is_loaded_texture = true;
         }
     }
 
@@ -261,17 +276,14 @@ namespace Libs_Wrapper {
         if (rl_textures_storage.find(path) != rl_textures_storage.end()) {
             RayLib_Texture_Info& texture_info = rl_textures_storage[path];
             if (texture_info.load_mode != Defined::LOAD_MODE::ASYNC) {
+                on_load_texture_from_image(texture_info);
                 return texture_info;
             }
             if (texture_info.loaded_state == Defined::RESOURCE_LOADED_STATE::LOADED &&
-                !texture_info.is_loaded_texture && !is_loaded_texture_async_in_frame) {
+                !texture_info.is_loaded_texture && can_load_texture_aysnc()) {
                 std::unique_lock<std::mutex> lock(resource_mutex);
-                texture_info.data = LoadTextureFromImage(texture_info.inner_image);
-                texture_info.info = {
-                    (float)texture_info.data.width, (float)texture_info.data.height, texture_info.loaded_state
-                };
-                texture_info.is_loaded_texture = true;
-                is_loaded_texture_async_in_frame = true;
+                on_load_texture_from_image(texture_info);
+                loaded_async_texture_in_frame_count++;
             }
             return texture_info;
         }
@@ -628,7 +640,7 @@ namespace Libs_Wrapper {
     }
 
     void start_frame() {
-        is_loaded_texture_async_in_frame = false;
+        loaded_async_texture_in_frame_count = 0;
     }
 
     void draw_frame() {

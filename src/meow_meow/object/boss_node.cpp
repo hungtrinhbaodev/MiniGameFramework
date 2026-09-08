@@ -219,6 +219,9 @@ namespace Meow_Meow {
         state_machine->change_state_at(
             Const::TRACK_CONTROLL, Const::STATE_SKILL_FLASH, flash_skill_config.duration_flash
         );
+
+        float duration_animation = this->enemy_animation->get_amimation_duration("WALK");
+        this->enemy_animation->play_animation("WALK", flash_skill_config.duration_flash / duration_animation);
         this->action_flashing(0.f, flash_skill_config.duration_flash, flash_skill->get_flash_to_position());
     }
 

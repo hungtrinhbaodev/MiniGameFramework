@@ -27,6 +27,7 @@ public:
     void on_finish_animation_callback(
         std::string name, std::function<void(Animation_Node* target, void* global_data)> finish_callback
     );
+    void set_preload_animation(std::string animation_name);
     void clear_all_animation();
     float get_amimation_duration(std::string name);
 
@@ -44,6 +45,7 @@ private:
         ANIMATION_LOAD_MODE animation_load_mode = ANIMATION_LOAD_MODE::IMMEDIATE;
         std::function<void(Animation_Node* target, void* global_data)> finish_callback;
         bool is_finish_cycle = false;
+        bool need_preload = false;
     };
 
     std::string current_animation;
@@ -51,7 +53,8 @@ private:
     float speed_ratio;
     float total_delta_time = 0;
     std::map<std::string, Animation_Data> animations;
-    std::string get_image_path(int current_frame);
+    std::string get_image_path(std::string animation_name, int current_frame);
 
-    bool is_valid_animation(std::string);
+    bool is_valid_animation(std::string animation_name);
+    bool is_load_all_smooth_frame(std::string animation_name);
 };

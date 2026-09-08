@@ -69,8 +69,11 @@ namespace Meow_Meow {
                 animation.get_full_path(this->character_level),
                 animation.number_frame,
                 animation.duration_per_frame,
-                !is_dead && !is_boss_attack ? load_mode : Animation_Node::ANIMATION_LOAD_MODE::IMMEDIATE
+                load_mode
             );
+            if (is_dead || is_boss_attack) {
+                this->set_preload_animation(animation.animation_name);
+            }
         }
         return true;
     }

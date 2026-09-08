@@ -11,6 +11,23 @@ bool Animation_Node::is_valid_animation(std::string name) {
     return animations.find(name) != animations.end();
 }
 
+bool Animation_Node::is_load_all_smooth_frame(std::string animation_name) {
+    if (!this->is_valid_animation(animation_name)) {
+        return false;
+    }
+    Animation_Data& animation = this->animations[animation_name];
+    for (int i = 0; i < animation.number_frame; i++) {
+        std::string current_image = this->get_image_path(animation_name, i);
+        if (current_image == "")
+            return false;
+        Image_Info image_info = Libs_Wrapper::image_info(current_image, Defined::LOAD_MODE::ASYNC);
+        if (image_info.state != Defined::RESOURCE_LOADED_STATE::LOADED) {
+            return false;
+        }
+    }
+    return true;
+}
+
 Node_Type Animation_Node::get_type() {
     return Node_Type::ANIMATION;
 }
@@ -33,13 +50,22 @@ void Animation_Node::make_animation(
 void Animation_Node::set_speed(float speed) {
     speed_ratio = std::min(std::max(speed, 0.f), 1.f);
 }
+
 void Animation_Node::on_finish_animation_callback(
     std::string name, std::function<void(Animation_Node* target, void* global_data)> finish_callback
 ) {
-    if (!is_valid_animation(name)) {
+    if (!this->is_valid_animation(name)) {
         return;
     }
     animations[name].finish_callback = finish_callback;
+}
+
+void Animation_Node::set_preload_animation(std::string animation_name) {
+    if (!this->is_valid_animation(animation_name)) {
+        return;
+    }
+    this->animations[animation_name].need_preload = true;
+    this->animations[animation_name].animation_load_mode = ANIMATION_LOAD_MODE::SMOOTH;
 }
 
 float Animation_Node::get_amimation_duration(std::string name) {
@@ -81,10 +107,23 @@ void Animation_Node::handle_personal_task(float delta_time, void* global_data) {
             animation.is_finish_cycle = false;
         }
     }
+    for (const auto& [animation_name, animation] : this->animations) {
+        if (animation.need_preload) {
+            for (int i = 1; i < animation.number_frame; i++) {
+                std::string current_image = this->get_image_path(animation_name, i);
+                if (current_image == "")
+                    continue;
+                Libs_Wrapper::image_info(current_image, Defined::LOAD_MODE::ASYNC);
+            }
+        }
+    }
 }
 
-std::string Animation_Node::get_image_path(int current_frame) {
-    Animation_Data& animation = animations[current_animation];
+std::string Animation_Node::get_image_path(std::string animation_name, int current_frame) {
+    if (!this->is_valid_animation(animation_name)) {
+        return "";
+    }
+    Animation_Data& animation = animations[animation_name];
     std::string frame_number_str =
         current_frame < 10 ? ("0" + std::to_string(current_frame)) : std::to_string(current_frame);
     std::string current_image = animation.folder_path + frame_number_str + animation.extend_format;
@@ -102,7 +141,7 @@ void Animation_Node::flex_update(float delta_time) {
     if (animation.number_frame <= 0)
         return;
     if (total_delta_time >= animation.duration_loop * speed_ratio) {
-        std::string current_image = this->get_image_path(this->current_frame);
+        std::string current_image = this->get_image_path(this->current_animation, this->current_frame);
         switch (animation.animation_load_mode) {
             case ANIMATION_LOAD_MODE::ASYNC: {
                 set_image(current_image, Defined::LOAD_MODE::ASYNC);
@@ -117,10 +156,8 @@ void Animation_Node::flex_update(float delta_time) {
                     set_image(current_image, Defined::IMMEDIATE);
                     break;
                 }
-                Image_Info image_info = Libs_Wrapper::image_info(current_image, Defined::LOAD_MODE::ASYNC);
-                if (image_info.state != Defined::RESOURCE_LOADED_STATE::LOADED) {
-                    current_image = this->get_image_path(0);
-                    set_image(current_image, Defined::IMMEDIATE);
+                if (!this->is_load_all_smooth_frame(this->current_animation)) {
+                    set_image(this->get_image_path(this->current_animation, 0), Defined::IMMEDIATE);
                 } else {
                     set_image(current_image, Defined::ASYNC);
                 }

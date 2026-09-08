@@ -44,8 +44,12 @@ namespace Meow_Meow {
         glm::vec2 velosity{0.f, 0.f};
 
     private:
+        const int PROGRESSION_HEALTH_TAG = 5;
+
         const int JUMP_ACTION_TAG = 0;
         const int HITTED_ACTION_TAG = 1;
+        const int HIDE_PROGRESSION_HEALTH_TAG = 2;
+
         const Custom::Anchor_Point ORIGIN_ANIMATION_ANCHOR_POINT = {0.35, 0.5};
         const glm::vec2 ORIGIN_HEALTH_BAR_POSITION = {0, 80};
         const float DURATION_SHOW_PROGRESSION_HEALTH = 3.5f;
@@ -85,8 +89,9 @@ namespace Meow_Meow {
         void action_enemy_jump(float delay, float duration, glm::vec2 character_position);
         void action_enemy_hitted(float delay, float duration, Const::DIRECTION bullet_direction, float percent_health);
         void action_enemy_dead(float delay, Layer_Node* label_exp_parent, float killed_exp);
-
         void action_enemy_hitted_by_thunder(float delay, float duration, Layer_Node* effect_layer);
+
+        void hide_other_health_progression(Layer_Node* layer);
 
         int enemy_id = 0;
         float current_health = 0.f;

@@ -43,6 +43,7 @@ public:
     void set_key_press_swallow_enabled(Custom::Key key, bool swallow_keys);
     virtual void on_key_pressed(Custom::Key key, Key_Press_Detail pressed_detail, void* global_data);
 
+    bool is_playing_action(int tag);
     Node_Type get_type() override;
 
 protected:

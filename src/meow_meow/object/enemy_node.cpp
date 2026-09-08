@@ -132,9 +132,10 @@ namespace Meow_Meow {
         this->progression_health->set_visible(false);
         this->progression_container->add_child(this->progression_health);
         this->progression_health->set_percent(100);
+        this->progression_health->set_tag(PROGRESSION_HEALTH_TAG);
+        this->progression_container->set_tag(PROGRESSION_HEALTH_TAG);
         effect_layer->add_child(this->progression_container);
         Utils::save_transform_origin(this->progression_health);
-        this->progression_container->set_name("Enemy_Node::progression_container");
     }
 
     void Enemy_Node::attach(void* global_data) {
@@ -421,6 +422,7 @@ namespace Meow_Meow {
 
         Custom::Transform origin = Utils::get_transform_origin(this->progression_health);
         this->progression_health->stop_action(HITTED_ACTION_TAG);
+        this->progression_health->stop_action(HIDE_PROGRESSION_HEALTH_TAG);
         if (this->progression_health->is_visible()) {
             Utils::reset_to_origin(this->progression_health);
             this->progression_health->set_visible(true);
@@ -567,6 +569,7 @@ namespace Meow_Meow {
     }
 
     void Enemy_Node::handle_collision(float delta_time, void* global_data) {
+        Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
         const Enemy_Behavior_Config& behavior_config = this->get_behavior_config_from(global_data);
 
         Collision_Component* collision_component =
@@ -592,6 +595,7 @@ namespace Meow_Meow {
                 continue;
             if (collision_data->get_damage_deal() <= 0 || collision_data->is_hitted())
                 continue;
+            this->hide_other_health_progression(data->get_effect_layer());
             this->change_to_hitted(
                 global_data,
                 collision_data->get_damage_deal(),
@@ -813,5 +817,28 @@ namespace Meow_Meow {
         this->update_colision_data();
         this->sync_progression_container();
         Game_Object::fix_update(delta_time, global_data);
+    }
+
+    void Enemy_Node::hide_other_health_progression(Layer_Node* layer) {
+        if (layer == nullptr) {
+            return;
+        }
+        float duration_hide = 0.55;
+        for (Base_Node* child : layer->get_children()) {
+            if (child->get_tag() == PROGRESSION_HEALTH_TAG) {
+                Base_Node* progression = child->get_child_by_tag(PROGRESSION_HEALTH_TAG);
+                if (progression == nullptr)
+                    continue;
+                Node* progression_node = reinterpret_cast<Node*>(progression);
+                if (progression_node->is_visible() &&
+                    !progression_node->is_playing_action(HIDE_PROGRESSION_HEALTH_TAG)) {
+                    progression_node->stop_action(HITTED_ACTION_TAG);
+                    Utils::reset_to_origin(progression_node);
+                    progression_node->do_action(
+                        Action::sequence(Action::fade_out(duration_hide), Action::hide()), HIDE_PROGRESSION_HEALTH_TAG
+                    );
+                }
+            }
+        }
     }
 }  // namespace Meow_Meow

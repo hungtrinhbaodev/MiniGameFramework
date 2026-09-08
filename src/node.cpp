@@ -155,6 +155,17 @@ void Node::set_key_press_swallow_enabled(Custom::Key key, bool swallow_keys) {
 
 void Node::on_key_pressed(Custom::Key key, Key_Press_Detail pressed_detail, void* global_data) {}
 
+bool Node::is_playing_action(int tag) {
+    for (int i = 0; i < this->actions.size(); i++) {
+        if (actions[i]->is_removed())
+            continue;
+        if (actions[i]->get_tag() == tag) {
+            return true;
+        }
+    }
+    return false;
+}
+
 Node_Type Node::get_type() {
     return Node_Type::NODE;
 }
