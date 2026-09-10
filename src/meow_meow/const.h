@@ -43,7 +43,7 @@ namespace Meow_Meow {
         const inline static std::vector<std::string> ENEMY_ANIMATION_NAMES = {"IDLE", "ATTACK", "DEAD", "WALK"};
         const inline static std::vector<std::string> ENEMY_ANIMATION_FOLDER_NAMES = {"Idle", "Attack", "Dead", "Walk"};
         const inline static std::vector<int> ENEMY_ANIMATION_NUMBER_FRAMES = {20, 25, 60, 35};
-        const inline static std::vector<float> ENEMY_ANIMATION_DURATION_PER_FRAMES = {0.04, 0.04, 0.03, 0.03};
+        const inline static std::vector<float> ENEMY_ANIMATION_DURATION_PER_FRAMES = {0.04, 0.04, 0.03, 0.06};
         const inline static std::vector<int> ENEMY_MAX_LEVELS = std::vector<int>(NUMBER_ANIMATION_ENEMY, 1);
         const inline static Custom::Size ENEMY_BOUNDING_BOX = {120, 140};
 
@@ -82,6 +82,15 @@ namespace Meow_Meow {
         const inline static std::string STATE_SKILL_FLASH = "SKILL_FLASH";
         const inline static std::string STATE_FLIGHT = "FLIGHT";
 
+        const inline static int CHARACTER_ATTACKED_FROM_EMEMY = 0;
+        const inline static int CHARACTER_CHANNLING_FROM_SKILL_THUNDER = 1;
+        const inline static int CHARACTER_FLIGHT_FROM_BOSS_SKILL_FLASH = 2;
+        const inline static int CHARACTER_STUN_FROM_BOSS_SKILL_FLASH = 3;
+        const inline static int ENEMY_ATTACKED_FROM_BULLET = 4;
+        const inline static int ENEMY_STUN_FROM_CHARACTER_SKILL_THUNDER = 5;
+        const inline static int BOSS_CHANNELING_FROM_SKILL_FLASH = 6;
+        const inline static int ENEMY_HITTED_WHEN_STUNED = 7;
+
         /**
          * Bullet
          */
@@ -106,7 +115,7 @@ namespace Meow_Meow {
         const inline static float CHARACTER_INVINCIBLE_DURATION = 1.5f;
         const inline static float CHARACTER_VELOSITY = 150.f;
         const inline static float CHARACTER_ACCELARATE = 35.f;
-        const inline static float CHARACTER_ATTACK_DURATION = 0.85f;
+        const inline static float CHARACTER_ATTACK_DURATION = 0.2f;
         const inline static float CHARACTER_BONUS_VELOSITY_RATE = 0.25f;
         const inline static float CHARACTER_BONUS_VELOSITY = 10.f;
         const inline static float CHARACTER_MAX_BONUS_VELOSITY = 60.f;
@@ -121,7 +130,7 @@ namespace Meow_Meow {
         const inline static float ENEMY_VELOSITY = 80.f;
         const inline static float ENEMY_ATTACK_DAMGE = 30.f;
         const inline static float ENEMY_ATTACK_RANGE = 50.f;
-        const inline static float ENEMY_DURATION_WALK = 1.f;
+        const inline static float ENEMY_DURATION_WALK = 0.5f;
         const inline static float ENEMY_DURATION_JUMP = 0.5f;
         const inline static float ENEMY_DURATION_ATTACK = 0.35f;
         const inline static float ENEMY_ATTACK_COUNTDOWN = 1.25f;
@@ -186,11 +195,11 @@ namespace Meow_Meow {
          */
         const inline static std::string CHARACTER_SKILL_THUNDER_COMPONENT_NAME = "SKILL_THURNDER_COMPONENT";
         const inline static std::string CHARACTER_SKILL_THUNDER_ID = "SKILL_THUNDER";
-        const inline static float CHARACTER_SKILL_THUNDER_COUNTDOWN = 8.f;
+        const inline static float CHARACTER_SKILL_THUNDER_COUNTDOWN = 5.f;
         const inline static float CHARACTER_SKILL_THUNDER_DAMAGE_TAKEN = 50.f;
         const inline static float CHARACTER_SKILL_THUNDER_DURATION_STUN = 1.75f;
         const inline static float CHARACTER_SKILL_THUNDER_TAKEN_RADIUS = 250.f;
-        const inline static int CHARACTER_SKILL_THUNDER_NUMBER_TAKEN = 3;
+        const inline static int CHARACTER_SKILL_THUNDER_NUMBER_TAKEN = 5;
         const inline static float CHARACTER_SKILL_THUNDER_CHANNELLING_DURATION = 0.35f;
 
         /**
@@ -198,7 +207,7 @@ namespace Meow_Meow {
          */
         const inline static std::string ENEMY_SKILL_JUMP_COMPONENT_NAME = "SKILL_JUMP_COMPONENT";
         const inline static std::string ENEMY_SKILL_JUMP_ID = "SKILL_JUMP";
-        const inline static float ENEMY_SKILL_JUMP_COUNTDOWN = 5.0f;
+        const inline static float ENEMY_SKILL_JUMP_COUNTDOWN = 1.0f;
         const inline static float ENEMY_SKILL_JUMP_DURATION = 0.5f;
         const inline static float ENEMY_SKILL_JUMP_DISTANCE = 150.f;
 
@@ -207,7 +216,7 @@ namespace Meow_Meow {
          */
         const inline static std::string BOSS_SKILL_FLASH_COMPONENT_NAME = "SKILL_FLASH_COMPONENT";
         const inline static std::string BOSS_SKILL_FLASH_ID = "FLASH_JUMP";
-        const inline static float BOSS_SKILL_FLASH_COUNTDOWN = 15.0f;
+        const inline static float BOSS_SKILL_FLASH_COUNTDOWN = 20.0f;
         const inline static float BOSS_SKILL_FLASH_DURATION = 0.5f;
         const inline static float BOSS_SKILL_FLASH_CHANNELLING_DURATION = 0.75f;
         const inline static float BOSS_SKILL_FLASH_DAMAGE = 100.f;

@@ -4,10 +4,10 @@
 #include <vector>
 
 namespace Meow_Meow {
-    class Character_Skill_Thurnder_Component : public Skill_Component {
+    class Character_Skill_Thunder_Component : public Skill_Component {
     public:
-        Character_Skill_Thurnder_Component();
-        ~Character_Skill_Thurnder_Component();
+        Character_Skill_Thunder_Component();
+        ~Character_Skill_Thunder_Component();
 
         bool is_enemy_taken(int enemy_id);
 

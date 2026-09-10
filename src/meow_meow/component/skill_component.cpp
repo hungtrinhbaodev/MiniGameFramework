@@ -24,7 +24,7 @@ namespace Meow_Meow {
     }
 
     bool Skill_Component::can_activate_skill(State_Machine_Component* state_machine, void* global_data) {
-        return this->current_countdown_time >= this->countdown_time;
+        return is_initialize && this->current_countdown_time >= this->countdown_time;
     }
 
     void Skill_Component::activating_skill(void* global_data) {
@@ -40,6 +40,7 @@ namespace Meow_Meow {
     }
 
     void Skill_Component::update_information(Base_Node* target, float delta_time, void* global_data) {
+        is_initialize = true;
         if (this->current_countdown_time < this->countdown_time) {
             this->current_countdown_time += delta_time;
         }

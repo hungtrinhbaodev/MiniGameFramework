@@ -1,6 +1,7 @@
 #include <math_custom.h>
 #include <meow_meow/component/enemy_jump_skill_component.h>
 #include <meow_meow/data/global_data.h>
+#include <meow_meow/utils.h>
 #include <utils.h>
 
 namespace Meow_Meow {
@@ -25,6 +26,19 @@ namespace Meow_Meow {
         Skill_Component::update_information(target, delta_time, global_data);
     }
 
+    void Enemy_Jump_Skill_Component::handle_task(Base_Node* target, float delta_time, void* global_data) {
+        Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
+        const Enemy_Skill_Jump_Config& skill_config = data->get_config().get_enemy_skill_jump_config();
+        Enemy_State_Machine_Component* state_machine = get_enemy_state_machine_component(target);
+        if (state_machine == nullptr)
+            return;
+        if (this->can_activate_skill(state_machine, global_data)) {
+            this->activating_skill(global_data);
+            state_machine->change_state_at(Const::TRACK_CONTROLL, Const::STATE_JUMP, skill_config.duration_jump);
+        }
+        Skill_Component::handle_task(target, delta_time, global_data);
+    }
+
     bool Enemy_Jump_Skill_Component::can_activate_skill(State_Machine_Component* state_machine, void* global_data) {
         Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
 
@@ -33,20 +47,23 @@ namespace Meow_Meow {
             return false;
         }
 
-        State_Machine_Component* player_state_machine =
-            Utils::get_component<State_Machine_Component>(character, Defined::COMPONENT_STATE_MACHINE_NAME);
-        if (player_state_machine->get_current_state_at(Const::TRACK_CONTROLL) == Const::STATE_DEATH) {
+        Character_State_Machine_Component* player_state_machine = get_character_state_machine(character);
+        if (player_state_machine->is_character_dead()) {
+            return false;
+        }
+
+        Enemy_State_Machine_Component* enemy_state_machine =
+            reinterpret_cast<Enemy_State_Machine_Component*>(state_machine);
+        if (enemy_state_machine->is_enemy_attacked() || enemy_state_machine->is_enemy_stun() ||
+            enemy_state_machine->is_enemy_dead()) {
             return false;
         }
 
         const Enemy_Skill_Jump_Config& skill_config = data->get_config().get_enemy_skill_jump_config();
-        if (state_machine->get_current_state_at(Const::TRACK_EFFECTED) == Const::STATE_ATTACKED ||
-            state_machine->get_current_state_at(Const::TRACK_EFFECTED) == Const::STATE_STUN) {
-            return false;
-        }
         if (glm::distance(this->player_position, this->enemy_position) > skill_config.jump_distance) {
             return false;
         }
+
         return Skill_Component::can_activate_skill(state_machine, global_data);
     }
 

@@ -6,7 +6,9 @@
 #include <meow_meow/animation/character_fire_run_animation.h>
 #include <meow_meow/animation/skill_thunder_animation.h>
 #include <meow_meow/component/enemy_behavior_component.h>
+#include <meow_meow/component/enemy_collision_component.h>
 #include <meow_meow/component/enemy_jump_skill_component.h>
+#include <meow_meow/component/enemy_state_machine_component.h>
 #include <meow_meow/config/character_skill_thunder_config.h>
 #include <meow_meow/const.h>
 #include <meow_meow/data/bullet_collision_data.h>
@@ -97,13 +99,14 @@ namespace Meow_Meow {
         behavior->set_name(Const::ENEMY_BEHAVIOR_COMPONENT_NAME);
         this->add_component(behavior);
 
-        State_Machine_Component* state_machine = new State_Machine_Component();
+        Enemy_State_Machine_Component* state_machine = this->make_state_machine_instance();
         state_machine->add_track(Const::TRACK_CONTROLL, nullptr);
         state_machine->add_track(Const::TRACK_EFFECTED, nullptr);
         state_machine->set_name(Defined::COMPONENT_STATE_MACHINE_NAME);
+        this->setup_state_machine_component(state_machine);
         this->add_component(state_machine);
 
-        Collision_Component* collision = new Collision_Component();
+        Enemy_Collision_Component* collision = new Enemy_Collision_Component();
         collision->set_name(Defined::COMPONENT_COLLISION_NAME);
         collision->set_box_size(Const::ENEMY_BOUNDING_BOX);
         collision->set_track_layer(Const::BATTLE_LAYER_COLLISION);
@@ -138,6 +141,63 @@ namespace Meow_Meow {
         Utils::save_transform_origin(this->progression_health);
     }
 
+    void Enemy_Node::setup_state_machine_component(State_Machine_Component* state_machine) {
+        /**
+         * Add state move
+         */
+        state_machine->add_state_at(
+            Const::TRACK_CONTROLL,
+            Const::STATE_MOVE,
+            [this](Base_Node*, State_Machine_Component*, void* global_data, int) { this->start_move(global_data); },
+            [this](Base_Node*, State_Machine_Component*, void* global_data, int) { this->end_move(global_data); }
+        );
+        /**
+         * Add state attack
+         */
+        state_machine->add_state_at(
+            Const::TRACK_CONTROLL,
+            Const::STATE_ATTACK,
+            [this](Base_Node*, State_Machine_Component*, void* global_data, int) { this->start_attack(global_data); },
+            [this](Base_Node*, State_Machine_Component*, void* global_data, int) { this->end_attack(global_data); }
+        );
+        /**
+         * Add state dead
+         */
+        state_machine->add_state_at(
+            Const::TRACK_CONTROLL,
+            Const::STATE_DEATH,
+            [this](Base_Node*, State_Machine_Component*, void* global_data, int) { this->start_dead(global_data); },
+            [this](Base_Node*, State_Machine_Component*, void* global_data, int) { this->end_dead(global_data); }
+        );
+        /**
+         * Add state attacked
+         */
+        state_machine->add_state_at(
+            Const::TRACK_EFFECTED,
+            Const::STATE_ATTACKED,
+            [this](Base_Node*, State_Machine_Component*, void* global_data, int source_call_state) {
+                this->start_hitted(global_data, source_call_state);
+            },
+            [this](Base_Node*, State_Machine_Component*, void* global_data, int source_call_state) {
+                this->end_hitted(global_data, source_call_state);
+            }
+        );
+        /**
+         * Add state stun
+         */
+        state_machine->add_state_at(
+            Const::TRACK_EFFECTED,
+            Const::STATE_STUN,
+            [this](Base_Node*, State_Machine_Component*, void* global_data, int source_call_state) {
+                this->start_stun(global_data, source_call_state);
+            },
+            [this](Base_Node*, State_Machine_Component*, void* global_data, int source_call_state) {
+                this->end_stun(global_data, source_call_state);
+            }
+        );
+        this->update_state_machine_component(state_machine);
+    }
+
     void Enemy_Node::attach(void* global_data) {
         this->init_components();
 
@@ -154,20 +214,28 @@ namespace Meow_Meow {
 
         this->init_progression_health(global_data);
 
-        this->change_to_walk(global_data);
         state_machine->change_state_at(
             Const::TRACK_EFFECTED, Const::STATE_UNEFFECTED, State_Machine_Component::INFITY_STATE
+        );
+        state_machine->change_state_at(
+            Const::TRACK_CONTROLL, Const::STATE_MOVE, behavior_config.get_enemy_walk_duration()
         );
 
         this->update_ui_attrubutes();
     }
 
-    void Enemy_Node::change_to_attack(void* global_data) {
-        Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
+    void Enemy_Node::start_move(void* global_data) {
         const auto& behavior_config = this->get_behavior_config_from(global_data);
 
-        State_Machine_Component* state_machine =
-            Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
+        Enemy_Behavior_Component* behavior =
+            Utils::get_component<Enemy_Behavior_Component>(this, Const::ENEMY_BEHAVIOR_COMPONENT_NAME);
+
+        this->velosity = behavior_config.get_enemy_velosity() * behavior->get_enemy_walking_direction();
+        this->enemy_animation->play_animation("WALK");
+    }
+
+    void Enemy_Node::start_attack(void* global_data) {
+        const auto& behavior_config = this->get_behavior_config_from(global_data);
 
         Enemy_Behavior_Component* behavior =
             Utils::get_component<Enemy_Behavior_Component>(this, Const::ENEMY_BEHAVIOR_COMPONENT_NAME);
@@ -180,15 +248,14 @@ namespace Meow_Meow {
         this->enemy_animation->play_animation(
             "ATTACK", behavior_config.get_enemy_attack_duration() / animation_duration
         );
-
-        state_machine->change_state_at(
-            Const::TRACK_CONTROLL, Const::STATE_ATTACK, behavior_config.get_enemy_attack_duration()
-        );
-
         /**
          * Attach the damage into collision data
          */
+        if (collision == nullptr)
+            return;
         Enemy_Collision_Data* collision_data = Utils::get_collision_owner_data<Enemy_Collision_Data>(collision);
+        if (collision_data == nullptr)
+            return;
         float damage_deal = behavior_config.get_emeny_attack_damage();
         this->schedule_once(
             Const::STATE_ATTACK,
@@ -199,16 +266,48 @@ namespace Meow_Meow {
         );
     }
 
-    void Enemy_Node::change_to_death(void* global_data) {
+    void Enemy_Node::start_hitted(void* global_data, int source_call_state) {
+        Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
+        const Enemy_Behavior_Config& behavior_config = this->get_behavior_config_from(global_data);
+        Enemy_Data& enemy_data = this->get_enemy_data(global_data);
+
+        Enemy_Behavior_Component* behavior =
+            Utils::get_component<Enemy_Behavior_Component>(this, Const::ENEMY_BEHAVIOR_COMPONENT_NAME);
+
+        Enemy_Collision_Component* collision =
+            Utils::get_component<Enemy_Collision_Component>(this, Defined::COMPONENT_COLLISION_NAME);
+
+        switch (source_call_state) {
+            case Const::ENEMY_ATTACKED_FROM_BULLET: {
+                float max_health = enemy_data.get_max_health();
+                float current_health = enemy_data.get_current_health();
+                current_health = std::max(current_health - collision->get_damage_deal(), 0.f);
+                enemy_data.set_current_health(current_health);
+                float percent = (current_health / max_health) * 100;
+                if (current_health > 0) {
+                    this->velosity =
+                        -behavior_config.get_enemy_attacked_velosity() * behavior->get_enemy_walking_direction();
+                } else {
+                    this->velosity = {0.f, 0.f};
+                }
+                float duration = this->enemy_animation->get_amimation_duration("IDLE");
+                this->enemy_animation->play_animation("IDLE", behavior_config.get_enemy_attacked_duration() / duration);
+                this->hide_other_health_progression(data->get_effect_layer());
+                this->action_enemy_hitted(
+                    0, behavior_config.get_enemy_attacked_duration(), collision->get_attacker_direction(), percent
+                );
+                break;
+            }
+            default: {
+                break;
+            }
+        }
+    }
+
+    void Enemy_Node::start_dead(void* global_data) {
         Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
         const auto& behavior_config = this->get_behavior_config_from(global_data);
 
-        State_Machine_Component* state_machine =
-            Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
-
-        state_machine->change_state_at(
-            Const::TRACK_CONTROLL, Const::STATE_DEATH, State_Machine_Component::INFITY_STATE
-        );
         this->velosity = {0, 0};
         /**
          * Clean collision data first before delete component
@@ -230,119 +329,119 @@ namespace Meow_Meow {
         }
     }
 
-    void Enemy_Node::change_to_hitted(
-        void* global_data,
-        float damage_take,
-        Const::DIRECTION bullet_direction,
-        std::string hitted_state,
-        float duration_state
-    ) {
+    void Enemy_Node::start_stun(void* global_data, int source_call_state) {
         Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
-        const Enemy_Behavior_Config& behavior_config = this->get_behavior_config_from(global_data);
         Enemy_Data& enemy_data = this->get_enemy_data(global_data);
-
-        State_Machine_Component* state_machine =
-            Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
-
-        Enemy_Behavior_Component* behavior =
-            Utils::get_component<Enemy_Behavior_Component>(this, Const::ENEMY_BEHAVIOR_COMPONENT_NAME);
-
-        Collision_Component* collision =
-            Utils::get_component<Collision_Component>(this, Defined::COMPONENT_COLLISION_NAME);
-
-        if (collision != nullptr) {
-            Enemy_Collision_Data* collision_data = Utils::get_collision_owner_data<Enemy_Collision_Data>(collision);
-            if (collision_data != nullptr) {
-                collision_data->set_damage_deal(0.f);
+        switch (source_call_state) {
+            case Const::ENEMY_STUN_FROM_CHARACTER_SKILL_THUNDER: {
+                const Character_Skill_Thunder_Config& skill_thunder_config =
+                    data->get_config().get_character_skill_thunder_config();
+                this->velosity = {0.f, 0.f};
+                float max_health = enemy_data.get_max_health();
+                float current_health = enemy_data.get_current_health();
+                current_health = std::max(current_health - skill_thunder_config.damage_taken, 0.f);
+                float percent = (current_health / max_health) * 100;
+                enemy_data.set_current_health(current_health);
+                this->action_enemy_hitted(0, skill_thunder_config.stun_duration, Const::DIRECTION::NONE, percent);
+                Layer_Node* effect_layer = data->get_effect_layer();
+                if (effect_layer != nullptr) {
+                    this->action_enemy_hitted_by_thunder(0, skill_thunder_config.stun_duration, effect_layer);
+                }
+                break;
             }
-        }
-
-        if (state_machine->get_current_state_at(Const::TRACK_CONTROLL) == Const::STATE_JUMP) {
-            this->stop_action(JUMP_ACTION_TAG);
-            this->container->stop_action(JUMP_ACTION_TAG);
-            Utils::reset_to_origin(this->container);
-        }
-
-        float max_health = enemy_data.get_max_health();
-        float current_health = enemy_data.get_current_health();
-        current_health = std::max(current_health - damage_take, 0.f);
-        float percent = (current_health / max_health) * 100;
-        enemy_data.set_current_health(current_health);
-
-        this->action_enemy_hitted(0, duration_state, bullet_direction, percent);
-
-        if (hitted_state == Const::STATE_ATTACKED && current_health > 0) {
-            this->velosity = -behavior_config.get_enemy_attacked_velosity() * behavior->get_enemy_walking_direction();
-        } else {
-            this->velosity = {0.f, 0.f};
-        }
-
-        if (hitted_state == Const::STATE_ATTACKED) {
-            if (state_machine->get_current_state_at(Const::TRACK_EFFECTED) != Const::STATE_STUN) {
-                state_machine->change_state_at(Const::TRACK_EFFECTED, hitted_state, duration_state);
+            case Const::ENEMY_HITTED_WHEN_STUNED: {
+                Enemy_Collision_Component* collision =
+                    Utils::get_component<Enemy_Collision_Component>(this, Defined::COMPONENT_COLLISION_NAME);
+                const Enemy_Behavior_Config& behavior_config = this->get_behavior_config_from(global_data);
+                float max_health = enemy_data.get_max_health();
+                float current_health = enemy_data.get_current_health();
+                current_health = std::max(current_health - collision->get_damage_deal(), 0.f);
+                float percent = (current_health / max_health) * 100;
+                enemy_data.set_current_health(current_health);
+                this->action_enemy_hitted(
+                    0,
+                    behavior_config.get_enemy_attacked_duration(),
+                    collision->get_attacker_direction(),
+                    behavior_config.get_enemy_attacked_duration()
+                );
+                break;
             }
-        } else {
-            state_machine->change_state_at(Const::TRACK_EFFECTED, hitted_state, duration_state);
-        }
-
-        float duration = this->enemy_animation->get_amimation_duration("IDLE");
-        this->enemy_animation->play_animation("IDLE", behavior_config.get_enemy_attacked_duration() / duration);
-    }
-
-    void Enemy_Node::change_to_hitted_by_thunder_skill(void* global_data) {
-        Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
-        const Character_Skill_Thunder_Config& skill_thunder_config =
-            data->get_config().get_character_skill_thunder_config();
-        this->change_to_hitted(
-            global_data,
-            skill_thunder_config.damage_taken,
-            Const::DIRECTION::NONE,
-            Const::STATE_STUN,
-            skill_thunder_config.stun_duration
-        );
-        Layer_Node* effect_layer = data->get_effect_layer();
-        if (effect_layer != nullptr) {
-            this->action_enemy_hitted_by_thunder(0, skill_thunder_config.stun_duration, effect_layer);
+            default: {
+                break;
+            }
         }
     }
 
-    void Enemy_Node::change_to_jump(void* global_data) {
+    void Enemy_Node::start_jump(void* global_data) {
         Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
-
-        State_Machine_Component* state_machine =
-            Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
-
         const Enemy_Skill_Jump_Config& skill_jump_config = data->get_config().get_enemy_skill_jump_config();
 
         Enemy_Jump_Skill_Component* skill_jump =
             Utils::get_component<Enemy_Jump_Skill_Component>(this, Const::ENEMY_SKILL_JUMP_COMPONENT_NAME);
-        skill_jump->activating_skill(global_data);
 
         float animation_duration = this->enemy_animation->get_amimation_duration("IDLE");
         this->enemy_animation->play_animation("IDLE", skill_jump_config.duration_jump / animation_duration);
         this->action_enemy_jump(0.f, skill_jump_config.duration_jump, skill_jump->get_jump_position());
-
-        state_machine->change_state_at(Const::TRACK_CONTROLL, Const::STATE_JUMP, skill_jump_config.duration_jump);
     }
 
-    void Enemy_Node::change_to_walk(void* global_data) {
-        Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
-        const auto& behavior_config = this->get_behavior_config_from(global_data);
+    void Enemy_Node::end_move(void* global_data) {
+        this->velosity = {0, 0};
+        this->enemy_animation->play_animation("IDLE");
+    }
 
-        State_Machine_Component* state_machine =
-            Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
+    void Enemy_Node::end_attack(void* global_data) {
+        this->enemy_animation->play_animation("IDLE");
+        Collision_Component* collision =
+            Utils::get_component<Collision_Component>(this, Defined::COMPONENT_COLLISION_NAME);
+        if (collision == nullptr) {
+            return;
+        }
+        Enemy_Collision_Data* collision_data = Utils::get_collision_owner_data<Enemy_Collision_Data>(collision);
+        if (collision_data != nullptr) {
+            collision_data->set_damage_deal(0.f);
+        }
+        this->unschedule(Const::STATE_ATTACK);
+    }
 
-        Enemy_Behavior_Component* behavior =
-            Utils::get_component<Enemy_Behavior_Component>(this, Const::ENEMY_BEHAVIOR_COMPONENT_NAME);
+    void Enemy_Node::end_hitted(void* global_data, int source_call_state) {
+        switch (source_call_state) {
+            case Const::ENEMY_ATTACKED_FROM_BULLET:
+            case Const::ENEMY_HITTED_WHEN_STUNED: {
+                this->container->stop_action(HITTED_ACTION_TAG);
+                this->attacked_image->stop_action(HITTED_ACTION_TAG);
+                this->attacked_image->set_visible(false);
+                Utils::reset_to_origin(this->container);
+                Utils::reset_to_origin(this->attacked_image);
+                break;
+            }
+            default: {
+                break;
+            }
+        }
+    }
 
-        this->velosity = behavior_config.get_enemy_velosity() * behavior->get_enemy_walking_direction();
+    void Enemy_Node::end_dead(void* global_data) {}
 
-        state_machine->change_state_at(
-            Const::TRACK_CONTROLL, Const::STATE_WALK, behavior_config.get_enemy_walk_duration()
-        );
+    void Enemy_Node::end_stun(void* global_data, int source_call_state) {
+        switch (source_call_state) {
+            case Const::ENEMY_STUN_FROM_CHARACTER_SKILL_THUNDER: {
+                this->container->stop_action(HITTED_ACTION_TAG);
+                this->attacked_image->stop_action(HITTED_ACTION_TAG);
+                this->attacked_image->set_visible(false);
+                Utils::reset_to_origin(this->container);
+                Utils::reset_to_origin(this->attacked_image);
+                break;
+            }
+            default: {
+                break;
+            }
+        }
+    }
 
-        float duration = this->enemy_animation->get_amimation_duration("WALK");
-        this->enemy_animation->play_animation("WALK", behavior_config.get_enemy_walk_duration() / duration);
+    void Enemy_Node::end_jump(void* global_data) {
+        this->stop_action(JUMP_ACTION_TAG);
+        this->container->stop_action(JUMP_ACTION_TAG);
+        Utils::reset_to_origin(this->container);
     }
 
     void Enemy_Node::action_enemy_jump(float delay, float duration, glm::vec2 character_position) {
@@ -504,8 +603,8 @@ namespace Meow_Meow {
 
     void Enemy_Node::action_enemy_dead(float delay, Layer_Node* label_exp_parent, float killed_exp) {
         if (this->progression_container != nullptr) {
-            Utils::reset_to_origin(this->progression_health);
             this->progression_health->stop_action(HITTED_ACTION_TAG);
+            Utils::reset_to_origin(this->progression_health);
             this->progression_health->do_action(
                 Action::sequence(Action::delay(0), Action::fade_out(0.2), Action::hide())
             );
@@ -532,7 +631,6 @@ namespace Meow_Meow {
         label_exp->set_anchor({0.5f, 0.5f});
         label_exp->set_color({20, 220, 20});
         label_exp_parent->add_child(label_exp);
-        label_exp->set_name("Enemy_Node::label_exp");
         float delta_y = Math::random_float(60, 80);
         float duration = 0.5;
         float duration_wait = 1.25;
@@ -554,78 +652,6 @@ namespace Meow_Meow {
                 Action::remove_self(true)
             )
         );
-    }
-
-    bool Enemy_Node::can_take_damage(void* global_data) {
-        State_Machine_Component* state_machine =
-            Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
-
-        std::string current_effect_state = state_machine->get_current_state_at(Const::TRACK_EFFECTED);
-        if (current_effect_state == Const::STATE_ATTACKED) {
-            return false;
-        }
-
-        return true;
-    }
-
-    void Enemy_Node::handle_collision(float delta_time, void* global_data) {
-        Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
-        const Enemy_Behavior_Config& behavior_config = this->get_behavior_config_from(global_data);
-
-        Collision_Component* collision_component =
-            Utils::get_component<Collision_Component>(this, Defined::COMPONENT_COLLISION_NAME);
-
-        if (collision_component == nullptr) {
-            return;
-        }
-
-        State_Machine_Component* state_machine =
-            Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
-
-        if (!this->can_take_damage(global_data)) {
-            return;
-        }
-
-        std::vector<Collision_Information> collisions = collision_component->get_collisioneds();
-        for (Collision_Information& collision : collisions) {
-            if (collision.tag != Const::BULLET_COLLISION_TAG)
-                continue;
-            Bullet_Collision_Data* collision_data = reinterpret_cast<Bullet_Collision_Data*>(collision.owner_data);
-            if (collision_data == nullptr)
-                continue;
-            if (collision_data->get_damage_deal() <= 0 || collision_data->is_hitted())
-                continue;
-            this->hide_other_health_progression(data->get_effect_layer());
-            this->change_to_hitted(
-                global_data,
-                collision_data->get_damage_deal(),
-                collision_data->get_bullet_direction(),
-                Const::STATE_ATTACKED,
-                behavior_config.get_enemy_attacked_duration()
-            );
-            collision_data->set_damage_deal(0.f);
-            collision_data->set_hitted(true);
-            break;
-        }
-    }
-
-    bool Enemy_Node::handle_active_skill(void* global_data) {
-        State_Machine_Component* state_machine =
-            Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
-
-        Enemy_Jump_Skill_Component* skill_jump =
-            Utils::get_component<Enemy_Jump_Skill_Component>(this, Const::ENEMY_SKILL_JUMP_COMPONENT_NAME);
-
-        if (skill_jump->can_activate_skill(state_machine, global_data)) {
-            this->change_to_jump(global_data);
-            return true;
-        }
-
-        return false;
-    }
-
-    bool Enemy_Node::handle_other_state(void* global_data) {
-        return false;
     }
 
     void Enemy_Node::remove_from_battle(void* global_data) {
@@ -657,10 +683,23 @@ namespace Meow_Meow {
         return data->get_config().get_enemy_behavior_config();
     }
 
+    Enemy_State_Machine_Component* Enemy_Node::make_state_machine_instance() {
+        return new Enemy_State_Machine_Component();
+    }
+
     void Enemy_Node::update_collision_component(Collision_Component* collision) {
         collision->set_tag(Const::ENEMY_COLLISION_TAG);
         Enemy_Collision_Data* collision_data = new Enemy_Collision_Data();
         collision->set_owner_data(collision_data);
+    }
+
+    void Enemy_Node::update_state_machine_component(State_Machine_Component* state_machine) {
+        state_machine->add_state_at(
+            Const::TRACK_CONTROLL,
+            Const::STATE_JUMP,
+            [this](Base_Node*, State_Machine_Component*, void* global_data, int) { this->start_jump(global_data); },
+            [this](Base_Node*, State_Machine_Component*, void* global_data, int) { this->end_jump(global_data); }
+        );
     }
 
     void Enemy_Node::init_skill_components() {
@@ -671,85 +710,6 @@ namespace Meow_Meow {
 
     void Enemy_Node::update_ui_attrubutes() {}
 
-    void Enemy_Node::handle_state_machine(float delta_time, void* global_data) {
-        Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
-        const auto& behavior_config = this->get_behavior_config_from(global_data);
-        Enemy_Data& enemy_data = this->get_enemy_data(global_data);
-
-        State_Machine_Component* state_machine =
-            Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
-
-        Enemy_Behavior_Component* behavior =
-            Utils::get_component<Enemy_Behavior_Component>(this, Const::ENEMY_BEHAVIOR_COMPONENT_NAME);
-
-        Collision_Component* collision =
-            Utils::get_component<Collision_Component>(this, Defined::COMPONENT_COLLISION_NAME);
-
-        if (collision == nullptr) {
-            return;
-        }
-
-        std::string state_at_effected = state_machine->get_current_state_at(Const::TRACK_EFFECTED);
-        std::string state_at_controll = state_machine->get_current_state_at(Const::TRACK_CONTROLL);
-
-        if (state_at_controll == Const::STATE_DEATH) {
-            return;
-        }
-
-        if (behavior->is_hitted_by_thunder_skill()) {
-            this->change_to_hitted_by_thunder_skill(global_data);
-            return;
-        }
-
-        if (state_machine->is_finish_state_at(Const::TRACK_CONTROLL)) {
-            /**
-             * If duration attack finish and player is not take it
-             * we remove the damage deal in collision!
-             */
-            if (state_at_controll == Const::STATE_ATTACK) {
-                this->unschedule(Const::STATE_ATTACK);
-                Enemy_Collision_Data* collision_data = Utils::get_collision_owner_data<Enemy_Collision_Data>(collision);
-                if (collision_data != nullptr) {
-                    collision_data->set_damage_deal(0.f);
-                }
-            }
-            /**
-             * @Note: if enemy is attacked we don't update anything!
-             */
-            if (state_at_effected != Const::STATE_ATTACKED && state_at_effected != Const::STATE_STUN) {
-                if (state_at_controll != Const::STATE_DEATH) {
-                    if (!this->handle_active_skill(global_data) && !this->handle_other_state(global_data)) {
-                        if (behavior->can_attack()) {
-                            this->change_to_attack(global_data);
-                        } else if (behavior->is_walking()) {
-                            this->change_to_walk(global_data);
-                        } else {
-                            state_machine->change_state_at(
-                                Const::TRACK_CONTROLL, Const::STATE_IDLE, State_Machine_Component::INFITY_STATE
-                            );
-                            this->enemy_animation->play_animation("IDLE");
-                        }
-                    }
-                }
-            }
-        }
-
-        if (state_machine->is_finish_state_at(Const::TRACK_EFFECTED)) {
-            if (state_at_effected == Const::STATE_ATTACKED || state_at_effected == Const::STATE_STUN) {
-                state_machine->change_state_at(
-                    Const::TRACK_EFFECTED, Const::STATE_UNEFFECTED, State_Machine_Component::INFITY_STATE
-                );
-                this->container->stop_action(HITTED_ACTION_TAG);
-                Utils::reset_to_origin(this->container);
-                if (enemy_data.get_current_health() <= 0) {
-                    this->change_to_death(global_data);
-                    return;
-                }
-                this->change_to_walk(global_data);
-            }
-        }
-    }
-
     void Enemy_Node::update_movement(float delta_time) {
         this->set_position(this->get_position() + this->velosity * delta_time);
     }
@@ -758,20 +718,21 @@ namespace Meow_Meow {
         Enemy_Behavior_Component* behavior =
             Utils::get_component<Enemy_Behavior_Component>(this, Const::ENEMY_BEHAVIOR_COMPONENT_NAME);
 
-        State_Machine_Component* state_machine =
-            Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
+        Enemy_State_Machine_Component* state_machine =
+            Utils::get_component<Enemy_State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
 
-        if (state_machine->get_current_state_at(Const::TRACK_CONTROLL) == Const::STATE_DEATH) {
+        if (state_machine->is_enemy_dead()) {
             return;
         }
 
         bool is_right = behavior->get_enemy_walking_direction().x > 0;
         this->enemy_animation->set_flipped_x(is_right);
-        glm::vec2 anchor = !is_right ? this->get_origin_animation_anchor_point().to_vec2()
-                                     : glm::vec2{
-                                           1.0f - this->get_origin_animation_anchor_point().x,
-                                           this->get_origin_animation_anchor_point().y
-                                       };
+        glm::vec2 anchor = this->get_origin_animation_anchor_point().to_vec2();
+        if (is_right) {
+            anchor = glm::vec2{
+                1.0f - this->get_origin_animation_anchor_point().x, this->get_origin_animation_anchor_point().y
+            };
+        }
         this->enemy_animation->set_anchor(anchor);
     }
 
@@ -809,8 +770,12 @@ namespace Meow_Meow {
     }
 
     void Enemy_Node::fix_update(float delta_time, void* global_data) {
-        this->handle_collision(delta_time, global_data);
-        this->handle_state_machine(delta_time, global_data);
+        Enemy_State_Machine_Component* state_machine =
+            Utils::get_component<Enemy_State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
+
+        if (state_machine != nullptr && state_machine->is_enemy_dead()) {
+            return;
+        }
         this->update_movement(delta_time);
         this->update_enemy_direction();
         this->sync_attacked_image();

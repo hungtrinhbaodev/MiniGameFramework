@@ -5,11 +5,11 @@
 #include <meow_meow/object/character_node.h>
 
 namespace Meow_Meow {
-    Character_Skill_Thurnder_Component::Character_Skill_Thurnder_Component() {}
+    Character_Skill_Thunder_Component::Character_Skill_Thunder_Component() {}
 
-    Character_Skill_Thurnder_Component::~Character_Skill_Thurnder_Component() {}
+    Character_Skill_Thunder_Component::~Character_Skill_Thunder_Component() {}
 
-    bool Character_Skill_Thurnder_Component::can_activate_skill(
+    bool Character_Skill_Thunder_Component::can_activate_skill(
         State_Machine_Component* state_machine, void* global_data
     ) {
         if (state_machine->get_current_state_at(Const::TRACK_EFFECTED) == Const::STATE_ATTACKED ||
@@ -22,7 +22,7 @@ namespace Meow_Meow {
         return Skill_Component::can_activate_skill(state_machine, global_data);
     }
 
-    bool Character_Skill_Thurnder_Component::is_enemy_taken(int enemy_id) {
+    bool Character_Skill_Thunder_Component::is_enemy_taken(int enemy_id) {
         for (int current_enemy_id : this->enemy_taken_ids) {
             if (current_enemy_id == enemy_id) {
                 return true;
@@ -31,7 +31,7 @@ namespace Meow_Meow {
         return false;
     }
 
-    void Character_Skill_Thurnder_Component::activating_skill(void* global_data) {
+    void Character_Skill_Thunder_Component::activating_skill(void* global_data) {
         Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
         const Character_Skill_Thunder_Config& skill_config = data->get_config().get_character_skill_thunder_config();
         Character_Node* character = data->get_character_node();
@@ -59,16 +59,14 @@ namespace Meow_Meow {
         }
     }
 
-    void Character_Skill_Thurnder_Component::attach(Base_Node* target, void* global_data) {
+    void Character_Skill_Thunder_Component::attach(Base_Node* target, void* global_data) {
         Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
         const Character_Skill_Thunder_Config& skill_config = data->get_config().get_character_skill_thunder_config();
         this->set_skill_id(skill_config.skill_id);
         this->set_countdown_time(skill_config.duration_countdown);
     }
 
-    void Character_Skill_Thurnder_Component::update_information(
-        Base_Node* target, float delta_time, void* global_data
-    ) {
+    void Character_Skill_Thunder_Component::update_information(Base_Node* target, float delta_time, void* global_data) {
         this->enemy_taken_ids.clear();
         Skill_Component::update_information(target, delta_time, global_data);
     }

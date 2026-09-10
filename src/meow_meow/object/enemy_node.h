@@ -1,9 +1,11 @@
 #pragma once
 #include <collision_component.h>
 #include <meow_meow/animation/character_animation.h>
+#include <meow_meow/component/enemy_state_machine_component.h>
 #include <meow_meow/config/enemy_behavior_config.h>
 #include <meow_meow/object/game_object.h>
 #include <progression_node.h>
+#include <state_machine_component.h>
 
 namespace Meow_Meow {
     class Enemy_Node : public Game_Object {
@@ -13,26 +15,22 @@ namespace Meow_Meow {
         ~Enemy_Node();
 
         int get_enemy_id();
+        virtual const Enemy_Behavior_Config& get_behavior_config_from(void* global_data) const;
+        virtual Enemy_Data& get_enemy_data(void* global_data);
 
     protected:
         Custom::Transformed_Rectangle get_bounding_box(void* global_data) override;
         void handle_boundary(void* global_data) override;
         void attach(void* global_data) override;
         void fix_update(float delta_time, void* global_data) override;
-        virtual const Enemy_Behavior_Config& get_behavior_config_from(void* global_data) const;
+        virtual Enemy_State_Machine_Component* make_state_machine_instance();
+        virtual void update_state_machine_component(State_Machine_Component* state_machine);
         virtual void update_collision_component(Collision_Component* collision);
+        virtual void clean_collision_data(Collision_Component* collision);
         virtual void init_skill_components();
         virtual void update_ui_attrubutes();
-        virtual bool handle_active_skill(void* global_data);
-        /**
-         * Using to boss class extend can handle that individual state
-         * */
-        virtual bool handle_other_state(void* global_data);
         virtual void remove_from_battle(void* global_data);
-        virtual void clean_collision_data(Collision_Component* collision);
-        virtual Enemy_Data& get_enemy_data(void* global_data);
         virtual Custom::Anchor_Point get_origin_animation_anchor_point();
-        virtual bool can_take_damage(void* global_data);
 
         const unsigned char ORIGIN_ATTACKED_IMAGE_OPACITY = 80;
 
@@ -64,22 +62,22 @@ namespace Meow_Meow {
         void init_components();
         void init_attacked_image();
         void init_progression_health(void* global_data);
+        void setup_state_machine_component(State_Machine_Component* state_machine);
 
-        void change_to_walk(void* global_data);
-        void change_to_attack(void* global_data);
-        void change_to_jump(void* global_data);
-        void change_to_hitted(
-            void* global_data,
-            float damage_take,
-            Const::DIRECTION bullet_direction,
-            std::string hitted_state,
-            float duration_state
-        );
-        void change_to_hitted_by_thunder_skill(void* global_data);
-        void change_to_death(void* global_data);
+        void start_move(void* global_data);
+        void start_attack(void* global_data);
+        void start_hitted(void* global_data, int source_call_state);
+        void start_dead(void* global_data);
+        void start_stun(void* global_data, int source_call_state);
+        void start_jump(void* global_data);
 
-        void handle_collision(float delta_time, void* global_data);
-        void handle_state_machine(float delta_time, void* global_data);
+        void end_move(void* global_data);
+        void end_attack(void* global_data);
+        void end_hitted(void* global_data, int source_call_state);
+        void end_dead(void* global_data);
+        void end_stun(void* global_data, int source_call_state);
+        void end_jump(void* global_data);
+
         void update_movement(float delta_time);
         void update_enemy_direction();
         void sync_attacked_image();

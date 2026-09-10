@@ -9,6 +9,8 @@ public:
     ~Touch_Component();
 
     Touch_Information& modify_infomation();
+
+protected:
     void attach(Base_Node* target, void* global_data) override;
     void detach(Base_Node* target, void* global_data = nullptr) override;
     void draw(Base_Node* target, int& draw_index) override;

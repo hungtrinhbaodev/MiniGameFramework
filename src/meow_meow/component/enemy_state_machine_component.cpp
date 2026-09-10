@@ -1,0 +1,79 @@
+#include <meow_meow/component/enemy_state_machine_component.h>
+#include <meow_meow/const.h>
+#include <meow_meow/data/global_data.h>
+#include <meow_meow/utils.h>
+
+namespace Meow_Meow {
+    Enemy_State_Machine_Component::Enemy_State_Machine_Component() {}
+
+    Enemy_State_Machine_Component::~Enemy_State_Machine_Component() {}
+
+    bool Enemy_State_Machine_Component::can_take_bullet_damage(void* global_data) {
+        if (this->is_enemy_attacked() || this->is_enemy_dead()) {
+            return false;
+        }
+        return true;
+    }
+
+    bool Enemy_State_Machine_Component::is_enemy_dead() {
+        return this->get_current_state_at(Const::TRACK_CONTROLL) == Const::STATE_DEATH;
+    }
+
+    bool Enemy_State_Machine_Component::is_enemy_attacked() {
+        return this->get_current_state_at(Const::TRACK_EFFECTED) == Const::STATE_ATTACKED;
+    }
+
+    bool Enemy_State_Machine_Component::is_enemy_stun() {
+        return this->get_current_state_at(Const::TRACK_EFFECTED) == Const::STATE_STUN;
+    }
+
+    void Enemy_State_Machine_Component::handle_auto_change_state(
+        Base_Node* target, std::string track, std::string state, void* global_data, int source_call_state
+    ) {
+        Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
+        Enemy_Node* enemy = cast_enemy_target(target);
+        if (enemy == nullptr)
+            return;
+        const auto& behavior_config = enemy->get_behavior_config_from(global_data);
+        Enemy_Data& enemy_data = enemy->get_enemy_data(global_data);
+        Enemy_Behavior_Component* behavior = get_enemy_bihavior_component(target);
+
+        if (this->is_enemy_dead()) {
+            return;
+        }
+
+        if (track == Const::TRACK_CONTROLL) {
+            if (this->is_enemy_attacked() || this->is_enemy_stun()) {
+                return;
+            }
+            if (behavior->can_attack()) {
+                this->change_state_at(
+                    Const::TRACK_CONTROLL, Const::STATE_ATTACK, behavior_config.get_enemy_attack_duration()
+                );
+            } else if (behavior->is_walking()) {
+                this->change_state_at(
+                    Const::TRACK_CONTROLL, Const::STATE_MOVE, behavior_config.get_enemy_attack_duration()
+                );
+            } else {
+                this->change_state_at(Const::TRACK_CONTROLL, Const::STATE_MOVE, State_Machine_Component::INFITY_STATE);
+            }
+        }
+
+        if (track == Const::TRACK_EFFECTED) {
+            if (state == Const::STATE_STUN || state == Const::STATE_ATTACKED) {
+                this->change_state_at(
+                    Const::TRACK_EFFECTED, Const::STATE_UNEFFECTED, State_Machine_Component::INFITY_STATE
+                );
+                if (enemy_data.get_current_health() <= 0) {
+                    this->change_state_at(
+                        Const::TRACK_CONTROLL, Const::STATE_DEATH, State_Machine_Component::INFITY_STATE
+                    );
+                    return;
+                }
+                this->change_state_at(
+                    Const::TRACK_CONTROLL, Const::STATE_MOVE, behavior_config.get_enemy_walk_duration()
+                );
+            }
+        }
+    }
+}  // namespace Meow_Meow

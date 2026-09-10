@@ -3,6 +3,7 @@
 #include <meow_meow/component/enemy_behavior_component.h>
 #include <meow_meow/config/enemy_behavior_config.h>
 #include <meow_meow/data/global_data.h>
+#include <meow_meow/utils.h>
 #include <utils.h>
 
 namespace Meow_Meow {
@@ -53,25 +54,34 @@ namespace Meow_Meow {
             return;
         }
 
-        State_Machine_Component* state_machine =
-            Utils::get_component<State_Machine_Component>(character, Defined::COMPONENT_STATE_MACHINE_NAME);
+        Enemy_State_Machine_Component* enemy_state_machine = get_enemy_state_machine_component(target);
+        Character_State_Machine_Component* character_state_machine = get_character_state_machine(target);
 
-        if (state_machine != nullptr &&
-            (state_machine->get_current_state_at(Const::TRACK_CONTROLL) == Const::STATE_DEATH ||
-             state_machine->get_current_state_at(Const::TRACK_CONTROLL) == Const::STATE_FLIGHT)) {
-            this->walking = true;
+        if (enemy_state_machine->is_enemy_dead()) {
+            return;
+        }
+
+        if (character_state_machine != nullptr &&
+            (character_state_machine->is_character_dead() || character_state_machine->is_character_flight())) {
             this->enemy_direction = {0.f, 0.f};
             return;
         }
 
-        Character_Skill_Thurnder_Component* skill_thunder = Utils::get_component<Character_Skill_Thurnder_Component>(
+        Character_Skill_Thunder_Component* skill_thunder = Utils::get_component<Character_Skill_Thunder_Component>(
             character, Const::CHARACTER_SKILL_THUNDER_COMPONENT_NAME
         );
 
         if (skill_thunder != nullptr) {
             Enemy_Node* enemy = reinterpret_cast<Enemy_Node*>(target);
             if (skill_thunder->is_enemy_taken(enemy->get_enemy_id())) {
-                this->hitted_by_thunder_skill = true;
+                const Character_Skill_Thunder_Config skill_config =
+                    data->get_config().get_character_skill_thunder_config();
+                enemy_state_machine->change_state_at(
+                    Const::TRACK_EFFECTED,
+                    Const::STATE_STUN,
+                    skill_config.stun_duration,
+                    Const::ENEMY_STUN_FROM_CHARACTER_SKILL_THUNDER
+                );
                 return;
             }
         }

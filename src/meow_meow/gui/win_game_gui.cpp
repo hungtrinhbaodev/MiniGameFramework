@@ -72,7 +72,7 @@ namespace Meow_Meow {
         this->image_win->set_position(origin.position + glm::vec2(Math::random_float(-100, 100), -100));
         this->image_win->set_scale({0.2f, 0.2f});
         this->image_win->set_visible(false);
-        float duration = 0.55f;
+        float duration = 0.45f;
         this->image_win->do_action(
             Action::sequence(
                 Action::delay(delay),

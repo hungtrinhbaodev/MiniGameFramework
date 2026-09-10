@@ -19,4 +19,52 @@ namespace Meow_Meow {
         );
         logo->do_action(logo_action->repeat_forever());
     }
+
+    Character_Node* cast_charater_target(Base_Node* target) {
+        return reinterpret_cast<Character_Node*>(target);
+    }
+
+    Character_State_Machine_Component* get_character_state_machine(Base_Node* target) {
+        Character_Node* character = cast_charater_target(target);
+        return Utils::get_component<Character_State_Machine_Component>(
+            character, Defined::COMPONENT_STATE_MACHINE_NAME
+        );
+    }
+
+    Character_Skill_Thunder_Component* get_skill_thunder_component(Base_Node* target) {
+        Character_Node* character = cast_charater_target(target);
+        return Utils::get_component<Character_Skill_Thunder_Component>(
+            character, Const::CHARACTER_SKILL_THUNDER_COMPONENT_NAME
+        );
+    }
+
+    Character_Skill_Dash_Component* get_skill_dash_component(Base_Node* target) {
+        Character_Node* character = cast_charater_target(target);
+        return Utils::get_component<Character_Skill_Dash_Component>(
+            character, Const::CHARACTER_SKILL_DASH_COMPONENT_NAME
+        );
+    }
+
+    Enemy_Node* cast_enemy_target(Base_Node* target) {
+        return reinterpret_cast<Enemy_Node*>(target);
+    }
+
+    Enemy_State_Machine_Component* get_enemy_state_machine_component(Base_Node* target) {
+        Enemy_Node* enemy = cast_enemy_target(target);
+        return Utils::get_component<Enemy_State_Machine_Component>(enemy, Defined::COMPONENT_STATE_MACHINE_NAME);
+    }
+
+    Enemy_Behavior_Component* get_enemy_bihavior_component(Base_Node* target) {
+        Enemy_Node* enemy = cast_enemy_target(target);
+        return Utils::get_component<Enemy_Behavior_Component>(enemy, Const::ENEMY_BEHAVIOR_COMPONENT_NAME);
+    }
+
+    Boss_Node* cast_boss_target(Base_Node* target) {
+        return reinterpret_cast<Boss_Node*>(target);
+    }
+
+    Boss_State_Machine_Component* get_boss_state_machine_component(Base_Node* target) {
+        Boss_Node* boss = cast_boss_target(target);
+        return Utils::get_component<Boss_State_Machine_Component>(boss, Defined::COMPONENT_STATE_MACHINE_NAME);
+    }
 }  // namespace Meow_Meow

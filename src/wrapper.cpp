@@ -504,7 +504,7 @@ namespace Libs_Wrapper {
         for (int i = 0; i < static_cast<int>(Custom::Key::COUNT); i++) {
             Custom::Key current = static_cast<Custom::Key>(i);
             KeyboardKey key = form_key(current);
-            if (key == KeyboardKey::KEY_NULL) {
+            if (key == KeyboardKey::KEY_NULL && current != Custom::Key::NONE) {
                 std::cout << "Key inputs warning: Unsported key, please check {from_key} function again!" << std::endl;
                 continue;
             }

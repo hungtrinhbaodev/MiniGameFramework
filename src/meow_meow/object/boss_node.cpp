@@ -1,5 +1,6 @@
 #include <actions.h>
 #include <meow_meow/component/boss_skill_flash_component.h>
+#include <meow_meow/component/boss_state_michine_component.h>
 #include <meow_meow/data/boss_collision_data.h>
 #include <meow_meow/data/global_data.h>
 #include <meow_meow/object/boss_node.h>
@@ -28,9 +29,36 @@ namespace Meow_Meow {
         return ORIGIN_ANIMATION_ANCHOR_POINT;
     }
 
+    Enemy_State_Machine_Component* Boss_Node::make_state_machine_instance() {
+        return new Boss_State_Machine_Component();
+    }
+
     void Boss_Node::update_collision_component(Collision_Component* collision) {
         collision->set_tag(Const::BOSS_COLLISION_TAG);
         collision->set_owner_data(new Boss_Collision_Data());
+    }
+
+    void Boss_Node::update_state_machine_component(State_Machine_Component* state_machine) {
+        state_machine->add_state_at(
+            Const::TRACK_CONTROLL,
+            Const::STATE_SKILL_CHANNELLING,
+            [this](Base_Node*, State_Machine_Component*, void* global_data, int source_call_tag) {
+                this->start_channelling(global_data, source_call_tag);
+            },
+            [this](Base_Node*, State_Machine_Component*, void* global_data, int source_call_tag) {
+                this->end_channelling(global_data, source_call_tag);
+            }
+        );
+        state_machine->add_state_at(
+            Const::TRACK_CONTROLL,
+            Const::STATE_SKILL_FLASH,
+            [this](Base_Node*, State_Machine_Component*, void* global_data, int source_call_tag) {
+                this->start_flashing(global_data);
+            },
+            [this](Base_Node*, State_Machine_Component*, void* global_data, int source_call_tag) {
+                this->end_flashing(global_data);
+            }
+        );
     }
 
     void Boss_Node::init_skill_components() {
@@ -44,22 +72,6 @@ namespace Meow_Meow {
         Utils::save_transform_origin(this->enemy_animation);
         this->progression_health->set_position(ORIGIN_HEALTH_BAR_POSITION);
         Utils::save_transform_origin(this->progression_health);
-    }
-
-    bool Boss_Node::handle_active_skill(void* global_data) {
-        State_Machine_Component* state_machine =
-            Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
-
-        Boss_Skill_Flash_Component* flash_skill =
-            Utils::get_component<Boss_Skill_Flash_Component>(this, Const::BOSS_SKILL_FLASH_COMPONENT_NAME);
-
-        if (flash_skill->can_activate_skill(state_machine, global_data)) {
-            flash_skill->activating_skill(global_data);
-            this->change_to_channeling(global_data, flash_skill->get_skill_id());
-            return true;
-        }
-
-        return false;
     }
 
     void Boss_Node::remove_from_battle(void* global_data) {
@@ -77,61 +89,7 @@ namespace Meow_Meow {
         this->unschedule(Const::STATE_ATTACK);
     }
 
-    bool Boss_Node::handle_other_state(void* global_data) {
-        Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
-        const Boss_Skill_Flash_Config& flash_skill_config = data->get_config().get_boss_skill_flash_config();
-
-        State_Machine_Component* state_machine =
-            Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
-
-        if (state_machine->is_finish_state_at(Const::TRACK_CONTROLL)) {
-            std::string current_state = state_machine->get_current_state_at(Const::TRACK_CONTROLL);
-            if (current_state == Const::STATE_SKILL_CHANNELLING) {
-                this->container->stop_action(ACTION_CHANNELLING_SKILL_TAG);
-                this->attacked_image->stop_action(ACTION_CHANNELLING_SKILL_TAG);
-                this->attacked_image->set_visible(false);
-                Utils::reset_to_origin(this->container);
-                Utils::reset_to_origin(this->attacked_image);
-                if (data->get_config().is_boss_flash_skill(this->channelling_skill)) {
-                    this->change_to_flash(global_data);
-                    return true;
-                }
-            }
-            if (current_state == Const::STATE_SKILL_FLASH) {
-                this->stop_action(ACTION_FLASHING_SKILL_TAG);
-                this->container->stop_action(ACTION_FLASHING_SKILL_TAG);
-                Utils::reset_to_origin(this->container);
-                this->enemy_animation->play_animation("IDLE");
-                /**
-                 * When end skill but chacter don't get damage we remove it!
-                 */
-                Collision_Component* collision =
-                    Utils::get_component<Collision_Component>(this, Defined::COMPONENT_COLLISION_NAME);
-                Boss_Collision_Data* collision_data = Utils::get_collision_owner_data<Boss_Collision_Data>(collision);
-                collision_data->set_using_skill_id("");
-                collision_data->set_skill_damage(0);
-                return false;
-            }
-        }
-
-        return false;
-    }
-
-    bool Boss_Node::can_take_damage(void* global_data) {
-        State_Machine_Component* state_machine =
-            Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
-
-        std::string current_controll_state = state_machine->get_current_state_at(Const::TRACK_CONTROLL);
-        std::string current_effect_state = state_machine->get_current_state_at(Const::TRACK_EFFECTED);
-        if (current_effect_state == Const::STATE_ATTACKED || current_controll_state == Const::STATE_SKILL_CHANNELLING ||
-            current_controll_state == Const::STATE_SKILL_FLASH) {
-            return false;
-        }
-
-        return true;
-    }
-
-    void Boss_Node::action_channelling_skill(float delay, float duration_channelling) {
+    void Boss_Node::action_channelling_skill_flash(float delay, float duration_channelling) {
         this->enemy_animation->play_animation("IDLE");
         this->container->stop_action(ACTION_CHANNELLING_SKILL_TAG);
         Utils::reset_to_origin(this->container);
@@ -155,6 +113,80 @@ namespace Meow_Meow {
         );
     }
 
+    void Boss_Node::start_channelling(void* global_data, int source_call_state) {
+        Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
+
+        switch (source_call_state) {
+            case Const::BOSS_CHANNELING_FROM_SKILL_FLASH: {
+                const Boss_Skill_Flash_Config& flash_skill_config = data->get_config().get_boss_skill_flash_config();
+                this->velosity = {0.f, 0.f};
+                this->action_channelling_skill_flash(0.f, flash_skill_config.duration_channeling);
+                break;
+            }
+            default: {
+                break;
+            }
+        }
+    }
+
+    void Boss_Node::start_flashing(void* global_data) {
+        Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
+        const Boss_Skill_Flash_Config& flash_skill_config = data->get_config().get_boss_skill_flash_config();
+
+        Boss_Skill_Flash_Component* flash_skill =
+            Utils::get_component<Boss_Skill_Flash_Component>(this, Const::BOSS_SKILL_FLASH_COMPONENT_NAME);
+
+        Collision_Component* collision =
+            Utils::get_component<Collision_Component>(this, Defined::COMPONENT_COLLISION_NAME);
+
+        if (collision != nullptr) {
+            Boss_Collision_Data* collision_data = Utils::get_collision_owner_data<Boss_Collision_Data>(collision);
+            if (collision_data != nullptr) {
+                collision_data->set_using_skill_id(flash_skill_config.skill_id);
+                collision_data->set_skill_damage(flash_skill_config.flash_damage);
+            }
+        }
+
+        float duration_animation = this->enemy_animation->get_amimation_duration("WALK");
+        this->enemy_animation->play_animation("WALK", flash_skill_config.duration_flash / duration_animation);
+        this->action_flashing(0.f, flash_skill_config.duration_flash, flash_skill->get_flash_to_position());
+    }
+
+    void Boss_Node::end_channelling(void* global_data, int source_call_state) {
+        switch (source_call_state) {
+            case Const::BOSS_CHANNELING_FROM_SKILL_FLASH: {
+                this->container->stop_action(ACTION_CHANNELLING_SKILL_TAG);
+                this->attacked_image->stop_action(ACTION_CHANNELLING_SKILL_TAG);
+                this->attacked_image->set_visible(false);
+                Utils::reset_to_origin(this->container);
+                Utils::reset_to_origin(this->attacked_image);
+                break;
+            }
+            default: {
+                break;
+            }
+        }
+    }
+
+    void Boss_Node::end_flashing(void* global_data) {
+        this->stop_action(ACTION_FLASHING_SKILL_TAG);
+        this->container->stop_action(ACTION_FLASHING_SKILL_TAG);
+        this->enemy_animation->play_animation("IDLE");
+        Utils::reset_to_origin(this->container);
+        /**
+         * When end skill but chacter don't get damage we remove it!
+         */
+        Collision_Component* collision =
+            Utils::get_component<Collision_Component>(this, Defined::COMPONENT_COLLISION_NAME);
+        if (collision != nullptr) {
+            Boss_Collision_Data* collision_data = Utils::get_collision_owner_data<Boss_Collision_Data>(collision);
+            if (collision_data != nullptr) {
+                collision_data->set_using_skill_id("");
+                collision_data->set_skill_damage(0);
+            }
+        }
+    }
+
     void Boss_Node::change_to_channeling(void* global_data, std::string skill_id) {
         Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
         const Boss_Skill_Flash_Config& flash_skill_config = data->get_config().get_boss_skill_flash_config();
@@ -171,7 +203,7 @@ namespace Meow_Meow {
         }
 
         state_machine->change_state_at(Const::TRACK_CONTROLL, Const::STATE_SKILL_CHANNELLING, duration_channelling);
-        this->action_channelling_skill(0.f, duration_channelling);
+        this->action_channelling_skill_flash(0.f, duration_channelling);
     }
 
     void Boss_Node::action_flashing(float delay, float duration_flash, glm::vec2 flash_position) {

@@ -15,6 +15,7 @@ namespace Meow_Meow {
     protected:
         void attach(Base_Node* target, void* global_data) override;
         void update_information(Base_Node* target, float delta_time, void* global_data) override;
+        void handle_task(Base_Node* target, float delta_time, void* global_data) override;
 
     private:
         glm::vec2 player_position = {0.f, 0.f};

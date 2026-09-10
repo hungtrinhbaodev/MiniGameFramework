@@ -25,6 +25,7 @@ namespace Meow_Meow {
         std::string skill_id = "";
         float countdown_time = 0.f;
         float current_countdown_time = 0.f;
+        bool is_initialize = false;
 
         void start_countdown_time();
     };

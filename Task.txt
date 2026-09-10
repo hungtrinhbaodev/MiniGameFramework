@@ -49,6 +49,9 @@
 [Done]: Add boss node.
 [Done]: Add skill system to character (dash, random bullet and booming).
 []: Update movement to enemy to make it more realistic.
+[]: Add clean up callback to state machine easy to implement.
+[]: Update flow that component comunicate with each other, object just hold the action.
+
 
 []: Refactor variable name in key press system to read easier.
 [][Very difficult]: Add quad tree to collision system.
