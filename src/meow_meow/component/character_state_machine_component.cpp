@@ -45,15 +45,29 @@ namespace Meow_Meow {
 
     bool Character_State_Machine_Component::can_character_attack(void* global_data) {
         if (this->is_character_attacking() || this->is_character_attacked() || this->is_character_dashing() ||
-            this->is_character_channelling() || this->is_character_stunned()) {
+            this->is_character_channelling() || this->is_character_stunned() || this->is_character_dead()) {
             return false;
         }
         return true;
     }
 
-    bool Character_State_Machine_Component::can_process_move_input(void* global_data) {
+    bool Character_State_Machine_Component::can_process_mix_dash(Const::DIRECTION direction) {
+        if (this->is_character_dead())
+            return false;
+        if (this->is_character_dashing() &&
+            (direction == Const::DIRECTION::UP || direction == Const::DIRECTION::DOWN)) {
+            return this->get_source_call_state_at(Const::TRACK_CONTROLL, Const::STATE_DASHING) !=
+                   Const::MIX_DASH_WITH_MOVE;
+        }
+        return false;
+    }
+
+    bool Character_State_Machine_Component::can_process_move_input(void* global_data, Const::DIRECTION direction) {
+        if (this->can_process_mix_dash(direction)) {
+            return true;
+        }
         if (this->is_character_attacking() || this->is_character_attacked() || this->is_character_dashing() ||
-            this->is_character_channelling() || this->is_character_stunned()) {
+            this->is_character_channelling() || this->is_character_stunned() || this->is_character_dead()) {
             return false;
         }
         return true;
@@ -61,7 +75,7 @@ namespace Meow_Meow {
 
     bool Character_State_Machine_Component::can_process_release_move(void* global_data) {
         if (this->is_character_attacking() || this->is_character_attacked() || this->is_character_dashing() ||
-            this->is_character_channelling() || this->is_character_stunned()) {
+            this->is_character_channelling() || this->is_character_stunned() || this->is_character_dead()) {
             return false;
         }
         if (!this->is_character_moving()) {

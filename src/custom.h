@@ -5,7 +5,7 @@
 
 namespace Custom {
 
-    enum Key { A, W, S, D, B, C, V, LEFT, RIGHT, UP, DOWN, SPACE, NONE, /** @Hack to loop key enum */ COUNT };
+    enum Key { A, W, S, D, B, C, V, Z, LEFT, RIGHT, UP, DOWN, SPACE, NONE, /** @Hack to loop key enum */ COUNT };
 
     struct Size {
         float width = 0.f;

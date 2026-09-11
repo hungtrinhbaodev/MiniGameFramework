@@ -81,7 +81,11 @@ void State_Machine_Component::add_state_at(
 }
 
 void State_Machine_Component::change_state_at(
-    std::string track_name, std::string state_name, float state_duration, int source_call_tag
+    std::string track_name,
+    std::string state_name,
+    float state_duration,
+    int source_call_tag,
+    bool is_calling_end_last_state
 ) {
     if (this->tracks.find(track_name) == this->tracks.end())
         return;
@@ -96,8 +100,10 @@ void State_Machine_Component::change_state_at(
         /**
          * Cancel logic and action of last state before change into other state
          */
-        if (state.end_state != nullptr) {
-            state.end_state(this->target, this, this->global_data, state.source_call_tag);
+        if (is_calling_end_last_state && state.end_state != nullptr) {
+            state.end_state(
+                {this->target, this, this->global_data, state.source_call_tag, state_name, source_call_tag}
+            );
         }
     }
     track.current_state = state_name;
@@ -112,7 +118,7 @@ void State_Machine_Component::change_state_at(
          * Cancel logic and action of last state before change into other state
          */
         if (state.start_state != nullptr) {
-            state.start_state(this->target, this, this->global_data, source_call_tag);
+            state.start_state({this->target, this, this->global_data, source_call_tag, "", -1});
         }
     }
 }
@@ -163,7 +169,7 @@ void State_Machine_Component::handle_task(Base_Node* target, float delta_time, v
             if (!track.is_callback && track.states.find(current_state) != track.states.end()) {
                 State_Information& state = track.states[current_state];
                 if (state.end_state != nullptr) {
-                    state.end_state(this->target, this, this->global_data, state.source_call_tag);
+                    state.end_state({this->target, this, this->global_data, state.source_call_tag, "", -1});
                 }
             }
             if (!track.is_callback && track.finish_callback != nullptr) {

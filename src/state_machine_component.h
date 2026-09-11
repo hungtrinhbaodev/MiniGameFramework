@@ -8,9 +8,16 @@
 
 class State_Machine_Component : public Base_Component {
 public:
-    using Callback = std::function<
-        void(Base_Node* target, State_Machine_Component* state_mahine, void* global_data, int source_call_tag)>;
+    struct State_Machine_Callback_Data {
+        Base_Node* target = nullptr;
+        State_Machine_Component* state_machine = nullptr;
+        void* global_data = nullptr;
+        int source_call_state = -1;
+        std::string next_state = "";
+        int next_state_source_call = -1;
+    };
     static float INFITY_STATE;
+    using Callback = std::function<void(State_Machine_Callback_Data)>;
     struct Callback_Finish_State {
         Base_Node* target = nullptr;
         State_Machine_Component* component = nullptr;
@@ -39,7 +46,13 @@ public:
     void add_state_at(
         std::string track_name, std::string state_name, Callback start_state = nullptr, Callback finish_state = nullptr
     );
-    void change_state_at(std::string track, std::string state, float state_duration, int source_call_tag = -1);
+    virtual void change_state_at(
+        std::string track,
+        std::string state,
+        float state_duration,
+        int source_call_tag = -1,
+        bool call_end_last_state = true
+    );
     void log(std::string track);
 
 protected:
@@ -49,6 +62,9 @@ protected:
     virtual void handle_auto_change_state(
         Base_Node* target, std::string track, std::string state, void* global_data, int source_call_state
     );
+
+    Base_Node* target = nullptr;
+    void* global_data = nullptr;
 
 private:
     struct State_Information {
@@ -77,8 +93,6 @@ private:
         }
     };
 
-    Base_Node* target = nullptr;
-    void* global_data = nullptr;
     std::string state_need_handle = "";
     std::string track_need_handle = "";
     float duration_state_need_handle = 0.f;

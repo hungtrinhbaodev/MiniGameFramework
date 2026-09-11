@@ -1,4 +1,5 @@
 #pragma once
+#include <meow_meow/const.h>
 #include <state_machine_component.h>
 
 namespace Meow_Meow {
@@ -17,7 +18,8 @@ namespace Meow_Meow {
         bool is_character_flight();
         bool is_character_invincible();
         bool can_character_attack(void* global_data);
-        bool can_process_move_input(void* global_data);
+        bool can_process_mix_dash(Const::DIRECTION direction);
+        bool can_process_move_input(void* global_data, Const::DIRECTION direction);
         bool can_process_release_move(void* global_data);
 
     protected:

@@ -1,7 +1,77 @@
 #include <animation_node.h>
+#include <profiler.h>
 #include <wrapper.h>
 
+#include <algorithm>
 #include <iostream>
+
+std::map<std::string, std::map<std::string, std::vector<std::string>>> Animation_Node::animations_need_preload = {};
+
+void Animation_Node::add_animation_need_preload(const Animation_Data& animation) {
+    if (Animation_Node::animations_need_preload.find(animation.name) == Animation_Node::animations_need_preload.end()) {
+        Animation_Node::animations_need_preload[animation.name] = {};
+    }
+    std::map<std::string, std::vector<std::string>>& animations_need_preload_folders =
+        Animation_Node::animations_need_preload[animation.name];
+    if (animations_need_preload_folders.find(animation.folder_path) == animations_need_preload_folders.end()) {
+        animations_need_preload_folders[animation.folder_path] = {};
+    } else {
+        return;
+    }
+    std::vector<std::string>& preloads_frame = animations_need_preload_folders[animation.folder_path];
+    for (int i = 1; i < animation.number_frame; i++) {
+        preloads_frame.push_back(Animation_Node::get_image_animation_path(animation, i));
+    }
+}
+
+void Animation_Node::preload_animation() {
+    for (auto& [name, folders_animation] : Animation_Node::animations_need_preload) {
+        for (auto& [folder_path, images] : folders_animation) {
+            std::vector<std::string> images_preload_finish;
+            for (std::string& image : images) {
+                Image_Info info = Libs_Wrapper::image_info(image, Defined::LOAD_MODE::ASYNC);
+                if (info.state == Defined::RESOURCE_LOADED_STATE::LOADED && info.is_loaded_texture) {
+                    images_preload_finish.push_back(image);
+                }
+            }
+            for (const std::string& image_preload_finish : images_preload_finish) {
+                for (int i = 0; i < images.size(); i++) {
+                    if (images[i] == image_preload_finish) {
+                        images[i] = images.back();
+                        images.pop_back();
+                        i--;
+                    }
+                }
+            }
+            if (name == "DEAD" && images.size() <= 0) {
+                int a = 0;
+            }
+        }
+    }
+}
+
+std::string Animation_Node::get_image_animation_path(const Animation_Data& animation, int current_frame) {
+    std::string frame_number_str =
+        current_frame < 10 ? ("0" + std::to_string(current_frame)) : std::to_string(current_frame);
+    std::string current_image = animation.folder_path + frame_number_str + animation.extend_format;
+    return current_image;
+}
+
+bool Animation_Node::is_animation_preload_finish(const Animation_Data& animation) {
+    if (Animation_Node::animations_need_preload.find(animation.name) == Animation_Node::animations_need_preload.end()) {
+        return false;
+    }
+    std::map<std::string, std::vector<std::string>>& animations_need_preload_folders =
+        Animation_Node::animations_need_preload[animation.name];
+    if (animations_need_preload_folders.find(animation.folder_path) == animations_need_preload_folders.end()) {
+        return false;
+    }
+    if (animation.name == "DEAD") {
+        int a = 1;
+    }
+    std::vector<std::string>& preloads_frame = animations_need_preload_folders[animation.folder_path];
+    return preloads_frame.size() <= 0;
+}
 
 Animation_Node::Animation_Node() {}
 
@@ -16,6 +86,9 @@ bool Animation_Node::is_load_all_smooth_frame(std::string animation_name) {
         return false;
     }
     Animation_Data& animation = this->animations[animation_name];
+    if (animation.need_preload) {
+        return Animation_Node::is_animation_preload_finish(animation);
+    }
     for (int i = 0; i < animation.number_frame; i++) {
         std::string current_image = this->get_image_path(animation_name, i);
         if (current_image == "")
@@ -66,6 +139,7 @@ void Animation_Node::set_preload_animation(std::string animation_name) {
     }
     this->animations[animation_name].need_preload = true;
     this->animations[animation_name].animation_load_mode = ANIMATION_LOAD_MODE::SMOOTH;
+    Animation_Node::add_animation_need_preload(this->animations[animation_name]);
 }
 
 float Animation_Node::get_amimation_duration(std::string name) {
@@ -97,6 +171,7 @@ void Animation_Node::play_animation(std::string name, float speed, bool is_reset
 }
 
 void Animation_Node::handle_personal_task(float delta_time, void* global_data) {
+    PROFILE_SCOPE("Animation_Node::handle_personal_task");
     Image_Node::handle_personal_task(delta_time, global_data);
     if (is_valid_animation(this->current_animation)) {
         Animation_Data& animation = this->animations[this->current_animation];
@@ -107,16 +182,6 @@ void Animation_Node::handle_personal_task(float delta_time, void* global_data) {
             animation.is_finish_cycle = false;
         }
     }
-    for (const auto& [animation_name, animation] : this->animations) {
-        if (animation.need_preload) {
-            for (int i = 1; i < animation.number_frame; i++) {
-                std::string current_image = this->get_image_path(animation_name, i);
-                if (current_image == "")
-                    continue;
-                Libs_Wrapper::image_info(current_image, Defined::LOAD_MODE::ASYNC);
-            }
-        }
-    }
 }
 
 std::string Animation_Node::get_image_path(std::string animation_name, int current_frame) {
@@ -124,10 +189,7 @@ std::string Animation_Node::get_image_path(std::string animation_name, int curre
         return "";
     }
     Animation_Data& animation = animations[animation_name];
-    std::string frame_number_str =
-        current_frame < 10 ? ("0" + std::to_string(current_frame)) : std::to_string(current_frame);
-    std::string current_image = animation.folder_path + frame_number_str + animation.extend_format;
-    return current_image;
+    return Animation_Node::get_image_animation_path(animation, current_frame);
 }
 
 void Animation_Node::flex_update(float delta_time) {
@@ -156,9 +218,10 @@ void Animation_Node::flex_update(float delta_time) {
                     set_image(current_image, Defined::IMMEDIATE);
                     break;
                 }
-                if (!this->is_load_all_smooth_frame(this->current_animation)) {
+                if (!animation.is_preload_finish && !this->is_load_all_smooth_frame(this->current_animation)) {
                     set_image(this->get_image_path(this->current_animation, 0), Defined::IMMEDIATE);
                 } else {
+                    animation.is_preload_finish = true;
                     set_image(current_image, Defined::ASYNC);
                 }
                 break;

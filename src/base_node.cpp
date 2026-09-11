@@ -1,5 +1,6 @@
 #include <base_node.h>
 #include <math_custom.h>
+#include <profiler.h>
 #include <utils.h>
 
 #include <algorithm>
@@ -379,13 +380,23 @@ void Base_Node::add_child(Base_Node* child) {
 }
 
 void Base_Node::travel(float delta_time, void* global_data) {
-    // Handle personal task of each node before draw
-    visit_handle_personal_task(delta_time, global_data, this->paused);
-    // Loop all node to draw into scene
-    int start_draw_index = 0;
-    Custom::Transform world_transform = transform;
-    visit_draw(world_transform, delta_time, start_draw_index, global_data, this->visible, this->paused);
-    visit_cleanup(delta_time, global_data);
+    Profiler::get().begin_frame();
+    {
+        PROFILE_SCOPE("Update Tree");
+        // Handle personal task of each node before draw
+        visit_handle_personal_task(delta_time, global_data, this->paused);
+    }
+    {
+        PROFILE_SCOPE("Draw Tree");
+        // Loop all node to draw into scene
+        int start_draw_index = 0;
+        Custom::Transform world_transform = transform;
+        visit_draw(world_transform, delta_time, start_draw_index, global_data, this->visible, this->paused);
+    }
+    {
+        PROFILE_SCOPE("Cleanup Tree");
+        visit_cleanup(delta_time, global_data);
+    }
 }
 
 void Base_Node::remove_from_parent(bool is_cleanup) {

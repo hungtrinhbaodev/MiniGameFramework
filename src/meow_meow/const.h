@@ -43,7 +43,7 @@ namespace Meow_Meow {
         const inline static std::vector<std::string> ENEMY_ANIMATION_NAMES = {"IDLE", "ATTACK", "DEAD", "WALK"};
         const inline static std::vector<std::string> ENEMY_ANIMATION_FOLDER_NAMES = {"Idle", "Attack", "Dead", "Walk"};
         const inline static std::vector<int> ENEMY_ANIMATION_NUMBER_FRAMES = {20, 25, 60, 35};
-        const inline static std::vector<float> ENEMY_ANIMATION_DURATION_PER_FRAMES = {0.04, 0.04, 0.03, 0.06};
+        const inline static std::vector<float> ENEMY_ANIMATION_DURATION_PER_FRAMES = {0.04, 0.04, 0.03, 0.07};
         const inline static std::vector<int> ENEMY_MAX_LEVELS = std::vector<int>(NUMBER_ANIMATION_ENEMY, 1);
         const inline static Custom::Size ENEMY_BOUNDING_BOX = {120, 140};
 
@@ -90,6 +90,7 @@ namespace Meow_Meow {
         const inline static int ENEMY_STUN_FROM_CHARACTER_SKILL_THUNDER = 5;
         const inline static int BOSS_CHANNELING_FROM_SKILL_FLASH = 6;
         const inline static int ENEMY_HITTED_WHEN_STUNED = 7;
+        const inline static int MIX_DASH_WITH_MOVE = 8;
 
         /**
          * Bullet
@@ -207,7 +208,7 @@ namespace Meow_Meow {
          */
         const inline static std::string ENEMY_SKILL_JUMP_COMPONENT_NAME = "SKILL_JUMP_COMPONENT";
         const inline static std::string ENEMY_SKILL_JUMP_ID = "SKILL_JUMP";
-        const inline static float ENEMY_SKILL_JUMP_COUNTDOWN = 1.0f;
+        const inline static float ENEMY_SKILL_JUMP_COUNTDOWN = 10.0f;
         const inline static float ENEMY_SKILL_JUMP_DURATION = 0.5f;
         const inline static float ENEMY_SKILL_JUMP_DISTANCE = 150.f;
 

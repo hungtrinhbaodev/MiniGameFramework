@@ -3,6 +3,7 @@
 #include <meow_meow/data/global_data.h>
 #include <meow_meow/layer/layer_battle.h>
 #include <meow_meow/object/character_node.h>
+#include <meow_meow/utils.h>
 
 namespace Meow_Meow {
     Character_Skill_Thunder_Component::Character_Skill_Thunder_Component() {}
@@ -49,6 +50,9 @@ namespace Meow_Meow {
             glm::vec2 enemy_position = enemy->get_position();
             int enemy_id = enemy->get_enemy_id();
             Enemy_Data enemy_data = data->get_enemy_data_by(enemy_id);
+            Enemy_State_Machine_Component* enemy_state_machine = get_enemy_state_machine_component(enemy);
+            if (enemy_state_machine->is_enemy_dead() || enemy_state_machine->is_enemy_lost_all_health())
+                continue;
             if (glm::distance(character_position, enemy_position) <= radius_taken && !enemy_data.is_dead()) {
                 this->enemy_taken_ids.push_back(enemy_id);
                 number_enemy_taken--;

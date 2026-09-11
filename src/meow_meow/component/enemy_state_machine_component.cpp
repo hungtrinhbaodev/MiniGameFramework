@@ -9,7 +9,7 @@ namespace Meow_Meow {
     Enemy_State_Machine_Component::~Enemy_State_Machine_Component() {}
 
     bool Enemy_State_Machine_Component::can_take_bullet_damage(void* global_data) {
-        if (this->is_enemy_attacked() || this->is_enemy_dead()) {
+        if (this->is_enemy_attacked() || this->is_enemy_dead() || this->is_enemy_lost_all_health()) {
             return false;
         }
         return true;
@@ -23,8 +23,34 @@ namespace Meow_Meow {
         return this->get_current_state_at(Const::TRACK_EFFECTED) == Const::STATE_ATTACKED;
     }
 
+    bool Enemy_State_Machine_Component::is_enemy_lost_all_health() {
+        if (this->global_data == nullptr || this->target == nullptr) {
+            return false;
+        }
+        Global_Data* data = reinterpret_cast<Global_Data*>(this->global_data);
+        Enemy_Node* enemy = cast_enemy_target(this->target);
+        Enemy_Data& enemy_data = data->get_enemy_data_by(enemy->get_enemy_id());
+        if (this->get_current_state_at(Const::TRACK_EFFECTED) == Const::STATE_STUN ||
+            this->get_current_state_at(Const::TRACK_EFFECTED) == Const::STATE_ATTACKED) {
+            return enemy_data.get_current_health() <= 0;
+        }
+        return false;
+    }
+
+    bool Enemy_State_Machine_Component::is_enemy_jump() {
+        return this->get_current_state_at(Const::TRACK_CONTROLL) == Const::STATE_JUMP;
+    }
+
     bool Enemy_State_Machine_Component::is_enemy_stun() {
         return this->get_current_state_at(Const::TRACK_EFFECTED) == Const::STATE_STUN;
+    }
+
+    void Enemy_State_Machine_Component::change_state_at(
+        std::string track, std::string state, float state_duration, int source_call_tag, bool is_calling_end_last_state
+    ) {
+        State_Machine_Component::change_state_at(
+            track, state, state_duration, source_call_tag, is_calling_end_last_state
+        );
     }
 
     void Enemy_State_Machine_Component::handle_auto_change_state(

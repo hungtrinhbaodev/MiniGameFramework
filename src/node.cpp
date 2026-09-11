@@ -1,5 +1,6 @@
 #include <defined.h>
 #include <node.h>
+#include <profiler.h>
 
 #include <algorithm>
 #include <iostream>
@@ -186,39 +187,49 @@ void Node::handle_personal_task(float delta_time, void* global_data) {
             component->attach_from_node(this, global_data);
         }
         if (component->is_active()) {
+            PROFILE_SCOPE(component->get_name());
             component->handle_task(this, delta_time, global_data);
         }
     }
 
     /**After that we handle actions need to do in node*/
-    for (int i = 0; i < actions.size(); i++) {
-        Base_Action* action = actions[i];
-        if (action->is_removed())
-            continue;
-        bool is_finish_all = action->travel_action_2(this, delta_time, global_data);
-        if (is_finish_all) {
-            action->set_removed(true);
+    {
+        PROFILE_SCOPE("Actions");
+        for (int i = 0; i < actions.size(); i++) {
+            Base_Action* action = actions[i];
+            if (action->is_removed())
+                continue;
+            bool is_finish_all = action->travel_action_2(this, delta_time, global_data);
+            if (is_finish_all) {
+                action->set_removed(true);
+            }
         }
     }
 
     /**After action we check the schedulers logic to handle it!*/
     /**Loop all scheduler check time of it and handle it!*/
-    for (auto& [key, scheduler] : schedulers) {
-        scheduler.current_duration += delta_time;
-        if (scheduler.current_duration >= scheduler.duration_scheduler) {
-            if (scheduler.caller) {
-                scheduler.caller(this, global_data);
-            }
-            if (scheduler.is_scheduler_once) {
-                scheduler.is_removed = true;
-            } else {
-                scheduler.current_duration = 0;
+    {
+        PROFILE_SCOPE("Schedulers");
+        for (auto& [key, scheduler] : schedulers) {
+            scheduler.current_duration += delta_time;
+            if (scheduler.current_duration >= scheduler.duration_scheduler) {
+                if (scheduler.caller) {
+                    scheduler.caller(this, global_data);
+                }
+                if (scheduler.is_scheduler_once) {
+                    scheduler.is_removed = true;
+                } else {
+                    scheduler.current_duration = 0;
+                }
             }
         }
     }
 
     /**Final we call fix update to cascade update into extended node to update it logic if needed*/
-    this->fix_update(delta_time, global_data);
+    {
+        PROFILE_SCOPE("fix_update");
+        this->fix_update(delta_time, global_data);
+    }
 }
 
 void Node::set_world_transform_information(

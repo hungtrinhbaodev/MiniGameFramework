@@ -2,6 +2,8 @@
 #include <label_node.h>
 #include <layer_node.h>
 
+#include <vector>
+
 class Scene_Node : public Layer_Node {
 public:
     Scene_Node();
@@ -21,7 +23,13 @@ protected:
     void track_layer_background(Base_Node* background);
 
 private:
+    const int MAX_PROFILER_ROWS = 12;
+
+    void init_profiler_rows();
+    void update_profiler_rows();
+
     Label_Node* label_fps = nullptr;
+    std::vector<Label_Node*> profiler_rows;
     float fps_rate = 0.f;
     int frame_count;
     void* global_data = nullptr;

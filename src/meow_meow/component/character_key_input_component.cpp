@@ -127,13 +127,23 @@ namespace Meow_Meow {
             bool release_or_cancel_key = this->is_released_key(KEY_MOVE) || this->is_cancel_key(KEY_MOVE);
             switch (KEY_MOVE) {
                 case Custom::Key::W: {
-                    if (press_or_hold_key && state_machine->can_process_move_input(global_data)) {
+                    if (press_or_hold_key && state_machine->can_process_move_input(global_data, Const::DIRECTION::UP)) {
                         this->set_pressed_information(
                             KEY_MOVE, handled_keys[KEY_MOVE].type, handled_keys[KEY_MOVE].duration_pressed
                         );
-                        state_machine->change_state_at(
-                            Const::TRACK_CONTROLL, Const::STATE_MOVE, State_Machine_Component::INFITY_STATE
-                        );
+                        if (state_machine->is_character_dashing()) {
+                            state_machine->change_state_at(
+                                Const::TRACK_CONTROLL,
+                                Const::STATE_DASHING,
+                                state_machine->get_duration_remain_state_at(Const::TRACK_CONTROLL),
+                                Const::MIX_DASH_WITH_MOVE,
+                                false
+                            );
+                        } else {
+                            state_machine->change_state_at(
+                                Const::TRACK_CONTROLL, Const::STATE_MOVE, State_Machine_Component::INFITY_STATE
+                            );
+                        }
                     }
                     if (release_or_cancel_key && state_machine->can_process_release_move(global_data) &&
                         character->is_moving_at_direction(Const::DIRECTION::UP)) {
@@ -144,7 +154,8 @@ namespace Meow_Meow {
                     break;
                 }
                 case Custom::Key::A: {
-                    if (press_or_hold_key && state_machine->can_process_move_input(global_data)) {
+                    if (press_or_hold_key &&
+                        state_machine->can_process_move_input(global_data, Const::DIRECTION::LEFT)) {
                         this->set_pressed_information(
                             KEY_MOVE, handled_keys[KEY_MOVE].type, handled_keys[KEY_MOVE].duration_pressed
                         );
@@ -161,13 +172,24 @@ namespace Meow_Meow {
                     break;
                 }
                 case Custom::Key::S: {
-                    if (press_or_hold_key && state_machine->can_process_move_input(global_data)) {
+                    if (press_or_hold_key &&
+                        state_machine->can_process_move_input(global_data, Const::DIRECTION::DOWN)) {
                         this->set_pressed_information(
                             KEY_MOVE, handled_keys[KEY_MOVE].type, handled_keys[KEY_MOVE].duration_pressed
                         );
-                        state_machine->change_state_at(
-                            Const::TRACK_CONTROLL, Const::STATE_MOVE, State_Machine_Component::INFITY_STATE
-                        );
+                        if (state_machine->is_character_dashing()) {
+                            state_machine->change_state_at(
+                                Const::TRACK_CONTROLL,
+                                Const::STATE_DASHING,
+                                state_machine->get_duration_remain_state_at(Const::TRACK_CONTROLL),
+                                Const::MIX_DASH_WITH_MOVE,
+                                false
+                            );
+                        } else {
+                            state_machine->change_state_at(
+                                Const::TRACK_CONTROLL, Const::STATE_MOVE, State_Machine_Component::INFITY_STATE
+                            );
+                        }
                     }
                     if (release_or_cancel_key && state_machine->can_process_release_move(global_data) &&
                         character->is_moving_at_direction(Const::DIRECTION::DOWN)) {
@@ -178,7 +200,8 @@ namespace Meow_Meow {
                     break;
                 }
                 case Custom::Key::D: {
-                    if (press_or_hold_key && state_machine->can_process_move_input(global_data)) {
+                    if (press_or_hold_key &&
+                        state_machine->can_process_move_input(global_data, Const::DIRECTION::RIGHT)) {
                         this->set_pressed_information(
                             KEY_MOVE, handled_keys[KEY_MOVE].type, handled_keys[KEY_MOVE].duration_pressed
                         );

@@ -143,13 +143,28 @@ namespace Meow_Meow {
 
     void Enemy_Node::setup_state_machine_component(State_Machine_Component* state_machine) {
         /**
+         * Add state idle
+         */
+        state_machine->add_state_at(
+            Const::TRACK_CONTROLL,
+            Const::STATE_IDLE,
+            [this](State_Machine_Component::State_Machine_Callback_Data callback) {
+                this->start_idle(callback.global_data);
+            },
+            nullptr
+        );
+        /**
          * Add state move
          */
         state_machine->add_state_at(
             Const::TRACK_CONTROLL,
             Const::STATE_MOVE,
-            [this](Base_Node*, State_Machine_Component*, void* global_data, int) { this->start_move(global_data); },
-            [this](Base_Node*, State_Machine_Component*, void* global_data, int) { this->end_move(global_data); }
+            [this](State_Machine_Component::State_Machine_Callback_Data callback) {
+                this->start_move(callback.global_data);
+            },
+            [this](State_Machine_Component::State_Machine_Callback_Data callback) {
+                this->end_move(callback.global_data);
+            }
         );
         /**
          * Add state attack
@@ -157,8 +172,12 @@ namespace Meow_Meow {
         state_machine->add_state_at(
             Const::TRACK_CONTROLL,
             Const::STATE_ATTACK,
-            [this](Base_Node*, State_Machine_Component*, void* global_data, int) { this->start_attack(global_data); },
-            [this](Base_Node*, State_Machine_Component*, void* global_data, int) { this->end_attack(global_data); }
+            [this](State_Machine_Component::State_Machine_Callback_Data callback) {
+                this->start_attack(callback.global_data);
+            },
+            [this](State_Machine_Component::State_Machine_Callback_Data callback) {
+                this->end_attack(callback.global_data);
+            }
         );
         /**
          * Add state dead
@@ -166,8 +185,12 @@ namespace Meow_Meow {
         state_machine->add_state_at(
             Const::TRACK_CONTROLL,
             Const::STATE_DEATH,
-            [this](Base_Node*, State_Machine_Component*, void* global_data, int) { this->start_dead(global_data); },
-            [this](Base_Node*, State_Machine_Component*, void* global_data, int) { this->end_dead(global_data); }
+            [this](State_Machine_Component::State_Machine_Callback_Data callback) {
+                this->start_dead(callback.global_data);
+            },
+            [this](State_Machine_Component::State_Machine_Callback_Data callback) {
+                this->end_dead(callback.global_data);
+            }
         );
         /**
          * Add state attacked
@@ -175,11 +198,11 @@ namespace Meow_Meow {
         state_machine->add_state_at(
             Const::TRACK_EFFECTED,
             Const::STATE_ATTACKED,
-            [this](Base_Node*, State_Machine_Component*, void* global_data, int source_call_state) {
-                this->start_hitted(global_data, source_call_state);
+            [this](State_Machine_Component::State_Machine_Callback_Data callback) {
+                this->start_hitted(callback.global_data, callback.source_call_state);
             },
-            [this](Base_Node*, State_Machine_Component*, void* global_data, int source_call_state) {
-                this->end_hitted(global_data, source_call_state);
+            [this](State_Machine_Component::State_Machine_Callback_Data callback) {
+                this->end_hitted(callback.global_data, callback.source_call_state);
             }
         );
         /**
@@ -188,11 +211,11 @@ namespace Meow_Meow {
         state_machine->add_state_at(
             Const::TRACK_EFFECTED,
             Const::STATE_STUN,
-            [this](Base_Node*, State_Machine_Component*, void* global_data, int source_call_state) {
-                this->start_stun(global_data, source_call_state);
+            [this](State_Machine_Component::State_Machine_Callback_Data callback) {
+                this->start_stun(callback.global_data, callback.source_call_state);
             },
-            [this](Base_Node*, State_Machine_Component*, void* global_data, int source_call_state) {
-                this->end_stun(global_data, source_call_state);
+            [this](State_Machine_Component::State_Machine_Callback_Data callback) {
+                this->end_stun(callback.global_data, callback.source_call_state);
             }
         );
         this->update_state_machine_component(state_machine);
@@ -222,6 +245,11 @@ namespace Meow_Meow {
         );
 
         this->update_ui_attrubutes();
+    }
+
+    void Enemy_Node::start_idle(void* global_data) {
+        this->velosity = {0.f, 0.f};
+        this->enemy_animation->play_animation("IDLE");
     }
 
     void Enemy_Node::start_move(void* global_data) {
@@ -359,10 +387,7 @@ namespace Meow_Meow {
                 float percent = (current_health / max_health) * 100;
                 enemy_data.set_current_health(current_health);
                 this->action_enemy_hitted(
-                    0,
-                    behavior_config.get_enemy_attacked_duration(),
-                    collision->get_attacker_direction(),
-                    behavior_config.get_enemy_attacked_duration()
+                    0, behavior_config.get_enemy_attacked_duration(), collision->get_attacker_direction(), percent
                 );
                 break;
             }
@@ -697,8 +722,12 @@ namespace Meow_Meow {
         state_machine->add_state_at(
             Const::TRACK_CONTROLL,
             Const::STATE_JUMP,
-            [this](Base_Node*, State_Machine_Component*, void* global_data, int) { this->start_jump(global_data); },
-            [this](Base_Node*, State_Machine_Component*, void* global_data, int) { this->end_jump(global_data); }
+            [this](State_Machine_Component::State_Machine_Callback_Data callback) {
+                this->start_jump(callback.global_data);
+            },
+            [this](State_Machine_Component::State_Machine_Callback_Data callback) {
+                this->end_jump(callback.global_data);
+            }
         );
     }
 

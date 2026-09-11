@@ -66,7 +66,7 @@ namespace Meow_Meow {
                     return;
                 }
                 this->change_state_at(
-                    Const::TRACK_CONTROLL, Const::STATE_WALK, behavior_config.get_enemy_attacked_duration()
+                    Const::TRACK_CONTROLL, Const::STATE_MOVE, behavior_config.get_enemy_attacked_duration()
                 );
             }
         }

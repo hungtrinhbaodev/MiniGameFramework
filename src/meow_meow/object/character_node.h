@@ -59,17 +59,17 @@ namespace Meow_Meow {
         void start_hitted(void* global_data, int source_call_state);
         void start_invincible(void* global_data);
         void start_dead(void* global_data);
-        void start_dash(void* global_data);
+        void start_dash(void* global_data, int source_call_state);
         void start_channelling(void* global_data, int source_call_state);
         void start_flight(void* global_data, int source_call_state);
         void start_stun(void* global_data, int source_call_state);
 
-        void end_move(void* global_data);
+        void end_move(void* global_data, std::string next_state);
         void end_attack(void* global_data);
         void end_hitted(void* global_data, int source_call_state);
         void end_invincible(void* global_data);
         void end_dead(void* global_data);
-        void end_dash(void* global_data);
+        void end_dash(void* global_data, int source_call_state);
         void end_channelling(void* global_data, int source_call_state);
         void end_flight(void* global_data, int source_call_state);
         void end_stun(void* global_data, int source_call_state);

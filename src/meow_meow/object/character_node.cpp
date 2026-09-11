@@ -98,7 +98,7 @@ namespace Meow_Meow {
         state_machine->add_state_at(
             Const::TRACK_CONTROLL,
             Const::STATE_IDLE,
-            [this](Base_Node*, State_Machine_Component*, void*, int) { this->start_idle(); },
+            [this](State_Machine_Component::State_Machine_Callback_Data callback) { this->start_idle(); },
             nullptr
         );
         /**
@@ -107,8 +107,12 @@ namespace Meow_Meow {
         state_machine->add_state_at(
             Const::TRACK_CONTROLL,
             Const::STATE_MOVE,
-            [this](Base_Node*, State_Machine_Component*, void* global_data, int) { this->start_move(global_data); },
-            [this](Base_Node*, State_Machine_Component*, void* global_data, int) { this->end_move(global_data); }
+            [this](State_Machine_Component::State_Machine_Callback_Data callback) {
+                this->start_move(callback.global_data);
+            },
+            [this](State_Machine_Component::State_Machine_Callback_Data callback) {
+                this->end_move(callback.global_data, callback.next_state);
+            }
         );
         /**
          * Add state attack
@@ -116,8 +120,12 @@ namespace Meow_Meow {
         state_machine->add_state_at(
             Const::TRACK_CONTROLL,
             Const::STATE_ATTACK,
-            [this](Base_Node*, State_Machine_Component*, void* global_data, int) { this->start_attack(global_data); },
-            [this](Base_Node*, State_Machine_Component*, void* global_data, int) { this->end_attack(global_data); }
+            [this](State_Machine_Component::State_Machine_Callback_Data callback) {
+                this->start_attack(callback.global_data);
+            },
+            [this](State_Machine_Component::State_Machine_Callback_Data callback) {
+                this->end_attack(callback.global_data);
+            }
         );
         /**
          * Add state dead
@@ -125,8 +133,12 @@ namespace Meow_Meow {
         state_machine->add_state_at(
             Const::TRACK_CONTROLL,
             Const::STATE_DEATH,
-            [this](Base_Node*, State_Machine_Component*, void* global_data, int) { this->start_dead(global_data); },
-            [this](Base_Node*, State_Machine_Component*, void* global_data, int) { this->end_dead(global_data); }
+            [this](State_Machine_Component::State_Machine_Callback_Data callback) {
+                this->start_dead(callback.global_data);
+            },
+            [this](State_Machine_Component::State_Machine_Callback_Data callback) {
+                this->end_dead(callback.global_data);
+            }
         );
         /**
          * Add state dash
@@ -134,8 +146,12 @@ namespace Meow_Meow {
         state_machine->add_state_at(
             Const::TRACK_CONTROLL,
             Const::STATE_DASHING,
-            [this](Base_Node*, State_Machine_Component*, void* global_data, int) { this->start_dash(global_data); },
-            [this](Base_Node*, State_Machine_Component*, void* global_data, int) { this->end_dash(global_data); }
+            [this](State_Machine_Component::State_Machine_Callback_Data callback) {
+                this->start_dash(callback.global_data, callback.source_call_state);
+            },
+            [this](State_Machine_Component::State_Machine_Callback_Data callback) {
+                this->end_dash(callback.global_data, callback.source_call_state);
+            }
         );
         /**
          * Add state channeling
@@ -143,11 +159,11 @@ namespace Meow_Meow {
         state_machine->add_state_at(
             Const::TRACK_CONTROLL,
             Const::STATE_SKILL_CHANNELLING,
-            [this](Base_Node*, State_Machine_Component*, void* global_data, int source_call_state) {
-                this->start_channelling(global_data, source_call_state);
+            [this](State_Machine_Component::State_Machine_Callback_Data callback) {
+                this->start_channelling(callback.global_data, callback.source_call_state);
             },
-            [this](Base_Node*, State_Machine_Component*, void* global_data, int source_call_state) {
-                this->end_channelling(global_data, source_call_state);
+            [this](State_Machine_Component::State_Machine_Callback_Data callback) {
+                this->end_channelling(callback.global_data, callback.source_call_state);
             }
         );
         /**
@@ -156,11 +172,11 @@ namespace Meow_Meow {
         state_machine->add_state_at(
             Const::TRACK_CONTROLL,
             Const::STATE_FLIGHT,
-            [this](Base_Node*, State_Machine_Component*, void* global_data, int source_call_state) {
-                this->start_flight(global_data, source_call_state);
+            [this](State_Machine_Component::State_Machine_Callback_Data callback) {
+                this->start_flight(callback.global_data, callback.source_call_state);
             },
-            [this](Base_Node*, State_Machine_Component*, void* global_data, int source_call_state) {
-                this->end_flight(global_data, source_call_state);
+            [this](State_Machine_Component::State_Machine_Callback_Data callback) {
+                this->end_flight(callback.global_data, callback.source_call_state);
             }
         );
 
@@ -170,11 +186,11 @@ namespace Meow_Meow {
         state_machine->add_state_at(
             Const::TRACK_EFFECTED,
             Const::STATE_ATTACKED,
-            [this](Base_Node*, State_Machine_Component*, void* global_data, int source_call_state) {
-                this->start_hitted(global_data, source_call_state);
+            [this](State_Machine_Component::State_Machine_Callback_Data callback) {
+                this->start_hitted(callback.global_data, callback.source_call_state);
             },
-            [this](Base_Node*, State_Machine_Component*, void* global_data, int source_call_state) {
-                this->end_hitted(global_data, source_call_state);
+            [this](State_Machine_Component::State_Machine_Callback_Data callback) {
+                this->end_hitted(callback.global_data, callback.source_call_state);
             }
         );
         /**
@@ -183,11 +199,11 @@ namespace Meow_Meow {
         state_machine->add_state_at(
             Const::TRACK_EFFECTED,
             Const::STATE_STUN,
-            [this](Base_Node*, State_Machine_Component*, void* global_data, int source_call_state) {
-                this->start_stun(global_data, source_call_state);
+            [this](State_Machine_Component::State_Machine_Callback_Data callback) {
+                this->start_stun(callback.global_data, callback.source_call_state);
             },
-            [this](Base_Node*, State_Machine_Component*, void* global_data, int source_call_state) {
-                this->end_stun(global_data, source_call_state);
+            [this](State_Machine_Component::State_Machine_Callback_Data callback) {
+                this->end_stun(callback.global_data, callback.source_call_state);
             }
         );
         /**
@@ -196,10 +212,12 @@ namespace Meow_Meow {
         state_machine->add_state_at(
             Const::TRACK_EFFECTED,
             Const::STATE_INVINCIBLE,
-            [this](Base_Node*, State_Machine_Component*, void* global_data, int) {
-                this->start_invincible(global_data);
+            [this](State_Machine_Component::State_Machine_Callback_Data callback) {
+                this->start_invincible(callback.global_data);
             },
-            [this](Base_Node*, State_Machine_Component*, void* global_data, int) { this->end_invincible(global_data); }
+            [this](State_Machine_Component::State_Machine_Callback_Data callback) {
+                this->end_invincible(callback.global_data);
+            }
         );
     }
 
@@ -439,17 +457,52 @@ namespace Meow_Meow {
         this->action_character_dead(0, behavior_config.get_dead_duration());
     }
 
-    void Character_Node::start_dash(void* global_data) {
+    void Character_Node::start_dash(void* global_data, int source_call_state) {
         Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
-        const Character_Skill_Dash_Config& dash_skill_config = data->get_config().get_character_skill_dash_config();
+        switch (source_call_state) {
+            case Const::MIX_DASH_WITH_MOVE: {
+                Character_Key_Input_Component* input_component =
+                    Utils::get_component<Character_Key_Input_Component>(this, Defined::COMPONENT_KEY_INPUT_NAME);
+                if (input_component == nullptr) {
+                    break;
+                }
 
-        Character_Skill_Dash_Component* dash_skill =
-            Utils::get_component<Character_Skill_Dash_Component>(this, Const::CHARACTER_SKILL_DASH_COMPONENT_NAME);
+                Const::DIRECTION direction = Const::DIRECTION::NONE;
+                switch (input_component->get_key_need_handled()) {
+                    case Custom::Key::W: {
+                        direction = Const::DIRECTION::UP;
+                        break;
+                    }
+                    case Custom::Key::S: {
+                        direction = Const::DIRECTION::DOWN;
+                        break;
+                    }
+                    default: {
+                        break;
+                    }
+                }
 
-        this->character_animation->play_animation("IDLE");
-        this->action_character_dashing(0.f, dash_skill_config.dash_duration, dash_skill_config.dash_distance);
+                const Character_Behavior_Config& behavior_config = data->get_config().get_character_behavior_config();
+                this->vertical_direction = direction;
+                this->velocity.y = behavior_config.get_velosity();
+                this->accelarate.y = behavior_config.get_accelarate();
+                break;
+            }
+            default: {
+                const Character_Skill_Dash_Config& dash_skill_config =
+                    data->get_config().get_character_skill_dash_config();
 
-        dash_skill->activating_skill(global_data);
+                Character_Skill_Dash_Component* dash_skill = Utils::get_component<Character_Skill_Dash_Component>(
+                    this, Const::CHARACTER_SKILL_DASH_COMPONENT_NAME
+                );
+
+                this->character_animation->play_animation("IDLE");
+                this->action_character_dashing(0.f, dash_skill_config.dash_duration, dash_skill_config.dash_distance);
+
+                dash_skill->activating_skill(global_data);
+                break;
+            }
+        }
     }
 
     void Character_Node::start_channelling(void* global_data, int source_call_state) {
@@ -508,8 +561,15 @@ namespace Meow_Meow {
         }
     }
 
-    void Character_Node::end_move(void* global_data) {
-        this->start_idle();
+    void Character_Node::end_move(void* global_data, std::string next_state) {
+        if (next_state == Const::STATE_DASHING) {
+            /**
+             * Note: when dashing the velosity is remain make it real.
+             */
+            this->character_animation->play_animation("IDLE");
+        } else {
+            this->start_idle();
+        }
     }
 
     void Character_Node::end_attack(void* global_data) {
@@ -546,10 +606,13 @@ namespace Meow_Meow {
         player_data.set_dead(true);
     }
 
-    void Character_Node::end_dash(void* global_data) {
+    void Character_Node::end_dash(void* global_data, int source_call_state) {
         this->stop_action(ACTION_DASHING_TAG);
         this->container->stop_action(ACTION_DASHING_TAG);
         Utils::reset_to_origin(this->container);
+        this->vertical_direction = Const::DIRECTION::NONE;
+        this->velocity = {0.f, 0.f};
+        this->accelarate = {0.f, 0.f};
     }
 
     void Character_Node::end_channelling(void* global_data, int source_call_state) {}

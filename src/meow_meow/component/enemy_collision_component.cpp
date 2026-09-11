@@ -46,12 +46,18 @@ namespace Meow_Meow {
                 state_machine->change_state_at(
                     Const::TRACK_EFFECTED, Const::STATE_STUN, stun_remain_duration, Const::ENEMY_HITTED_WHEN_STUNED
                 );
+                state_machine->change_state_at(
+                    Const::TRACK_CONTROLL, Const::STATE_IDLE, State_Machine_Component::INFITY_STATE
+                );
             } else {
                 state_machine->change_state_at(
                     Const::TRACK_EFFECTED,
                     Const::STATE_ATTACKED,
                     behavior_config.get_enemy_attacked_duration(),
                     Const::ENEMY_ATTACKED_FROM_BULLET
+                );
+                state_machine->change_state_at(
+                    Const::TRACK_CONTROLL, Const::STATE_IDLE, State_Machine_Component::INFITY_STATE
                 );
             }
             collision_data->set_damage_deal(0.f);

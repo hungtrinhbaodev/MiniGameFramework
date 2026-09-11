@@ -13,6 +13,7 @@
 struct Image_Info {
     Custom::Size size;
     Defined::RESOURCE_LOADED_STATE state;
+    bool is_loaded_texture = false;
 };
 
 struct Text_Info {
@@ -23,6 +24,8 @@ namespace Libs_Wrapper {
     void init_libs();
 
     bool is_debug_mode();
+
+    bool is_profiling_mode();
 
     float get_screen_width();
 

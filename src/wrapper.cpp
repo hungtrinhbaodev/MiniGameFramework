@@ -1,9 +1,11 @@
 #include <ThreadPool.h>
+#include <animation_node.h>
 #include <collision_system.h>
 #include <director.h>
 #include <key_input_system.h>
 #include <label_node.h>
 #include <math_custom.h>
+#include <profiler.h>
 #include <touch_system.h>
 #include <utils.h>
 #include <wrapper.h>
@@ -217,6 +219,7 @@ namespace Libs_Wrapper {
 
     /**Debug information */
     bool is_debug = false;
+    bool is_profling = false;
     std::vector<RayLib_Trace_Draw_Command> trace_commands;
 
     /**Shader support information */
@@ -265,6 +268,7 @@ namespace Libs_Wrapper {
                 (float)texture_info.data.width, (float)texture_info.data.height, texture_info.loaded_state
             };
             texture_info.is_loaded_texture = true;
+            texture_info.info.is_loaded_texture = true;
         }
     }
 
@@ -331,6 +335,10 @@ namespace Libs_Wrapper {
         return is_debug;
     }
 
+    bool is_profiling_mode() {
+        return is_profling;
+    }
+
     float get_screen_width() {
         return (float)GetScreenWidth();
     }
@@ -361,6 +369,9 @@ namespace Libs_Wrapper {
             }
             case Custom::Key::V: {
                 return KEY_V;
+            }
+            case Custom::Key::Z: {
+                return KEY_Z;
             }
             case Custom::Key::LEFT: {
                 return KEY_LEFT;
@@ -641,6 +652,7 @@ namespace Libs_Wrapper {
 
     void start_frame() {
         loaded_async_texture_in_frame_count = 0;
+        Animation_Node::preload_animation();
     }
 
     void draw_frame() {
@@ -680,167 +692,173 @@ namespace Libs_Wrapper {
         }
 
         trace_commands.clear();
-        BeginDrawing();
+        {
+            PROFILE_SCOPE("LibWraaper::draw_frame");
+            BeginDrawing();
+            ClearBackground({230, 230, 230, 255});
+            reload_shader();
 
-        ClearBackground({230, 230, 230, 255});
-        reload_shader();
+            while (!rl_queue_commands.empty()) {
+                RayLib_Draw_Command command = rl_queue_commands.top();
+                Custom::Draw_Attributes attributes = command.attributes;
+                Custom::Transform transform = attributes.transform;
+                Custom::Anchor_Point anchor = attributes.anchor;
+                float screen_height = get_screen_height();
+                float x = transform.position.x;
+                float y = screen_height - transform.position.y;
 
-        while (!rl_queue_commands.empty()) {
-            RayLib_Draw_Command command = rl_queue_commands.top();
-            Custom::Draw_Attributes attributes = command.attributes;
-            Custom::Transform transform = attributes.transform;
-            Custom::Anchor_Point anchor = attributes.anchor;
-            float screen_height = get_screen_height();
-            float x = transform.position.x;
-            float y = screen_height - transform.position.y;
-
-            // Save command to trace and debug when need
-            if (is_debug && command.type != RayLib_Draw_Type::LINE) {
-                std::map<std::string, std::string> extra_trace_information;
-                if (command.resource != nullptr) {
-                    extra_trace_information = command.resource->get_trace();
+                // Save command to trace and debug when need
+                if (is_debug && command.type != RayLib_Draw_Type::LINE) {
+                    std::map<std::string, std::string> extra_trace_information;
+                    if (command.resource != nullptr) {
+                        extra_trace_information = command.resource->get_trace();
+                    }
+                    trace_commands.push_back({command.type, command.attributes, extra_trace_information});
                 }
-                trace_commands.push_back({command.type, command.attributes, extra_trace_information});
-            }
 
-            switch (command.type) {
-                case RayLib_Draw_Type::START_CLIPPING: {
-                    process_start_clipping(command);
-                    command.clean();
-                    break;
-                }
-                case RayLib_Draw_Type::IMAGE: {
-                    RayLib_Draw_Image_Resource* resource =
-                        reinterpret_cast<RayLib_Draw_Image_Resource*>(command.resource);
-                    RayLib_Texture_Info texture_info = load_raylib_texture(resource->image_path, resource->load_mode);
-                    /**
-                     * If texture is not loaded success we ignore it to draw!
-                     */
-                    if (texture_info.info.state != Defined::RESOURCE_LOADED_STATE::LOADED) {
+                switch (command.type) {
+                    case RayLib_Draw_Type::START_CLIPPING: {
+                        process_start_clipping(command);
                         command.clean();
                         break;
                     }
-                    Texture2D texture = texture_info.data;
-                    glm::vec2 rect_scale = attributes.rect_scale;
-                    auto need_rounded_pixel = [&transform, &rect_scale]() {
-                        return transform.rotation <= 3 && transform.scale.x / rect_scale.x <= 1.02f &&
-                               transform.scale.y / rect_scale.y <= 1.02f;
-                    };
-                    Rectangle source = {0.0f, 0.0f, (float)texture.width, (float)texture.height};
-                    if (attributes.is_use_rect_texture) {
-                        Custom::Rectangle_Area& rect = attributes.rect_texture;
-                        /*@Hack: if draw area have size <= 0 we ignore it don't draw anything*/
-                        if (rect.width <= 0 || rect.height <= 0) {
+                    case RayLib_Draw_Type::IMAGE: {
+                        RayLib_Draw_Image_Resource* resource =
+                            reinterpret_cast<RayLib_Draw_Image_Resource*>(command.resource);
+                        RayLib_Texture_Info texture_info =
+                            load_raylib_texture(resource->image_path, resource->load_mode);
+                        /**
+                         * If texture is not loaded success we ignore it to draw!
+                         */
+                        if (texture_info.info.state != Defined::RESOURCE_LOADED_STATE::LOADED) {
                             command.clean();
-                            continue;
+                            break;
                         }
-                        source = {rect.x, (float)texture.height - (rect.y + rect.height), rect.width, rect.height};
-                        if (need_rounded_pixel()) {
-                            source = {
-                                std::ceil(source.x),
-                                std::ceil(source.y),
-                                std::ceil(source.width),
-                                std::ceil(source.height)
-                            };
+                        Texture2D texture = texture_info.data;
+                        glm::vec2 rect_scale = attributes.rect_scale;
+                        auto need_rounded_pixel = [&transform, &rect_scale]() {
+                            return transform.rotation <= 3 && transform.scale.x / rect_scale.x <= 1.02f &&
+                                   transform.scale.y / rect_scale.y <= 1.02f;
+                        };
+                        Rectangle source = {0.0f, 0.0f, (float)texture.width, (float)texture.height};
+                        if (attributes.is_use_rect_texture) {
+                            Custom::Rectangle_Area& rect = attributes.rect_texture;
+                            /*@Hack: if draw area have size <= 0 we ignore it don't draw anything*/
+                            if (rect.width <= 0 || rect.height <= 0) {
+                                command.clean();
+                                continue;
+                            }
+                            source = {rect.x, (float)texture.height - (rect.y + rect.height), rect.width, rect.height};
+                            if (need_rounded_pixel()) {
+                                source = {
+                                    std::ceil(source.x),
+                                    std::ceil(source.y),
+                                    std::ceil(source.width),
+                                    std::ceil(source.height)
+                                };
+                            }
                         }
-                    }
 
-                    float tex_width = source.width * std::abs(transform.scale.x);
-                    float tex_height = source.height * std::abs(transform.scale.y);
-                    source.width *= (transform.flipped.x ? -1.f : 1.f);
-                    source.height *= (transform.flipped.y ? -1.f : 1.f);
-                    Rectangle dest = {x, y, tex_width, tex_height};
-                    Vector2 origin = {anchor.x * tex_width, (1 - anchor.y) * tex_height};
-                    if (attributes.is_use_rect_texture) {
-                        if (need_rounded_pixel()) {
-                            dest = {
-                                std::ceil(dest.x), std::ceil(dest.y), std::round(dest.width), std::round(dest.height)
-                            };
+                        float tex_width = source.width * std::abs(transform.scale.x);
+                        float tex_height = source.height * std::abs(transform.scale.y);
+                        source.width *= (transform.flipped.x ? -1.f : 1.f);
+                        source.height *= (transform.flipped.y ? -1.f : 1.f);
+                        Rectangle dest = {x, y, tex_width, tex_height};
+                        Vector2 origin = {anchor.x * tex_width, (1 - anchor.y) * tex_height};
+                        if (attributes.is_use_rect_texture) {
+                            if (need_rounded_pixel()) {
+                                dest = {
+                                    std::ceil(dest.x),
+                                    std::ceil(dest.y),
+                                    std::round(dest.width),
+                                    std::round(dest.height)
+                                };
+                            }
                         }
+                        if (resource->enable_force_color) {
+                            process_start_force_color_to_texture(resource->force_color);
+                        }
+                        DrawTexturePro(
+                            texture,
+                            source,
+                            dest,
+                            origin,
+                            transform.rotation,
+                            {attributes.tint.r, attributes.tint.g, attributes.tint.b, transform.opacity}
+                        );
+                        if (resource->enable_force_color) {
+                            process_end_force_color_to_texture();
+                        }
+                        command.clean();
+                        break;
                     }
-                    if (resource->enable_force_color) {
-                        process_start_force_color_to_texture(resource->force_color);
+                    case RayLib_Draw_Type::RECTANGLE: {
+                        RayLib_Draw_Rectangle_Resource* resource =
+                            reinterpret_cast<RayLib_Draw_Rectangle_Resource*>(command.resource);
+                        float width = resource->width * transform.scale.x;
+                        float height = resource->height * transform.scale.y;
+                        Rectangle source{x, y, width, height};
+                        Vector2 origin = {anchor.x * width, (1 - anchor.y) * height};
+                        DrawRectanglePro(
+                            source,
+                            origin,
+                            transform.rotation,
+                            {attributes.tint.r, attributes.tint.g, attributes.tint.b, transform.opacity}
+                        );
+                        command.clean();
+                        break;
                     }
-                    DrawTexturePro(
-                        texture,
-                        source,
-                        dest,
-                        origin,
-                        transform.rotation,
-                        {attributes.tint.r, attributes.tint.g, attributes.tint.b, transform.opacity}
-                    );
-                    if (resource->enable_force_color) {
-                        process_end_force_color_to_texture();
-                    }
-                    command.clean();
-                    break;
-                }
-                case RayLib_Draw_Type::RECTANGLE: {
-                    RayLib_Draw_Rectangle_Resource* resource =
-                        reinterpret_cast<RayLib_Draw_Rectangle_Resource*>(command.resource);
-                    float width = resource->width * transform.scale.x;
-                    float height = resource->height * transform.scale.y;
-                    Rectangle source{x, y, width, height};
-                    Vector2 origin = {anchor.x * width, (1 - anchor.y) * height};
-                    DrawRectanglePro(
-                        source,
-                        origin,
-                        transform.rotation,
-                        {attributes.tint.r, attributes.tint.g, attributes.tint.b, transform.opacity}
-                    );
-                    command.clean();
-                    break;
-                }
-                case RayLib_Draw_Type::TEXT: {
-                    RayLib_Draw_Text_Resource* resource =
-                        reinterpret_cast<RayLib_Draw_Text_Resource*>(command.resource);
-                    Font font = load_raylib_font(resource->font_path);
+                    case RayLib_Draw_Type::TEXT: {
+                        RayLib_Draw_Text_Resource* resource =
+                            reinterpret_cast<RayLib_Draw_Text_Resource*>(command.resource);
+                        Font font = load_raylib_font(resource->font_path);
 
-                    Vector2 position = {x, y};
-                    float font_size = (float)resource->font_size * std::min(transform.scale.x, transform.scale.y);
-                    Vector2 text_size = MeasureTextEx(font, resource->text.data(), font_size, 1.0f);
-                    Vector2 origin = {text_size.x * anchor.x, text_size.y * (1 - anchor.y)};
-                    DrawTextPro(
-                        font,
-                        resource->text.data(),
-                        position,
-                        origin,
-                        transform.rotation,
-                        font_size,
-                        1.0f,
-                        {attributes.tint.r, attributes.tint.g, attributes.tint.b, transform.opacity}
-                    );
-                    command.clean();
-                    break;
-                }
-                case RayLib_Draw_Type::LINE: {
-                    RayLib_Draw_Line_Resource* resource =
-                        reinterpret_cast<RayLib_Draw_Line_Resource*>(command.resource);
-                    resource->start.y = screen_height - resource->start.y;
-                    resource->end.y = screen_height - resource->end.y;
-                    if (!resource->is_dashed) {
-                        DrawLineEx(resource->start, resource->end, resource->thin, resource->color);
-                    } else {
-                        rlSetLineWidth(3.0f);
-                        DrawLineDashed(resource->start, resource->end, 5, 5, resource->color);
-                        rlSetLineWidth(1.0f);
+                        Vector2 position = {x, y};
+                        float font_size = (float)resource->font_size * std::min(transform.scale.x, transform.scale.y);
+                        Vector2 text_size = MeasureTextEx(font, resource->text.data(), font_size, 1.0f);
+                        Vector2 origin = {text_size.x * anchor.x, text_size.y * (1 - anchor.y)};
+                        DrawTextPro(
+                            font,
+                            resource->text.data(),
+                            position,
+                            origin,
+                            transform.rotation,
+                            font_size,
+                            1.0f,
+                            {attributes.tint.r, attributes.tint.g, attributes.tint.b, transform.opacity}
+                        );
+                        command.clean();
+                        break;
                     }
-                    command.clean();
-                    break;
+                    case RayLib_Draw_Type::LINE: {
+                        RayLib_Draw_Line_Resource* resource =
+                            reinterpret_cast<RayLib_Draw_Line_Resource*>(command.resource);
+                        resource->start.y = screen_height - resource->start.y;
+                        resource->end.y = screen_height - resource->end.y;
+                        if (!resource->is_dashed) {
+                            DrawLineEx(resource->start, resource->end, resource->thin, resource->color);
+                        } else {
+                            rlSetLineWidth(3.0f);
+                            DrawLineDashed(resource->start, resource->end, 5, 5, resource->color);
+                            rlSetLineWidth(1.0f);
+                        }
+                        command.clean();
+                        break;
+                    }
+                    case RayLib_Draw_Type::END_CLIPPING: {
+                        process_end_clipping(true);
+                        command.clean();
+                        break;
+                    }
+                    default: {
+                        break;
+                    }
                 }
-                case RayLib_Draw_Type::END_CLIPPING: {
-                    process_end_clipping(true);
-                    command.clean();
-                    break;
-                }
-                default: {
-                    break;
-                }
+                rl_queue_commands.pop();
             }
-            rl_queue_commands.pop();
-        }
 
-        EndShaderMode();
+            EndShaderMode();
+        }
         EndDrawing();
 
         if (IsKeyPressed(KEY_K)) {
@@ -857,6 +875,9 @@ namespace Libs_Wrapper {
             } else {
                 std::cout << "Exit mode debug!" << std::endl;
             }
+        }
+        if (IsKeyPressed(KEY_Z)) {
+            is_profling = !is_profling;
         }
         frame_count++;
     }

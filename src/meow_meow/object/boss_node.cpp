@@ -42,21 +42,21 @@ namespace Meow_Meow {
         state_machine->add_state_at(
             Const::TRACK_CONTROLL,
             Const::STATE_SKILL_CHANNELLING,
-            [this](Base_Node*, State_Machine_Component*, void* global_data, int source_call_tag) {
-                this->start_channelling(global_data, source_call_tag);
+            [this](State_Machine_Component::State_Machine_Callback_Data callback) {
+                this->start_channelling(callback.global_data, callback.source_call_state);
             },
-            [this](Base_Node*, State_Machine_Component*, void* global_data, int source_call_tag) {
-                this->end_channelling(global_data, source_call_tag);
+            [this](State_Machine_Component::State_Machine_Callback_Data callback) {
+                this->end_channelling(callback.global_data, callback.source_call_state);
             }
         );
         state_machine->add_state_at(
             Const::TRACK_CONTROLL,
             Const::STATE_SKILL_FLASH,
-            [this](Base_Node*, State_Machine_Component*, void* global_data, int source_call_tag) {
-                this->start_flashing(global_data);
+            [this](State_Machine_Component::State_Machine_Callback_Data callback) {
+                this->start_flashing(callback.global_data);
             },
-            [this](Base_Node*, State_Machine_Component*, void* global_data, int source_call_tag) {
-                this->end_flashing(global_data);
+            [this](State_Machine_Component::State_Machine_Callback_Data callback) {
+                this->end_flashing(callback.global_data);
             }
         );
     }
@@ -187,25 +187,6 @@ namespace Meow_Meow {
         }
     }
 
-    void Boss_Node::change_to_channeling(void* global_data, std::string skill_id) {
-        Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
-        const Boss_Skill_Flash_Config& flash_skill_config = data->get_config().get_boss_skill_flash_config();
-
-        State_Machine_Component* state_machine =
-            Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
-
-        this->velosity = {0.f, 0.f};
-
-        this->channelling_skill = skill_id;
-        float duration_channelling = 0.f;
-        if (skill_id == flash_skill_config.skill_id) {
-            duration_channelling = flash_skill_config.duration_channeling;
-        }
-
-        state_machine->change_state_at(Const::TRACK_CONTROLL, Const::STATE_SKILL_CHANNELLING, duration_channelling);
-        this->action_channelling_skill_flash(0.f, duration_channelling);
-    }
-
     void Boss_Node::action_flashing(float delay, float duration_flash, glm::vec2 flash_position) {
         this->stop_action(ACTION_FLASHING_SKILL_TAG);
         this->container->stop_action(ACTION_FLASHING_SKILL_TAG);
@@ -229,32 +210,6 @@ namespace Meow_Meow {
             ),
             ACTION_FLASHING_SKILL_TAG
         );
-    }
-
-    void Boss_Node::change_to_flash(void* global_data) {
-        Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
-        const Boss_Skill_Flash_Config& flash_skill_config = data->get_config().get_boss_skill_flash_config();
-
-        State_Machine_Component* state_machine =
-            Utils::get_component<State_Machine_Component>(this, Defined::COMPONENT_STATE_MACHINE_NAME);
-
-        Boss_Skill_Flash_Component* flash_skill =
-            Utils::get_component<Boss_Skill_Flash_Component>(this, Const::BOSS_SKILL_FLASH_COMPONENT_NAME);
-
-        Collision_Component* collision =
-            Utils::get_component<Collision_Component>(this, Defined::COMPONENT_COLLISION_NAME);
-        Boss_Collision_Data* collision_data = Utils::get_collision_owner_data<Boss_Collision_Data>(collision);
-
-        collision_data->set_using_skill_id(flash_skill_config.skill_id);
-        collision_data->set_skill_damage(flash_skill_config.flash_damage);
-
-        state_machine->change_state_at(
-            Const::TRACK_CONTROLL, Const::STATE_SKILL_FLASH, flash_skill_config.duration_flash
-        );
-
-        float duration_animation = this->enemy_animation->get_amimation_duration("WALK");
-        this->enemy_animation->play_animation("WALK", flash_skill_config.duration_flash / duration_animation);
-        this->action_flashing(0.f, flash_skill_config.duration_flash, flash_skill->get_flash_to_position());
     }
 
 }  // namespace Meow_Meow

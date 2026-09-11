@@ -11,6 +11,16 @@ namespace Meow_Meow {
         bool is_enemy_dead();
         bool is_enemy_attacked();
         bool is_enemy_stun();
+        bool is_enemy_jump();
+        bool is_enemy_lost_all_health();
+
+        void change_state_at(
+            std::string track,
+            std::string state,
+            float state_duration,
+            int source_call_tag = -1,
+            bool is_calling_end_last_state = true
+        ) override;
 
     protected:
         void handle_auto_change_state(

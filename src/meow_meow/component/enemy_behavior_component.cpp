@@ -57,7 +57,7 @@ namespace Meow_Meow {
         Enemy_State_Machine_Component* enemy_state_machine = get_enemy_state_machine_component(target);
         Character_State_Machine_Component* character_state_machine = get_character_state_machine(target);
 
-        if (enemy_state_machine->is_enemy_dead()) {
+        if (enemy_state_machine->is_enemy_dead() || enemy_state_machine->is_enemy_lost_all_health()) {
             return;
         }
 
@@ -81,6 +81,9 @@ namespace Meow_Meow {
                     Const::STATE_STUN,
                     skill_config.stun_duration,
                     Const::ENEMY_STUN_FROM_CHARACTER_SKILL_THUNDER
+                );
+                enemy_state_machine->change_state_at(
+                    Const::TRACK_CONTROLL, Const::STATE_IDLE, State_Machine_Component::INFITY_STATE
                 );
                 return;
             }

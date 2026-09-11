@@ -1,4 +1,6 @@
+#include <actions.h>
 #include <defined.h>
+#include <math_custom.h>
 #include <meow_meow/animation/character_animation.h>
 #include <meow_meow/data/global_data.h>
 
@@ -29,6 +31,37 @@ namespace Meow_Meow {
             this->waiting_rate = speed;
             this->waiiting_is_reset = is_reset;
             return;
+        }
+        if (name == "DEAD" && !this->is_load_all_smooth_frame(name)) {
+            float duration = this->get_amimation_duration(name) * speed * 0.75;
+            float sign = this->is_flipped_x() ? -1 : 1;
+            this->do_action(
+                Action::sequence(
+                    Action::spawn(
+                        Action::rotate_to(duration * 0.65, sign * 90, Action_Ease::SINE_IN),
+                        Action::rotate_by(duration, sign * 360, Action_Ease::SINE_IN),
+                        Action::sequence(
+                            Action::move_to(
+                                duration * 0.5,
+                                this->get_position() +
+                                    glm::vec2(sign * Math::random_float(50, 100), 150 + Math::random_float(0, 50)),
+                                Action_Ease::SINE_OUT
+                            ),
+                            Action::move_to(duration / 2, this->get_position(), Action_Ease::SINE_IN)
+                        ),
+                        Action::sequence(
+                            Action::scale_to(
+                                duration / 2, glm::vec2{1.1f, 1.1f} * this->get_scale(), Action_Ease::SINE_OUT
+                            ),
+                            Action::scale_to(
+                                duration / 2, glm::vec2{0.85f, 0.85f} * this->get_scale(), Action_Ease::SINE_IN
+                            )
+                        ),
+                        Action::sequence(Action::delay(duration * 0.5), Action::fade_out(duration * 0.75))
+                    ),
+                    Action::hide()
+                )
+            );
         }
         Animation_Node::play_animation(name, speed, is_reset);
     }

@@ -34,9 +34,6 @@ namespace Meow_Meow {
         void end_channelling(void* global_data, int source_call_state);
         void end_flashing(void* global_data);
 
-        void change_to_channeling(void* global_data, std::string skill_id);
-        void change_to_flash(void* global_data);
-
         void action_channelling_skill_flash(float delay, float duration_channelling);
         void action_flashing(float delay, float duration_float, glm::vec2 flash_position);
 

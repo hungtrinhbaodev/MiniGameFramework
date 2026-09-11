@@ -64,6 +64,7 @@ namespace Meow_Meow {
         void init_progression_health(void* global_data);
         void setup_state_machine_component(State_Machine_Component* state_machine);
 
+        void start_idle(void* global_data);
         void start_move(void* global_data);
         void start_attack(void* global_data);
         void start_hitted(void* global_data, int source_call_state);
