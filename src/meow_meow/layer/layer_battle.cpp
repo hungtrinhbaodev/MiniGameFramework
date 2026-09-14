@@ -42,6 +42,36 @@ namespace Meow_Meow {
 
     void Battle_Layer::show_label_attacked(float delay, float damage, glm::vec2 position) {}
 
+    bool Battle_Layer::remove_enemy(std::vector<Enemy_Node*>& enemies, int enemy_id) {
+        for (int i = 0; i < enemies.size(); i++) {
+            if (enemies[i]->get_enemy_id() == enemy_id) {
+                if (enemies[i]->get_parent() != nullptr) {
+                    enemies[i]->remove_from_parent();
+                }
+                enemies[i] = enemies.back();
+                enemies.pop_back();
+                i--;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool Battle_Layer::remove_boss(std::vector<Boss_Node*>& bosses, int boss_id) {
+        for (int i = 0; i < bosses.size(); i++) {
+            if (bosses[i]->get_enemy_id() == boss_id) {
+                if (bosses[i]->get_parent() != nullptr) {
+                    bosses[i]->remove_from_parent();
+                }
+                bosses[i] = bosses.back();
+                bosses.pop_back();
+                i--;
+                return true;
+            }
+        }
+        return false;
+    }
+
     Image_Node* Battle_Layer::get_bg() {
         return this->bg;
     }
@@ -54,15 +84,25 @@ namespace Meow_Meow {
         return this->effect_layer;
     }
 
-    std::vector<Enemy_Node*> Battle_Layer::get_enemy_nodes() {
-        std::vector<Enemy_Node*> enemies;
-        for (Enemy_Node* enemy : this->enemies) {
-            enemies.push_back(enemy);
+    const std::vector<Enemy_Node*>& Battle_Layer::get_all_enemy_nodes() {
+        return this->all_enemies;
+    }
+
+    const std::vector<Enemy_Node*>& Battle_Layer::get_enemies() {
+        return this->enemies;
+    }
+
+    const std::vector<Boss_Node*>& Battle_Layer::get_bosses() {
+        return this->bosses;
+    }
+
+    Boss_Node* Battle_Layer::get_boss_by(int boss_id) {
+        for (Boss_Node* boss : this->bosses) {
+            if (boss->get_enemy_id() == boss_id) {
+                return boss;
+            }
         }
-        for (Enemy_Node* boss : this->bosses) {
-            enemies.push_back(boss);
-        }
-        return enemies;
+        return nullptr;
     }
 
     void Battle_Layer::spawn_enemy(Enemy_Data emeny_data) {
@@ -73,37 +113,29 @@ namespace Meow_Meow {
         );
         this->add_child(enemy);
         this->enemies.push_back(enemy);
+        this->all_enemies.push_back(enemy);
     }
 
     void Battle_Layer::remove_enemy_by(int enemy_id) {
-        for (int i = 0; i < this->enemies.size(); i++) {
-            if (this->enemies[i]->get_enemy_id() == enemy_id) {
-                this->enemies[i]->remove_from_parent();
-                this->enemies[i] = this->enemies.back();
-                this->enemies.pop_back();
-                i--;
-                this->removed_enemies_id.push_back(enemy_id);
-            }
+        if (this->remove_enemy(this->enemies, enemy_id)) {
+            this->remove_enemy(this->all_enemies, enemy_id);
+            this->removed_enemies_id.push_back(enemy_id);
         }
     }
 
     void Battle_Layer::spawn_boss(Enemy_Data boss_data) {
-        Boss_Node* boss = new Boss_Node(boss_data.get_enemy_id(), boss_data.get_enemy_animation_id());
+        Boss_Node* boss = new Boss_Node(boss_data.get_enemy_id(), 2003);
         glm::vec2 player_position = this->character->get_position();
         boss->set_position(player_position + glm::vec2{Math::random_float(-1000, 1000), Math::random_float(-400, 400)});
         this->add_child(boss);
         this->bosses.push_back(boss);
+        this->all_enemies.push_back(boss);
     }
 
     void Battle_Layer::remove_boss_by(int boss_id) {
-        for (int i = 0; i < this->bosses.size(); i++) {
-            if (this->bosses[i]->get_enemy_id() == boss_id) {
-                this->bosses[i]->remove_from_parent();
-                this->bosses[i] = this->bosses.back();
-                this->bosses.pop_back();
-                i--;
-                this->removed_bosses_id.push_back(boss_id);
-            }
+        if (this->remove_boss(this->bosses, boss_id)) {
+            this->remove_enemy(this->all_enemies, boss_id);
+            this->removed_bosses_id.push_back(boss_id);
         }
     }
 

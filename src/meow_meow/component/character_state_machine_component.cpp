@@ -148,6 +148,11 @@ namespace Meow_Meow {
                 this->change_state_at(
                     Const::TRACK_EFFECTED, Const::STATE_UNEFFECTED, State_Machine_Component::INFITY_STATE
                 );
+                if (player_data.get_current_health() <= 0) {
+                    this->change_state_at(
+                        Const::TRACK_CONTROLL, Const::STATE_DEATH, behavior_config.get_dead_duration()
+                    );
+                }
             }
         }
     }

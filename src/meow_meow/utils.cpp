@@ -67,4 +67,17 @@ namespace Meow_Meow {
         Boss_Node* boss = cast_boss_target(target);
         return Utils::get_component<Boss_State_Machine_Component>(boss, Defined::COMPONENT_STATE_MACHINE_NAME);
     }
+
+    Boss_Skill_Throw_Enemy_Component* get_skill_throw_enemy_component(void* global_data, int boss_id) {
+        Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
+        Battle_Layer* battle_layer = data->get_battle_layer();
+        if (battle_layer == nullptr)
+            return nullptr;
+        Boss_Node* boss = battle_layer->get_boss_by(boss_id);
+        if (boss == nullptr)
+            return nullptr;
+        Boss_Skill_Throw_Enemy_Component* throw_skill =
+            Utils::get_component<Boss_Skill_Throw_Enemy_Component>(boss, Const::BOSS_SKILL_THROW_ENEMY_COMPONENT_NAME);
+        return throw_skill;
+    }
 }  // namespace Meow_Meow

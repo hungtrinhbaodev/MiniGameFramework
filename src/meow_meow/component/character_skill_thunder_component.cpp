@@ -44,7 +44,7 @@ namespace Meow_Meow {
         }
         float radius_taken = skill_config.radius_taken;
         int number_enemy_taken = skill_config.number_taken;
-        std::vector<Enemy_Node*> enemies = battle_layer->get_enemy_nodes();
+        const std::vector<Enemy_Node*>& enemies = battle_layer->get_all_enemy_nodes();
         glm::vec2 character_position = character->get_position();
         for (Enemy_Node* enemy : enemies) {
             glm::vec2 enemy_position = enemy->get_position();

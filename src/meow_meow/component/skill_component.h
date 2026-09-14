@@ -11,6 +11,7 @@ namespace Meow_Meow {
         ~Skill_Component();
 
         std::string get_skill_id();
+        float get_current_countdown();
 
         virtual bool can_activate_skill(State_Machine_Component* state_machine, void* global_data);
         virtual void activating_skill(void* global_data);
@@ -20,6 +21,7 @@ namespace Meow_Meow {
         void handle_task(Base_Node* target, float delta_time, void* global_data) override;
         void set_skill_id(std::string skill_id);
         void set_countdown_time(float countdown_time);
+        bool is_countdown_finish();
 
     private:
         std::string skill_id = "";

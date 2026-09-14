@@ -14,7 +14,8 @@ struct Collision_Information {
     int track_layer = -1;
     Base_Node* onwner = nullptr;
     void* owner_data = nullptr;
-    Custom::Transformed_Rectangle collision_area;
+    Custom::Transformed_Rectangle collision_area{};
+    float distance = 0.f;
 };
 
 class Collision_System {

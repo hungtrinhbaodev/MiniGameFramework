@@ -32,6 +32,18 @@ namespace Meow_Meow {
         return this->enemy_direction;
     }
 
+    int Enemy_Behavior_Component::get_boss_hocked_id() {
+        return this->boss_hooked_id;
+    }
+
+    void Enemy_Behavior_Component::set_hooked_by_boss_skill(bool hooked) {
+        this->hooked_by_boss_skill = hooked;
+    }
+
+    void Enemy_Behavior_Component::set_boss_hooked_id(int boss_id) {
+        this->boss_hooked_id = boss_id;
+    }
+
     const Enemy_Behavior_Config& Enemy_Behavior_Component::get_behavior_config(void* global_data) const {
         Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
         return data->get_config().get_enemy_behavior_config();
@@ -45,10 +57,6 @@ namespace Meow_Meow {
         glm::vec2 enemy_position = target->get_position();
         glm::vec2 character_position = character->get_position();
 
-        this->attacking = false;
-        this->walking = false;
-        this->hitted_by_thunder_skill = false;
-
         if (character == nullptr) {
             this->enemy_direction = {0.f, 0.f};
             return;
@@ -57,7 +65,28 @@ namespace Meow_Meow {
         Enemy_State_Machine_Component* enemy_state_machine = get_enemy_state_machine_component(target);
         Character_State_Machine_Component* character_state_machine = get_character_state_machine(target);
 
-        if (enemy_state_machine->is_enemy_dead() || enemy_state_machine->is_enemy_lost_all_health()) {
+        if (enemy_state_machine->is_enemy_dead() || enemy_state_machine->is_enemy_lost_all_health() ||
+            enemy_state_machine->is_enemy_hooked()) {
+            if (enemy_state_machine->is_enemy_hooked() && this->boss_hooked_id != -1) {
+                Boss_Skill_Throw_Enemy_Component* throw_skill =
+                    get_skill_throw_enemy_component(global_data, this->boss_hooked_id);
+                if (throw_skill != nullptr) {
+                    this->enemy_direction = {throw_skill->get_hook_enemy_direction(), 0};
+                }
+            }
+            return;
+        }
+
+        if (this->hooked_by_boss_skill) {
+            this->enemy_direction = {0.f, 0.f};
+            const Boss_Skill_Throw_Enemy_Config& skill_config = data->get_config().get_boss_skill_throw_enemy_config();
+            enemy_state_machine->change_state_at(
+                Const::TRACK_CONTROLL,
+                Const::STATE_SKILL_CHANNELLING,
+                skill_config.duration_channelling,
+                Const::ENEMY_CHANNLING_BY_SKILL_THROWING
+            );
+            this->hooked_by_boss_skill = false;
             return;
         }
 
@@ -115,6 +144,10 @@ namespace Meow_Meow {
 
         this->enemy_direction =
             glm::normalize(character_position - enemy_position + glm::vec2(0, Math::random_float(-200, 200)));
+
+        this->attacking = false;
+        this->walking = false;
+        this->hitted_by_thunder_skill = false;
     }
 
 }  // namespace Meow_Meow

@@ -29,10 +29,20 @@ namespace Meow_Meow {
         }
         Global_Data* data = reinterpret_cast<Global_Data*>(this->global_data);
         Enemy_Node* enemy = cast_enemy_target(this->target);
-        Enemy_Data& enemy_data = data->get_enemy_data_by(enemy->get_enemy_id());
+        Enemy_Data& enemy_data = enemy->get_enemy_data(this->global_data);
         if (this->get_current_state_at(Const::TRACK_EFFECTED) == Const::STATE_STUN ||
             this->get_current_state_at(Const::TRACK_EFFECTED) == Const::STATE_ATTACKED) {
             return enemy_data.get_current_health() <= 0;
+        }
+        return false;
+    }
+
+    bool Enemy_State_Machine_Component::is_enemy_hooked() {
+        if (this->get_current_state_at(Const::TRACK_CONTROLL) == Const::STATE_SKILL_CHANNELLING) {
+            if (this->get_source_call_state_at(Const::TRACK_CONTROLL, Const::STATE_SKILL_CHANNELLING) ==
+                Const::ENEMY_CHANNLING_BY_SKILL_THROWING) {
+                return true;
+            }
         }
         return false;
     }
@@ -72,16 +82,35 @@ namespace Meow_Meow {
             if (this->is_enemy_attacked() || this->is_enemy_stun()) {
                 return;
             }
+            if (state == Const::STATE_SKILL_CHANNELLING) {
+                if (this->get_source_call_state_at(Const::TRACK_CONTROLL, Const::STATE_SKILL_CHANNELLING) ==
+                    Const::ENEMY_CHANNLING_BY_SKILL_THROWING) {
+                    const Boss_Skill_Throw_Enemy_Config& skill_config =
+                        data->get_config().get_boss_skill_throw_enemy_config();
+                    this->change_state_at(
+                        Const::TRACK_CONTROLL,
+                        Const::STATE_FLIGHT,
+                        skill_config.duration_throwing,
+                        Const::ENEMY_FLIGHT_BY_SKILL_THROWING
+                    );
+                    return;
+                }
+            }
+            if (state == Const::STATE_FLIGHT) {
+                int a = 5;
+            }
             if (behavior->can_attack()) {
                 this->change_state_at(
                     Const::TRACK_CONTROLL, Const::STATE_ATTACK, behavior_config.get_enemy_attack_duration()
                 );
             } else if (behavior->is_walking()) {
                 this->change_state_at(
-                    Const::TRACK_CONTROLL, Const::STATE_MOVE, behavior_config.get_enemy_attack_duration()
+                    Const::TRACK_CONTROLL, Const::STATE_MOVE, behavior_config.get_enemy_walk_duration()
                 );
             } else {
-                this->change_state_at(Const::TRACK_CONTROLL, Const::STATE_MOVE, State_Machine_Component::INFITY_STATE);
+                this->change_state_at(
+                    Const::TRACK_CONTROLL, Const::STATE_MOVE, behavior_config.get_enemy_walk_duration()
+                );
             }
         }
 

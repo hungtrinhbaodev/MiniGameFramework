@@ -77,6 +77,8 @@ void Collision_System::handle_collisions() {
             if (one.collision_area.is_collision_with(two.collision_area)) {
                 handled_collisions[one.collision_id].push_back(two);
                 handled_collisions[two.collision_id].push_back(one);
+                one.distance = one.collision_area.distance_from(two.collision_area);
+                two.distance = two.collision_area.distance_from(one.collision_area);
             }
         }
     }

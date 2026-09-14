@@ -91,6 +91,10 @@ namespace Meow_Meow {
         const inline static int BOSS_CHANNELING_FROM_SKILL_FLASH = 6;
         const inline static int ENEMY_HITTED_WHEN_STUNED = 7;
         const inline static int MIX_DASH_WITH_MOVE = 8;
+        const inline static int BOSS_CHANNELING_FROM_SKILL_THROW_ENEMY = 9;
+        const inline static int ENEMY_CHANNLING_BY_SKILL_THROWING = 10;
+        const inline static int ENEMY_FLIGHT_BY_SKILL_THROWING = 11;
+        const inline static int CHARACTER_STUN_FROM_BOSS_SKILL_THROW_ENEMY = 12;
 
         /**
          * Bullet
@@ -172,8 +176,8 @@ namespace Meow_Meow {
          */
         const inline static int BATTLE_NUMBER_WAVE = 3;
         const inline static std::vector<float> BATTLE_DURATION_GENERATE_ENEMY = {0, 30, 40};
-        const inline static std::vector<int> BATTLE_NUMBER_ENEMY_GENERATED = {5, 7, 5};
-        const inline static std::vector<int> BATTLE_NUMBER_BOSS_GENERATED = {0, 0, 1};
+        const inline static std::vector<int> BATTLE_NUMBER_ENEMY_GENERATED = {1, 0, 0};
+        const inline static std::vector<int> BATTLE_NUMBER_BOSS_GENERATED = {1, 0, 0};
 
         /**
          * Character level config
@@ -216,7 +220,7 @@ namespace Meow_Meow {
          * Skill flash config (boss)
          */
         const inline static std::string BOSS_SKILL_FLASH_COMPONENT_NAME = "SKILL_FLASH_COMPONENT";
-        const inline static std::string BOSS_SKILL_FLASH_ID = "FLASH_JUMP";
+        const inline static std::string BOSS_SKILL_FLASH_ID = "SKILL_FLASH";
         const inline static float BOSS_SKILL_FLASH_COUNTDOWN = 20.0f;
         const inline static float BOSS_SKILL_FLASH_DURATION = 0.5f;
         const inline static float BOSS_SKILL_FLASH_CHANNELLING_DURATION = 0.75f;
@@ -224,6 +228,24 @@ namespace Meow_Meow {
         const inline static float BOSS_SKILL_FLASH_DISTANCE = 500.f;
         const inline static float BOSS_SKILL_FLASH_DURATION_FLY = 1.f;
         const inline static float BOSS_SKILL_FLASH_DURATION_STUN = 0.5f;
+
+        /**
+         * Skill throw enemy to player (boss)
+         */
+        const inline static std::string BOSS_SKILL_THROW_ENEMY_COMPONENT_NAME = "SKILL_THROW_ENEMY_COMPONENT_NAME";
+        const inline static std::string BOSS_SKILL_THROW_ENEMY_ID = "THROW_ENEMY";
+        const inline static float BOSS_SKILL_THROW_ENEMY_COUNTDOWN = 5.f;
+        const inline static float BOSS_SKILL_THROW_ENEMY_THROWING_DURATION = 1.f;
+        const inline static float BOSS_SKILL_THROW_ENEMY_STUN_DURATION = 0.5f;
+        const inline static float BOSS_SKILL_THROW_ENEMY_DAMAGE = 120.f;
+        const inline static float BOSS_SKILL_THROW_ENEMY_POP_OUT_DISTANCE = 70.f;
+        const inline static float BOSS_SKILL_THROW_ENEMY_TAKE_ENEMY_DISTANCE = (1.5f * BOSS_ATTACK_RANGE);
+        const inline static float BOSS_SKILL_THROW_ENEMY_ACTIVING_DISTANCE = 800.f;
+        const inline static float BOSS_SKILL_THROW_ENEMY_DELTA_RANDOM_END_RANGE = ENEMY_ATTACK_RANGE;
+        const inline static float BOSS_SKILL_THROW_ENEMY_HOOK_ENEMY_DURATION = 2.5f;
+        const inline static float BOSS_SKILL_THROW_ENEMY_START_THROWING_DURATION = 0.5f;
+        const inline static float BOSS_SKILL_THROW_ENEMY_SHAKE_DISTANCE = 80.f;
+        const inline static float BOSS_SKILL_THROW_ENEMY_HIT_COLLISION_DISTANCE = 20.f;
 
         /**
          * Character skill ui countdown config

@@ -57,7 +57,6 @@ namespace Meow_Meow {
             if (collision.tag == Const::BOSS_COLLISION_TAG) {
                 Boss_Collision_Data* boss_collison = reinterpret_cast<Boss_Collision_Data*>(collision.owner_data);
                 if (boss_collison->get_using_skill_id() != "" && boss_collison->get_skill_damage() > 0) {
-                    Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
                     if (data->get_config().is_boss_flash_skill(boss_collison->get_using_skill_id())) {
                         const Boss_Skill_Flash_Config& skill_config = data->get_config().get_boss_skill_flash_config();
                         state_machine->change_state_at(
@@ -69,6 +68,28 @@ namespace Meow_Meow {
                         boss_collison->set_using_skill_id("");
                         boss_collison->set_skill_damage(0.f);
                     }
+                    break;
+                }
+            }
+            if (collision.tag == Const::ENEMY_COLLISION_TAG) {
+                Enemy_Collision_Data* enemy_collision = reinterpret_cast<Enemy_Collision_Data*>(collision.owner_data);
+                if (enemy_collision->get_using_skill_id() != "" && enemy_collision->get_skill_damage() > 0) {
+                    const Boss_Skill_Throw_Enemy_Config& skill_config =
+                        data->get_config().get_boss_skill_throw_enemy_config();
+                    if (data->get_config().is_boss_throwing_enemy_skill(enemy_collision->get_using_skill_id()) &&
+                        collision.distance <= skill_config.distance_hit_collision) {
+                        state_machine->change_state_at(
+                            Const::TRACK_CONTROLL, Const::STATE_IDLE, State_Machine_Component::INFITY_STATE
+                        );
+                        state_machine->change_state_at(
+                            Const::TRACK_EFFECTED,
+                            Const::STATE_STUN,
+                            skill_config.duration_stun,
+                            Const::CHARACTER_STUN_FROM_BOSS_SKILL_THROW_ENEMY
+                        );
+                    }
+                    enemy_collision->set_using_skill_id("");
+                    enemy_collision->set_skill_damage(0.f);
                     break;
                 }
             }

@@ -555,6 +555,16 @@ namespace Meow_Meow {
                 this->action_character_stunned(0.f, skill_config.stun_duration);
                 break;
             }
+            case Const::CHARACTER_STUN_FROM_BOSS_SKILL_THROW_ENEMY: {
+                const Boss_Skill_Throw_Enemy_Config& skill_config =
+                    data->get_config().get_boss_skill_throw_enemy_config();
+                Player_Data& player_data = data->get_player_data();
+                player_data.set_current_health(player_data.get_current_health() - skill_config.skill_damage);
+                this->action_character_shake_and_stun_when_enemy_thrown_hitted(
+                    0.f, skill_config.duration_stun, skill_config.shake_distance
+                );
+                break;
+            }
             default: {
                 break;
             }
@@ -641,6 +651,12 @@ namespace Meow_Meow {
                 break;
             }
             default: {
+                this->container->stop_action(ACTION_SHAKE_AND_STUN_TAG);
+                Utils::reset_to_origin(this->container);
+                this->attacked_image->stop_action(ACTION_SHAKE_AND_STUN_TAG);
+                this->stop_action(ACTION_SHAKE_AND_STUN_TAG);
+                Utils::reset_to_origin(this->attacked_image);
+                this->attacked_image->set_visible(false);
                 break;
             }
         }
@@ -698,8 +714,6 @@ namespace Meow_Meow {
     }
 
     void Character_Node::action_character_dead(float delay, float dead_duration) {
-        // this->container->stop_action(ACTION_HITTED_TAG);
-        // this->container->stop_action(ACTION_INVINCIBLE_TAG);
         Utils::reset_to_origin(this->container);
         Custom::Transform origin = Utils::get_transform_origin(this->container);
         glm::vec2 start_position = origin.position;
@@ -883,6 +897,54 @@ namespace Meow_Meow {
         );
         this->container->do_action(
             Action::sequence(Action::delay(delay), action_stunned->repeat(NUMBER_ROTATION)), ACTION_STUN_TAG
+        );
+    }
+
+    void Character_Node::action_character_shake_and_stun_when_enemy_thrown_hitted(
+        float delay, float duration_shake_and_stun, float shake_distance
+    ) {
+        float duration = duration_shake_and_stun;
+        glm::vec2 delta_shake = glm::vec2{
+            Math::random_float(-shake_distance, shake_distance), Math::random_float(-shake_distance, shake_distance)
+        };
+        glm::vec2 end_position = this->get_position() + delta_shake;
+        float sign = end_position.x > this->get_position().x ? -1 : 1;
+        glm::vec2 middle_position = Math::get_middle_bezier_point(
+            this->get_position(), end_position, 100.f + Math::random_float(0, 50), Math::random_float(0, 1.f), sign
+        );
+        this->do_action(
+            Action::sequence(
+                Action::delay(delay), Action::bezier_to(duration, middle_position, end_position, Action_Ease::SINE_OUT)
+            ),
+            ACTION_SHAKE_AND_STUN_TAG
+        );
+        this->container->stop_action(ACTION_SHAKE_AND_STUN_TAG);
+        this->container->do_action(
+            Action::sequence(
+                Action::delay(delay),
+                Action::spawn(
+                    Action::sequence(
+                        Action::scale_to(duration / 2, {0.9f, 0.9f}, Action_Ease::SINE_OUT),
+                        Action::scale_to(duration / 2, {1.f, 1.f}, Action_Ease::SINE_IN)
+                    ),
+                    Action::sequence(
+                        Action::rotate_to(duration / 2, sign * (Math::random_float(20, 30)), Action_Ease::SINE_OUT),
+                        Action::rotate_to(duration / 2, 0, Action_Ease::SINE_IN)
+                    )
+                )
+            ),
+            ACTION_SHAKE_AND_STUN_TAG
+        );
+        this->attacked_image->stop_action(ACTION_SHAKE_AND_STUN_TAG);
+        this->attacked_image->do_action(
+            Action::sequence(
+                Action::delay(delay),
+                Action::show(),
+                Action::fade_to(duration / 2, ORIGIN_ATTACKED_IMAGE_OPACITY),
+                Action::delay(duration / 2),
+                Action::hide()
+            ),
+            ACTION_SHAKE_AND_STUN_TAG
         );
     }
 

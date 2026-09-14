@@ -1,8 +1,11 @@
 #pragma once
 #include <collision_component.h>
 #include <meow_meow/animation/character_animation.h>
+#include <meow_meow/component/enemy_behavior_component.h>
 #include <meow_meow/component/enemy_state_machine_component.h>
 #include <meow_meow/config/enemy_behavior_config.h>
+#include <meow_meow/const.h>
+#include <meow_meow/data/enemy_data.h>
 #include <meow_meow/object/game_object.h>
 #include <progression_node.h>
 #include <state_machine_component.h>
@@ -24,6 +27,7 @@ namespace Meow_Meow {
         void attach(void* global_data) override;
         void fix_update(float delta_time, void* global_data) override;
         virtual Enemy_State_Machine_Component* make_state_machine_instance();
+        virtual Enemy_Behavior_Component* make_behavior_instance();
         virtual void update_state_machine_component(State_Machine_Component* state_machine);
         virtual void update_collision_component(Collision_Component* collision);
         virtual void clean_collision_data(Collision_Component* collision);
@@ -41,12 +45,16 @@ namespace Meow_Meow {
         Node* progression_container = nullptr;
         glm::vec2 velosity{0.f, 0.f};
 
+        void action_show_attacked_iamge(float delay, float duration, int action_tag);
+
     private:
         const int PROGRESSION_HEALTH_TAG = 5;
 
         const int JUMP_ACTION_TAG = 0;
         const int HITTED_ACTION_TAG = 1;
         const int HIDE_PROGRESSION_HEALTH_TAG = 2;
+        const int ACTION_HOOKED_TAG = 3;
+        const int ACTION_THROWING_TAG = 4;
 
         const Custom::Anchor_Point ORIGIN_ANIMATION_ANCHOR_POINT = {0.35, 0.5};
         const glm::vec2 ORIGIN_HEALTH_BAR_POSITION = {0, 80};
@@ -71,6 +79,8 @@ namespace Meow_Meow {
         void start_dead(void* global_data);
         void start_stun(void* global_data, int source_call_state);
         void start_jump(void* global_data);
+        void start_channelling(void* global_data, int source_call_state);
+        void start_flight(void* global_data, int source_call_state);
 
         void end_move(void* global_data);
         void end_attack(void* global_data);
@@ -78,6 +88,8 @@ namespace Meow_Meow {
         void end_dead(void* global_data);
         void end_stun(void* global_data, int source_call_state);
         void end_jump(void* global_data);
+        void end_channelling(void* global_data, int source_call_state);
+        void end_flight(void* global_data, int source_call_state);
 
         void update_movement(float delta_time);
         void update_enemy_direction();
@@ -89,6 +101,10 @@ namespace Meow_Meow {
         void action_enemy_hitted(float delay, float duration, Const::DIRECTION bullet_direction, float percent_health);
         void action_enemy_dead(float delay, Layer_Node* label_exp_parent, float killed_exp);
         void action_enemy_hitted_by_thunder(float delay, float duration, Layer_Node* effect_layer);
+        void action_enemy_hooked_to_throw(float delay, float duration_hook, float direction, glm::vec2 boss_position);
+        void action_enemy_flight_when_throwing(
+            float delay, float duration, glm::vec2 end_throwing_position, float throwing_direction
+        );
 
         void hide_other_health_progression(Layer_Node* layer);
 

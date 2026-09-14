@@ -9,5 +9,6 @@ namespace Meow_Meow {
 
     protected:
         const Enemy_Behavior_Config& get_behavior_config(void* global_data) const override;
+        void handle_task(Base_Node* target, float delta_time, void* global_data) override;
     };
 }  // namespace Meow_Meow

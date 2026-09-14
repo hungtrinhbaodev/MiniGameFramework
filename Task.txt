@@ -10,7 +10,7 @@
 [Done]: Make sequenc e and spawn with args param when create it.
 
 [Done]: Update shader push constain and don't need to end it.
-[Pending]: Recheck logic flipped add it into base_node.
+[Done]: Recheck logic flipped add it into base_node.
 [Done]: Add clipping layer node.
 [Done]: Add scale9image node.
 [Done]: Add label node.
@@ -49,9 +49,13 @@
 [Done]: Add boss node.
 [Done]: Add skill system to character (dash, random bullet and booming).
 [Done]: Add clean up callback to state machine easy to implement.
+[]: Add skill player throw boom.
+[]: Add skill boss throw enemy into player.
+[]: Add image stun in status player and enemy.
 []: Update movement to enemy to make it more realistic.
 []: Update flow that component comunicate with each other, object just hold the action.
 
 
 []: Refactor variable name in key press system to read easier.
 [][Very difficult]: Add quad tree to collision system.
+[][Very difficult]: Change raylib to use vulkan as graphic API.

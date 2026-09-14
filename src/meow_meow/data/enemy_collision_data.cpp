@@ -20,4 +20,20 @@ namespace Meow_Meow {
     glm::vec2 Enemy_Collision_Data::get_enemy_direction() {
         return this->enemy_direction;
     }
+
+    std::string Enemy_Collision_Data::get_using_skill_id() {
+        return this->using_skill;
+    }
+
+    float Enemy_Collision_Data::get_skill_damage() {
+        return this->skill_damage;
+    }
+
+    void Enemy_Collision_Data::set_using_skill_id(std::string using_skill) {
+        this->using_skill = using_skill;
+    }
+
+    void Enemy_Collision_Data::set_skill_damage(float skill_damage) {
+        this->skill_damage = skill_damage;
+    }
 }  // namespace Meow_Meow

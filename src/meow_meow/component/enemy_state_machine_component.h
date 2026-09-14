@@ -13,6 +13,7 @@ namespace Meow_Meow {
         bool is_enemy_stun();
         bool is_enemy_jump();
         bool is_enemy_lost_all_health();
+        bool is_enemy_hooked();
 
         void change_state_at(
             std::string track,

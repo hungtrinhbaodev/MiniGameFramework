@@ -1,5 +1,6 @@
 #pragma once
 #include <image_node.h>
+#include <meow_meow/component/boss_skill_throw_enemy_component.h>
 #include <meow_meow/component/boss_state_michine_component.h>
 #include <meow_meow/component/character_key_input_component.h>
 #include <meow_meow/component/character_skill_dash_component.h>
@@ -35,4 +36,6 @@ namespace Meow_Meow {
     Boss_Node* cast_boss_target(Base_Node* target);
 
     Boss_State_Machine_Component* get_boss_state_machine_component(Base_Node* target);
+
+    Boss_Skill_Throw_Enemy_Component* get_skill_throw_enemy_component(void* global_data, int boss_id);
 };  // namespace Meow_Meow

@@ -29,6 +29,7 @@ namespace Meow_Meow {
         const int ACTION_DEAD_TAG = 3;
         const int ACTION_FLIGHT_TAG = 4;
         const int ACTION_STUN_TAG = 5;
+        const int ACTION_SHAKE_AND_STUN_TAG = 6;
 
         const unsigned char ORIGIN_ATTACKED_IMAGE_OPACITY = 100;
         const int NUMBER_FADE_IN_INVINCIBLE_STATE = 3;
@@ -82,6 +83,9 @@ namespace Meow_Meow {
         void action_character_channelling_skill_thunder(float delay, float duration);
         void action_character_flight(float delay, float duration_fly);
         void action_character_stunned(float delay, float duration_stun);
+        void action_character_shake_and_stun_when_enemy_thrown_hitted(
+            float delay, float duration_shake_and_stun, float shake_distance
+        );
 
         Character_Animation* character_animation = nullptr;
         Image_UI_Node* attacked_image = nullptr;

@@ -12,7 +12,9 @@ namespace Meow_Meow {
         Enemy_Data& get_enemy_data(void* global_data) override;
 
     protected:
+        void attach(void* global_data) override;
         Enemy_State_Machine_Component* make_state_machine_instance() override;
+        Enemy_Behavior_Component* make_behavior_instance() override;
         void update_collision_component(Collision_Component* collision) override;
         void update_state_machine_component(State_Machine_Component* state_machine) override;
         void init_skill_components() override;
@@ -24,6 +26,8 @@ namespace Meow_Meow {
     private:
         const int ACTION_CHANNELLING_SKILL_TAG = 0;
         const int ACTION_FLASHING_SKILL_TAG = 1;
+        const int ACTION_HOOK_ENEMY_TAG = 2;
+        const int ACTION_START_THROWING_ENEMY_TAG = 3;
 
         const Custom::Anchor_Point ORIGIN_ANIMATION_ANCHOR_POINT = {0.45, 0.35};
         const glm::vec2 ORIGIN_HEALTH_BAR_POSITION = {0, 130};
@@ -36,6 +40,8 @@ namespace Meow_Meow {
 
         void action_channelling_skill_flash(float delay, float duration_channelling);
         void action_flashing(float delay, float duration_float, glm::vec2 flash_position);
+        void action_hook_enemy_to_throw(float delay, float duration_hook, float direction);
+        void action_start_throw_enemy(float delay, float duration_start_throw, float direction);
 
         std::string channelling_skill = "";
     };

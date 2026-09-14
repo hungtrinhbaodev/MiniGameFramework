@@ -26,6 +26,11 @@ namespace Meow_Meow {
         return skill_config.skill_id == skill_id;
     }
 
+    bool Config::is_boss_throwing_enemy_skill(std::string skill_id) const {
+        const Boss_Skill_Throw_Enemy_Config& skill_config = this->get_boss_skill_throw_enemy_config();
+        return skill_config.skill_id == skill_id;
+    }
+
     const Character_Animation_Config& Config::get_character_animation_config() const {
         return this->character_animation_config;
     }
@@ -79,6 +84,10 @@ namespace Meow_Meow {
 
     const Boss_Skill_Flash_Config& Config::get_boss_skill_flash_config() const {
         return this->boss_skil_flash_config;
+    }
+
+    const Boss_Skill_Throw_Enemy_Config& Config::get_boss_skill_throw_enemy_config() const {
+        return this->boss_skill_throw_enemy_config;
     }
 
     const Character_Skill_UI_Config& Config::get_character_skill_ui_config() const {

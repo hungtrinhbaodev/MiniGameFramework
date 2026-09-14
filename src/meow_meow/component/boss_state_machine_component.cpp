@@ -6,7 +6,7 @@ namespace Meow_Meow {
 
     Boss_State_Machine_Component::~Boss_State_Machine_Component() {}
 
-    bool Boss_State_Machine_Component::is_channel_skill_flash(void* global_data) {
+    bool Boss_State_Machine_Component::is_channelling_skill_flash(void* global_data) {
         std::string current_state = this->get_current_state_at(Const::TRACK_CONTROLL);
         if (current_state != Const::STATE_SKILL_CHANNELLING) {
             return false;
@@ -18,12 +18,33 @@ namespace Meow_Meow {
         return true;
     }
 
+    bool Boss_State_Machine_Component::is_channelling_skill_throw_enemy(void* global_data) {
+        std::string current_state = this->get_current_state_at(Const::TRACK_CONTROLL);
+        if (current_state != Const::STATE_SKILL_CHANNELLING) {
+            return false;
+        }
+        if (this->get_source_call_state_at(Const::TRACK_CONTROLL, current_state) !=
+            Const::BOSS_CHANNELING_FROM_SKILL_THROW_ENEMY) {
+            return false;
+        }
+        return true;
+    }
+
     bool Boss_State_Machine_Component::is_using_skill_falsh(void* global_data) {
-        return this->get_current_state_at(Const::TRACK_CONTROLL) == Const::STATE_SKILL_FLASH;
+        return this->is_channelling_skill_flash(global_data) ||
+               this->get_current_state_at(Const::TRACK_CONTROLL) == Const::STATE_SKILL_FLASH;
+    }
+
+    bool Boss_State_Machine_Component::is_using_skill_throw_enemy(void* global_data) {
+        return this->is_channelling_skill_throw_enemy(global_data);
+    }
+
+    bool Boss_State_Machine_Component::is_using_some_skill(void* global_data) {
+        return this->is_using_skill_falsh(global_data) || this->is_using_skill_throw_enemy(global_data);
     }
 
     bool Boss_State_Machine_Component::can_take_bullet_damage(void* global_data) {
-        if (this->is_channel_skill_flash(global_data) || this->is_using_skill_falsh(global_data)) {
+        if (this->is_channelling_skill_flash(global_data) || this->is_using_skill_falsh(global_data)) {
             return false;
         }
         return Enemy_State_Machine_Component::can_take_bullet_damage(global_data);
@@ -44,6 +65,14 @@ namespace Meow_Meow {
                             data->get_config().get_boss_skill_flash_config();
                         this->change_state_at(
                             Const::TRACK_CONTROLL, Const::STATE_SKILL_FLASH, flash_skill_config.duration_flash
+                        );
+                        return;
+                    }
+                    case Const::BOSS_CHANNELING_FROM_SKILL_THROW_ENEMY: {
+                        Boss_Node* boss = cast_boss_target(target);
+                        const Enemy_Behavior_Config& behavior = boss->get_behavior_config_from(global_data);
+                        this->change_state_at(
+                            Const::TRACK_CONTROLL, Const::STATE_MOVE, behavior.get_enemy_walk_duration()
                         );
                         return;
                     }

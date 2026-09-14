@@ -27,8 +27,7 @@ namespace Meow_Meow {
         Boss_State_Machine_Component* boss_state_machine =
             reinterpret_cast<Boss_State_Machine_Component*>(state_machine);
         if (boss_state_machine->is_enemy_attacked() || boss_state_machine->is_enemy_attacked() ||
-            boss_state_machine->is_enemy_dead() || boss_state_machine->is_channel_skill_flash(global_data) ||
-            boss_state_machine->is_using_skill_falsh(global_data)) {
+            boss_state_machine->is_enemy_dead() || boss_state_machine->is_using_some_skill(global_data)) {
             return false;
         }
 
@@ -67,7 +66,7 @@ namespace Meow_Meow {
         Boss_State_Machine_Component* state_machine = get_boss_state_machine_component(target);
         if (state_machine == nullptr)
             return;
-        if (this->can_activate_skill(state_machine, global_data)) {
+        if (this->is_countdown_finish() && this->can_activate_skill(state_machine, global_data)) {
             this->activating_skill(global_data);
             state_machine->change_state_at(
                 Const::TRACK_CONTROLL,

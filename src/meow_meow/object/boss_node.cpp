@@ -1,5 +1,8 @@
 #include <actions.h>
+#include <math_custom.h>
+#include <meow_meow/component/boss_behavior_component.h>
 #include <meow_meow/component/boss_skill_flash_component.h>
+#include <meow_meow/component/boss_skill_throw_enemy_component.h>
 #include <meow_meow/component/boss_state_michine_component.h>
 #include <meow_meow/data/boss_collision_data.h>
 #include <meow_meow/data/global_data.h>
@@ -9,9 +12,7 @@
 namespace Meow_Meow {
     Boss_Node::Boss_Node() {}
 
-    Boss_Node::Boss_Node(int enemy_id, int enemy_character_id) : Enemy_Node(enemy_id, enemy_character_id) {
-        this->set_name("Boss_Node");
-    }
+    Boss_Node::Boss_Node(int enemy_id, int enemy_character_id) : Enemy_Node(enemy_id, enemy_character_id) {}
 
     Boss_Node::~Boss_Node() {}
 
@@ -31,6 +32,16 @@ namespace Meow_Meow {
 
     Enemy_State_Machine_Component* Boss_Node::make_state_machine_instance() {
         return new Boss_State_Machine_Component();
+    }
+
+    Enemy_Behavior_Component* Boss_Node::make_behavior_instance() {
+        return new Boss_Behavior_Component();
+    }
+
+    void Boss_Node::attach(void* global_data) {
+        this->set_name("Boss_Node");
+        this->enemy_animation->set_name("debug");
+        Enemy_Node::attach(global_data);
     }
 
     void Boss_Node::update_collision_component(Collision_Component* collision) {
@@ -62,9 +73,13 @@ namespace Meow_Meow {
     }
 
     void Boss_Node::init_skill_components() {
-        Boss_Skill_Flash_Component* flash_skill = new Boss_Skill_Flash_Component();
-        flash_skill->set_name(Const::BOSS_SKILL_FLASH_COMPONENT_NAME);
-        this->add_component(flash_skill);
+        // Boss_Skill_Flash_Component* flash_skill = new Boss_Skill_Flash_Component();
+        // flash_skill->set_name(Const::BOSS_SKILL_FLASH_COMPONENT_NAME);
+        // this->add_component(flash_skill);
+
+        Boss_Skill_Throw_Enemy_Component* throw_skill = new Boss_Skill_Throw_Enemy_Component();
+        throw_skill->set_name(Const::BOSS_SKILL_THROW_ENEMY_COMPONENT_NAME);
+        this->add_component(throw_skill);
     }
 
     void Boss_Node::update_ui_attrubutes() {
@@ -119,8 +134,24 @@ namespace Meow_Meow {
         switch (source_call_state) {
             case Const::BOSS_CHANNELING_FROM_SKILL_FLASH: {
                 const Boss_Skill_Flash_Config& flash_skill_config = data->get_config().get_boss_skill_flash_config();
-                this->velosity = {0.f, 0.f};
                 this->action_channelling_skill_flash(0.f, flash_skill_config.duration_channeling);
+                break;
+            }
+            case Const::BOSS_CHANNELING_FROM_SKILL_THROW_ENEMY: {
+                const Boss_Skill_Throw_Enemy_Config& throw_skill_config =
+                    data->get_config().get_boss_skill_throw_enemy_config();
+                Boss_Skill_Throw_Enemy_Component* throw_skill = Utils::get_component<Boss_Skill_Throw_Enemy_Component>(
+                    this, Const::BOSS_SKILL_THROW_ENEMY_COMPONENT_NAME
+                );
+                this->action_hook_enemy_to_throw(
+                    0.f, throw_skill_config.duration_hook_enemy, throw_skill->get_hook_enemy_direction()
+                );
+                this->action_start_throw_enemy(
+                    throw_skill_config.duration_hook_enemy,
+                    throw_skill_config.duration_start_throwing_enemy,
+                    throw_skill->get_throwing_direction()
+                );
+                this->action_show_attacked_iamge(0.f, throw_skill_config.duration_channelling, ACTION_HOOK_ENEMY_TAG);
                 break;
             }
             default: {
@@ -159,6 +190,16 @@ namespace Meow_Meow {
                 this->attacked_image->stop_action(ACTION_CHANNELLING_SKILL_TAG);
                 this->attacked_image->set_visible(false);
                 Utils::reset_to_origin(this->container);
+                Utils::reset_to_origin(this->attacked_image);
+                break;
+            }
+            case Const::BOSS_CHANNELING_FROM_SKILL_THROW_ENEMY: {
+                this->enemy_animation->play_animation("IDLE");
+                this->container->stop_action(ACTION_HOOK_ENEMY_TAG);
+                this->container->stop_action(ACTION_START_THROWING_ENEMY_TAG);
+                this->attacked_image->stop_action(ACTION_HOOK_ENEMY_TAG);
+                Utils::reset_to_origin(this->container);
+                this->attacked_image->set_visible(false);
                 Utils::reset_to_origin(this->attacked_image);
                 break;
             }
@@ -209,6 +250,53 @@ namespace Meow_Meow {
                 )
             ),
             ACTION_FLASHING_SKILL_TAG
+        );
+    }
+
+    void Boss_Node::action_hook_enemy_to_throw(float delay, float duration_hook, float direction) {
+        float duration_animation = this->enemy_animation->get_amimation_duration("ATTACK");
+        this->enemy_animation->play_animation("ATTACK", duration_hook / duration_animation);
+        this->container->stop_action(ACTION_HOOK_ENEMY_TAG);
+        this->container->do_action(
+            Action::sequence(
+                Action::delay(delay),
+                Action::spawn(
+                    Action::sequence(
+                        Action::scale_to(duration_hook / 2, {1.1f, 1.1f}, Action_Ease::SINE_OUT),
+                        Action::scale_to(duration_hook / 2, {1.f, 1.f}, Action_Ease::SINE_IN)
+                    )
+                )
+            ),
+            ACTION_HOOK_ENEMY_TAG
+        );
+    }
+
+    void Boss_Node::action_start_throw_enemy(float delay, float duration_start_throw, float direction) {
+        this->container->stop_action(ACTION_START_THROWING_ENEMY_TAG);
+        this->container->do_action(
+            Action::sequence(
+                Action::delay(delay),
+                Action::call_func([this, duration_start_throw](Base_Node* target, void* global_data) {
+                    float duration_animation = this->enemy_animation->get_amimation_duration("ATTACK");
+                    this->enemy_animation->play_animation("ATTACK", duration_start_throw / duration_animation);
+                }),
+                Action::spawn(
+                    Action::sequence(
+                        Action::scale_to(duration_start_throw / 2, {1.1f, 1.1f}, Action_Ease::SINE_OUT),
+                        Action::scale_to(duration_start_throw / 2, {1.f, 1.f}, Action_Ease::SINE_IN)
+                    ),
+                    Action::sequence(
+                        Action::rotate_to(
+                            duration_start_throw / 2, direction * Math::random_float(50, 60), Action_Ease::SINE_OUT
+                        ),
+                        Action::rotate_to(
+                            duration_start_throw / 2, -direction * Math::random_float(10, 15), Action_Ease::SINE_OUT
+                        )
+                    )
+                ),
+                Action::rotate_to(duration_start_throw / 2, 0, Action_Ease::SINE_IN)
+            ),
+            ACTION_START_THROWING_ENEMY_TAG
         );
     }
 

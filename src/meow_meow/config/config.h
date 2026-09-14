@@ -1,6 +1,7 @@
 #pragma once
 #include <meow_meow/config/battle_config.h>
 #include <meow_meow/config/boss_skill_flash_config.h>
+#include <meow_meow/config/boss_skill_throw_enemy_config.h>
 #include <meow_meow/config/bullet_behavior_config.h>
 #include <meow_meow/config/character_animation_config.h>
 #include <meow_meow/config/character_behavior_config.h>
@@ -24,6 +25,7 @@ namespace Meow_Meow {
         bool is_character_animation_id(int character_id) const;
         bool is_boss_animation_id(int character_id) const;
         bool is_boss_flash_skill(std::string skill_id) const;
+        bool is_boss_throwing_enemy_skill(std::string skill_id) const;
         const Character_Animation_Config& get_character_animation_config() const;
         const Character_Animation_Config& get_enemy_animation_config() const;
         const Character_Animation_Config& get_boss_animation_config() const;
@@ -37,6 +39,7 @@ namespace Meow_Meow {
         const Character_Skill_Thunder_Config& get_character_skill_thunder_config() const;
         const Enemy_Skill_Jump_Config& get_enemy_skill_jump_config() const;
         const Boss_Skill_Flash_Config& get_boss_skill_flash_config() const;
+        const Boss_Skill_Throw_Enemy_Config& get_boss_skill_throw_enemy_config() const;
         const Character_Skill_UI_Config& get_character_skill_ui_config() const;
         std::string get_character_name(int character_id) const;
         std::vector<int> get_character_ids() const;
@@ -156,6 +159,22 @@ namespace Meow_Meow {
             Const::BOSS_SKILL_FLASH_DISTANCE,
             Const::BOSS_SKILL_FLASH_DURATION_FLY,
             Const::BOSS_SKILL_FLASH_DURATION_STUN
+        };
+        Boss_Skill_Throw_Enemy_Config boss_skill_throw_enemy_config{
+            Const::BOSS_SKILL_THROW_ENEMY_ID,
+            Const::BOSS_SKILL_THROW_ENEMY_COUNTDOWN,
+            (Const::BOSS_SKILL_THROW_ENEMY_HOOK_ENEMY_DURATION + Const::BOSS_SKILL_THROW_ENEMY_START_THROWING_DURATION),
+            Const::BOSS_SKILL_THROW_ENEMY_THROWING_DURATION,
+            Const::BOSS_SKILL_THROW_ENEMY_STUN_DURATION,
+            Const::BOSS_SKILL_THROW_ENEMY_DAMAGE,
+            Const::BOSS_SKILL_THROW_ENEMY_POP_OUT_DISTANCE,
+            Const::BOSS_SKILL_THROW_ENEMY_TAKE_ENEMY_DISTANCE,
+            Const::BOSS_SKILL_THROW_ENEMY_ACTIVING_DISTANCE,
+            Const::BOSS_SKILL_THROW_ENEMY_DELTA_RANDOM_END_RANGE,
+            Const::BOSS_SKILL_THROW_ENEMY_HOOK_ENEMY_DURATION,
+            Const::BOSS_SKILL_THROW_ENEMY_START_THROWING_DURATION,
+            Const::BOSS_SKILL_THROW_ENEMY_SHAKE_DISTANCE,
+            Const::BOSS_SKILL_THROW_ENEMY_HIT_COLLISION_DISTANCE
         };
         Character_Skill_UI_Config skill_ui_config{
             Const::CHARACTER_SKILL_IDS, Const::CHARACTER_SKILL_NAMES, Const::CHARACTER_SKILL_IMAGE_PATHS

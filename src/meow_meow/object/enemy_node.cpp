@@ -5,6 +5,7 @@
 #include <math_custom.h>
 #include <meow_meow/animation/character_fire_run_animation.h>
 #include <meow_meow/animation/skill_thunder_animation.h>
+#include <meow_meow/component/boss_skill_throw_enemy_component.h>
 #include <meow_meow/component/enemy_behavior_component.h>
 #include <meow_meow/component/enemy_collision_component.h>
 #include <meow_meow/component/enemy_jump_skill_component.h>
@@ -15,6 +16,7 @@
 #include <meow_meow/data/enemy_collision_data.h>
 #include <meow_meow/data/global_data.h>
 #include <meow_meow/object/enemy_node.h>
+#include <meow_meow/utils.h>
 #include <state_machine_component.h>
 #include <utils.h>
 
@@ -95,7 +97,7 @@ namespace Meow_Meow {
     }
 
     void Enemy_Node::init_components() {
-        Enemy_Behavior_Component* behavior = new Enemy_Behavior_Component();
+        Enemy_Behavior_Component* behavior = this->make_behavior_instance();
         behavior->set_name(Const::ENEMY_BEHAVIOR_COMPONENT_NAME);
         this->add_component(behavior);
 
@@ -409,6 +411,71 @@ namespace Meow_Meow {
         this->action_enemy_jump(0.f, skill_jump_config.duration_jump, skill_jump->get_jump_position());
     }
 
+    void Enemy_Node::start_channelling(void* global_data, int source_call_state) {
+        Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
+        switch (source_call_state) {
+            case Const::ENEMY_CHANNLING_BY_SKILL_THROWING: {
+                const Boss_Skill_Throw_Enemy_Config& skill_config =
+                    data->get_config().get_boss_skill_throw_enemy_config();
+                Enemy_Behavior_Component* behavior =
+                    Utils::get_component<Enemy_Behavior_Component>(this, Const::ENEMY_BEHAVIOR_COMPONENT_NAME);
+                int boss_id = behavior->get_boss_hocked_id();
+                Boss_Skill_Throw_Enemy_Component* throw_skill = get_skill_throw_enemy_component(global_data, boss_id);
+                if (throw_skill == nullptr)
+                    return;
+                this->action_enemy_hooked_to_throw(
+                    0.f,
+                    skill_config.duration_channelling,
+                    throw_skill->get_hook_enemy_direction(),
+                    throw_skill->get_boss_position()
+                );
+                break;
+            }
+        }
+    }
+
+    void Enemy_Node::start_flight(void* global_data, int source_call_state) {
+        Global_Data* data = reinterpret_cast<Global_Data*>(global_data);
+        switch (source_call_state) {
+            case Const::ENEMY_FLIGHT_BY_SKILL_THROWING: {
+                const Boss_Skill_Throw_Enemy_Config& skill_config =
+                    data->get_config().get_boss_skill_throw_enemy_config();
+                Enemy_Behavior_Component* behavior =
+                    Utils::get_component<Enemy_Behavior_Component>(this, Const::ENEMY_BEHAVIOR_COMPONENT_NAME);
+                int boss_id = behavior->get_boss_hocked_id();
+                behavior->set_boss_hooked_id(-1);
+                Boss_Skill_Throw_Enemy_Component* throw_skill = get_skill_throw_enemy_component(global_data, boss_id);
+                if (throw_skill == nullptr)
+                    return;
+                Character_Node* character = data->get_character_node();
+                glm::vec2 character_position = character->get_position();
+                glm::vec2 throwing_position = throw_skill->get_end_throwing_position();
+                this->action_enemy_flight_when_throwing(
+                    0.f,
+                    skill_config.duration_throwing,
+                    throw_skill->get_end_throwing_position(),
+                    throw_skill->get_throwing_direction()
+                );
+                this->action_show_attacked_iamge(0.f, skill_config.duration_throwing, ACTION_THROWING_TAG);
+                Collision_Component* collision =
+                    Utils::get_component<Collision_Component>(this, Defined::COMPONENT_COLLISION_NAME);
+                if (collision == nullptr) {
+                    break;
+                }
+                Enemy_Collision_Data* collision_data = Utils::get_collision_owner_data<Enemy_Collision_Data>(collision);
+                if (!collision_data) {
+                    break;
+                }
+                collision_data->set_using_skill_id(skill_config.skill_id);
+                collision_data->set_skill_damage(skill_config.skill_damage);
+                break;
+            }
+            default: {
+                break;
+            }
+        }
+    }
+
     void Enemy_Node::end_move(void* global_data) {
         this->velosity = {0, 0};
         this->enemy_animation->play_animation("IDLE");
@@ -467,6 +534,63 @@ namespace Meow_Meow {
         this->stop_action(JUMP_ACTION_TAG);
         this->container->stop_action(JUMP_ACTION_TAG);
         Utils::reset_to_origin(this->container);
+    }
+
+    void Enemy_Node::end_channelling(void* global_data, int source_call_state) {
+        switch (source_call_state) {
+            case Const::ENEMY_CHANNLING_BY_SKILL_THROWING: {
+                this->stop_action(ACTION_HOOKED_TAG);
+                this->container->stop_action(ACTION_HOOKED_TAG);
+                Utils::reset_to_origin(this->container);
+                break;
+            }
+        }
+    }
+
+    void Enemy_Node::end_flight(void* global_data, int source_call_state) {
+        switch (source_call_state) {
+            case Const::ENEMY_FLIGHT_BY_SKILL_THROWING: {
+                this->stop_action(ACTION_THROWING_TAG);
+                this->attacked_image->stop_action(ACTION_THROWING_TAG);
+                this->container->stop_action(ACTION_THROWING_TAG);
+                Utils::reset_to_origin(this->container);
+                Utils::reset_to_origin(this->attacked_image);
+                this->attacked_image->set_visible(false);
+                Collision_Component* collision =
+                    Utils::get_component<Collision_Component>(this, Defined::COMPONENT_COLLISION_NAME);
+                if (collision == nullptr) {
+                    break;
+                }
+                Enemy_Collision_Data* collision_data = Utils::get_collision_owner_data<Enemy_Collision_Data>(collision);
+                if (!collision_data) {
+                    break;
+                }
+                collision_data->set_using_skill_id("");
+                collision_data->set_skill_damage(0);
+                break;
+            }
+            default: {
+                break;
+            }
+        }
+    }
+
+    void Enemy_Node::action_show_attacked_iamge(float delay, float duration, int action_tag) {
+        this->attacked_image->stop_action(action_tag);
+        Utils::reset_to_origin(this->attacked_image);
+        this->attacked_image->set_visible(false);
+        this->attacked_image->set_opacity(0);
+        this->attacked_image->do_action(
+            Action::sequence(
+                Action::delay(delay),
+                Action::show(),
+                Action::fade_to(duration * 0.25, ORIGIN_ATTACKED_IMAGE_OPACITY, Action_Ease::SINE_OUT),
+                Action::delay(duration * 0.5),
+                Action::fade_to(duration * 0.25, ORIGIN_ATTACKED_IMAGE_OPACITY / 2, Action_Ease::SINE_IN),
+                Action::hide()
+            ),
+            action_tag
+        );
     }
 
     void Enemy_Node::action_enemy_jump(float delay, float duration, glm::vec2 character_position) {
@@ -626,6 +750,84 @@ namespace Meow_Meow {
         effect_layer->add_child(fire);
     }
 
+    void Enemy_Node::action_enemy_hooked_to_throw(
+        float delay, float duration_hook, float direction, glm::vec2 boss_position
+    ) {
+        this->enemy_animation->play_animation("IDLE");
+        this->stop_action(ACTION_HOOKED_TAG);
+        this->container->stop_action(ACTION_HOOKED_TAG);
+        this->do_action(
+            Action::sequence(Action::delay(delay), Action::move_to(duration_hook, boss_position, Action_Ease::SINE_IN)),
+            ACTION_HOOKED_TAG
+        );
+        this->container->do_action(
+            Action::sequence(
+                Action::delay(delay),
+                Action::spawn(
+                    Action::sequence(
+                        Action::rotate_to(
+                            duration_hook / 2, direction * Math::random_float(15, 25), Action_Ease::SINE_OUT
+                        ),
+                        Action::rotate_to(
+                            duration_hook / 2, -direction * Math::random_float(15, 25), Action_Ease::SINE_OUT
+                        )
+                    ),
+                    Action::sequence(
+                        Action::scale_to(duration_hook / 2, {0.85f, 0.85f}, Action_Ease::SINE_OUT),
+                        Action::scale_to(duration_hook / 2, {1.f, 1.f}, Action_Ease::SINE_OUT)
+                    ),
+                    Action::sequence(
+                        Action::fade_to(duration_hook / 2, 240, Action_Ease::SINE_IN),
+                        Action::fade_in(duration_hook / 2)
+                    )
+                )
+            ),
+            ACTION_HOOKED_TAG
+        );
+    }
+
+    void Enemy_Node::action_enemy_flight_when_throwing(
+        float delay, float duration, glm::vec2 end_throwing_position, float throwing_direction
+    ) {
+        glm::vec2 start_position = this->get_position();
+        glm::vec2 middle_position = Math::get_middle_bezier_point(
+            start_position,
+            end_throwing_position,
+            400 + Math::random_float(0, 100),
+            0.5f,
+            end_throwing_position.x > start_position.x ? -1 : 1
+        );
+        this->do_action(
+            Action::sequence(
+                Action::delay(delay),
+                Action::bezier_to(duration, middle_position, end_throwing_position),
+                Action::call_func([](Base_Node* target, void* global_data) {
+                    glm::vec2 position = target->get_position();
+                    int a = 5;
+                })
+            ),
+            ACTION_THROWING_TAG
+        );
+        int NUMBER_ROTATION = 2;
+        this->container->do_action(
+            Action::sequence(
+                Action::delay(delay),
+                Action::spawn(
+                    Action::rotate_by(duration, throwing_direction * 360 * NUMBER_ROTATION, Action_Ease::SINE_OUT),
+                    Action::sequence(
+                        Action::scale_to(duration * 0.65, {0.75f, 0.75f}, Action_Ease::SINE_OUT),
+                        Action::scale_to(duration * 0.35, {1.f, 1.f}, Action_Ease::SINE_IN)
+                    ),
+                    Action::sequence(
+                        Action::fade_to(duration / 2, 250, Action_Ease::SINE_OUT),
+                        Action::fade_in(duration / 2, Action_Ease::SINE_IN)
+                    )
+                )
+            ),
+            ACTION_THROWING_TAG
+        );
+    }
+
     void Enemy_Node::action_enemy_dead(float delay, Layer_Node* label_exp_parent, float killed_exp) {
         if (this->progression_container != nullptr) {
             this->progression_health->stop_action(HITTED_ACTION_TAG);
@@ -712,6 +914,10 @@ namespace Meow_Meow {
         return new Enemy_State_Machine_Component();
     }
 
+    Enemy_Behavior_Component* Enemy_Node::make_behavior_instance() {
+        return new Enemy_Behavior_Component();
+    }
+
     void Enemy_Node::update_collision_component(Collision_Component* collision) {
         collision->set_tag(Const::ENEMY_COLLISION_TAG);
         Enemy_Collision_Data* collision_data = new Enemy_Collision_Data();
@@ -727,6 +933,26 @@ namespace Meow_Meow {
             },
             [this](State_Machine_Component::State_Machine_Callback_Data callback) {
                 this->end_jump(callback.global_data);
+            }
+        );
+        state_machine->add_state_at(
+            Const::TRACK_CONTROLL,
+            Const::STATE_SKILL_CHANNELLING,
+            [this](State_Machine_Component::State_Machine_Callback_Data callback) {
+                this->start_channelling(callback.global_data, callback.source_call_state);
+            },
+            [this](State_Machine_Component::State_Machine_Callback_Data callback) {
+                this->end_channelling(callback.global_data, callback.source_call_state);
+            }
+        );
+        state_machine->add_state_at(
+            Const::TRACK_CONTROLL,
+            Const::STATE_FLIGHT,
+            [this](State_Machine_Component::State_Machine_Callback_Data callback) {
+                this->start_flight(callback.global_data, callback.source_call_state);
+            },
+            [this](State_Machine_Component::State_Machine_Callback_Data callback) {
+                this->end_flight(callback.global_data, callback.source_call_state);
             }
         );
     }

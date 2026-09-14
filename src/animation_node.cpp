@@ -66,9 +66,6 @@ bool Animation_Node::is_animation_preload_finish(const Animation_Data& animation
     if (animations_need_preload_folders.find(animation.folder_path) == animations_need_preload_folders.end()) {
         return false;
     }
-    if (animation.name == "DEAD") {
-        int a = 1;
-    }
     std::vector<std::string>& preloads_frame = animations_need_preload_folders[animation.folder_path];
     return preloads_frame.size() <= 0;
 }
@@ -89,12 +86,12 @@ bool Animation_Node::is_load_all_smooth_frame(std::string animation_name) {
     if (animation.need_preload) {
         return Animation_Node::is_animation_preload_finish(animation);
     }
-    for (int i = 0; i < animation.number_frame; i++) {
+    for (int i = 1; i < animation.number_frame; i++) {
         std::string current_image = this->get_image_path(animation_name, i);
         if (current_image == "")
             return false;
         Image_Info image_info = Libs_Wrapper::image_info(current_image, Defined::LOAD_MODE::ASYNC);
-        if (image_info.state != Defined::RESOURCE_LOADED_STATE::LOADED) {
+        if (image_info.state != Defined::RESOURCE_LOADED_STATE::LOADED || !image_info.is_loaded_texture) {
             return false;
         }
     }
@@ -121,7 +118,7 @@ void Animation_Node::make_animation(
 }
 
 void Animation_Node::set_speed(float speed) {
-    speed_ratio = std::min(std::max(speed, 0.f), 1.f);
+    speed_ratio = std::min(std::max(speed, 0.f), 5.f);
 }
 
 void Animation_Node::on_finish_animation_callback(

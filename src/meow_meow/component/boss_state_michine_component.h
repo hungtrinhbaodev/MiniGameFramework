@@ -8,8 +8,11 @@ namespace Meow_Meow {
         ~Boss_State_Machine_Component();
 
         bool can_take_bullet_damage(void* global_data) override;
-        bool is_channel_skill_flash(void* global_data);
+        bool is_channelling_skill_flash(void* global_data);
+        bool is_channelling_skill_throw_enemy(void* global_data);
         bool is_using_skill_falsh(void* global_data);
+        bool is_using_skill_throw_enemy(void* global_data);
+        bool is_using_some_skill(void* global_data);
 
     protected:
         void handle_auto_change_state(

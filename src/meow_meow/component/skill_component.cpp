@@ -15,6 +15,10 @@ namespace Meow_Meow {
         this->countdown_time = countdown_time;
     }
 
+    bool Skill_Component::is_countdown_finish() {
+        return this->current_countdown_time >= this->countdown_time;
+    }
+
     void Skill_Component::start_countdown_time() {
         this->current_countdown_time = 0.f;
     }
@@ -23,8 +27,12 @@ namespace Meow_Meow {
         return this->skill_id;
     }
 
+    float Skill_Component::get_current_countdown() {
+        return this->current_countdown_time;
+    }
+
     bool Skill_Component::can_activate_skill(State_Machine_Component* state_machine, void* global_data) {
-        return is_initialize && this->current_countdown_time >= this->countdown_time;
+        return is_initialize && this->is_countdown_finish();
     }
 
     void Skill_Component::activating_skill(void* global_data) {

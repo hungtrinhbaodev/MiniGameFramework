@@ -32,7 +32,7 @@ namespace Meow_Meow {
         Enemy_State_Machine_Component* state_machine = get_enemy_state_machine_component(target);
         if (state_machine == nullptr)
             return;
-        if (this->can_activate_skill(state_machine, global_data)) {
+        if (this->is_countdown_finish() && this->can_activate_skill(state_machine, global_data)) {
             this->activating_skill(global_data);
             state_machine->change_state_at(Const::TRACK_CONTROLL, Const::STATE_JUMP, skill_config.duration_jump);
         }
