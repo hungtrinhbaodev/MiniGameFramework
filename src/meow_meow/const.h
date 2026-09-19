@@ -176,8 +176,8 @@ namespace Meow_Meow {
          */
         const inline static int BATTLE_NUMBER_WAVE = 3;
         const inline static std::vector<float> BATTLE_DURATION_GENERATE_ENEMY = {0, 30, 40};
-        const inline static std::vector<int> BATTLE_NUMBER_ENEMY_GENERATED = {1, 0, 0};
-        const inline static std::vector<int> BATTLE_NUMBER_BOSS_GENERATED = {1, 0, 0};
+        const inline static std::vector<int> BATTLE_NUMBER_ENEMY_GENERATED = {5, 7, 5};
+        const inline static std::vector<int> BATTLE_NUMBER_BOSS_GENERATED = {0, 0, 1};
 
         /**
          * Character level config
@@ -234,7 +234,7 @@ namespace Meow_Meow {
          */
         const inline static std::string BOSS_SKILL_THROW_ENEMY_COMPONENT_NAME = "SKILL_THROW_ENEMY_COMPONENT_NAME";
         const inline static std::string BOSS_SKILL_THROW_ENEMY_ID = "THROW_ENEMY";
-        const inline static float BOSS_SKILL_THROW_ENEMY_COUNTDOWN = 5.f;
+        const inline static float BOSS_SKILL_THROW_ENEMY_COUNTDOWN = 25.f;
         const inline static float BOSS_SKILL_THROW_ENEMY_THROWING_DURATION = 1.f;
         const inline static float BOSS_SKILL_THROW_ENEMY_STUN_DURATION = 0.5f;
         const inline static float BOSS_SKILL_THROW_ENEMY_DAMAGE = 120.f;

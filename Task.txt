@@ -50,10 +50,10 @@
 [Done]: Add skill system to character (dash, random bullet and booming).
 [Done]: Add clean up callback to state machine easy to implement.
 []: Add skill player throw boom.
-[]: Add skill boss throw enemy into player.
-[]: Add image stun in status player and enemy.
+[Done]: Add skill boss throw enemy into player.
+[Done]: Add image stun in status player and enemy.
 []: Update movement to enemy to make it more realistic.
-[]: Update flow that component comunicate with each other, object just hold the action.
+[Done]: Update flow that component comunicate with each other, object just hold the action.
 
 
 []: Refactor variable name in key press system to read easier.

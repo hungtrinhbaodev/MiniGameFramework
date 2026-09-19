@@ -9,7 +9,8 @@ namespace Meow_Meow {
     Enemy_State_Machine_Component::~Enemy_State_Machine_Component() {}
 
     bool Enemy_State_Machine_Component::can_take_bullet_damage(void* global_data) {
-        if (this->is_enemy_attacked() || this->is_enemy_dead() || this->is_enemy_lost_all_health()) {
+        if (this->is_enemy_attacked() || this->is_enemy_dead() || this->is_enemy_lost_all_health() ||
+            this->is_enemy_hooked()) {
             return false;
         }
         return true;

@@ -13,6 +13,26 @@ namespace Meow_Meow {
         init_bg();
         init_logo();
         init_loading();
+        this->add_key_press_listener(
+            Custom::Key::C, [this](Key_Press_Detail press_detail, Base_Node*, void* global_data) {
+                switch (press_detail.type) {
+                    case Key_Input_Type::PRESSED: {
+                        this->loading->do_action(
+                            Action::sequence(
+                                Action::progress_to(Math::random_float(3, 4), 100, Action_Ease::SINE_IN),
+                                Action::call_func([](Base_Node* base_node, void* global_data) {
+                                    Director::get()->change_scene(new Chosen_Character_Scene(), Global_Data::get());
+                                })
+                            )
+                        );
+                        break;
+                    }
+                    default: {
+                        break;
+                    }
+                }
+            }
+        );
     }
 
     Loading_Scene::~Loading_Scene() {}
@@ -48,14 +68,6 @@ namespace Meow_Meow {
     }
 
     void Loading_Scene::attach(void* global_data) {
-        loading->do_action(
-            Action::sequence(
-                Action::progress_to(Math::random_float(3, 4), 100, Action_Ease::SINE_IN),
-                Action::call_func([](Base_Node* base_node, void* global_data) {
-                    Director::get()->change_scene(new Chosen_Character_Scene(), Global_Data::get());
-                })
-            )
-        );
         run_action_idle_logo(logo, ORIGIN_SCALE_LOGO);
     }
 

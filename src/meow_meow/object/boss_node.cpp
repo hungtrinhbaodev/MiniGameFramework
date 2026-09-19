@@ -73,9 +73,9 @@ namespace Meow_Meow {
     }
 
     void Boss_Node::init_skill_components() {
-        // Boss_Skill_Flash_Component* flash_skill = new Boss_Skill_Flash_Component();
-        // flash_skill->set_name(Const::BOSS_SKILL_FLASH_COMPONENT_NAME);
-        // this->add_component(flash_skill);
+        Boss_Skill_Flash_Component* flash_skill = new Boss_Skill_Flash_Component();
+        flash_skill->set_name(Const::BOSS_SKILL_FLASH_COMPONENT_NAME);
+        this->add_component(flash_skill);
 
         Boss_Skill_Throw_Enemy_Component* throw_skill = new Boss_Skill_Throw_Enemy_Component();
         throw_skill->set_name(Const::BOSS_SKILL_THROW_ENEMY_COMPONENT_NAME);
